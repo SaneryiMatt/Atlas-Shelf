@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 42 33% 95%;
+  --foreground: 154 18% 15%;
+  --card: 0 0% 100%;
+  --card-foreground: 154 18% 15%;
+  --primary: 152 22% 26%;
+  --primary-foreground: 42 33% 97%;
+  --secondary: 40 26% 89%;
+  --secondary-foreground: 154 18% 18%;
+  --muted: 40 20% 91%;
+  --muted-foreground: 154 10% 39%;
+  --accent: 36 35% 86%;
+  --accent-foreground: 154 18% 18%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 32 18% 82%;
+  --input: 32 18% 82%;
+  --ring: 152 22% 26%;
+  --radius: 1.35rem;
+}
+
+* {
+  @apply border-border;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply min-h-screen bg-background text-foreground antialiased;
+  font-feature-settings: "ss01" 1, "liga" 1;
+}
+
+::selection {
+  background: hsl(var(--primary) / 0.18);
+}
+
+@layer base {
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply text-balance;
+  }
+
+  p {
+    @apply text-pretty;
+  }
+}
+
