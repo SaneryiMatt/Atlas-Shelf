@@ -23,10 +23,10 @@ export default async function BookDetailPage({
 
   return (
     <ProjectDetailPage
-      eyebrow="书籍详情"
-      description="这里展示书籍的基本信息、标签、笔记、评分和图片。"
+      eyebrow="书籍"
+      description=""
       backHref="/books"
-      backLabel="返回书籍列表"
+      backLabel="返回列表"
       detail={data.detail}
       actions={
         data.detail.canManage ? (

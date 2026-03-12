@@ -23,10 +23,10 @@ export default async function TravelDetailPage({
 
   return (
     <ProjectDetailPage
-      eyebrow="旅行详情"
-      description="这里展示地点的基本信息、标签、笔记、评分和图片。"
+      eyebrow="旅行"
+      description=""
       backHref="/travels"
-      backLabel="返回旅行列表"
+      backLabel="返回列表"
       detail={data.detail}
       actions={
         data.detail.canManage ? (

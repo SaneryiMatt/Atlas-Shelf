@@ -23,10 +23,10 @@ export default async function MovieDetailPage({
 
   return (
     <ProjectDetailPage
-      eyebrow="影视详情"
-      description="这里展示作品的基本信息、标签、笔记、评分和图片。"
+      eyebrow="影视"
+      description=""
       backHref="/movies"
-      backLabel="返回影视列表"
+      backLabel="返回列表"
       detail={data.detail}
       actions={
         data.detail.canManage ? (
