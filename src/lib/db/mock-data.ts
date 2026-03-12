@@ -446,7 +446,7 @@ export const analyticsInsights = [
 export const settingsPanels: SettingsPanel[] = [
   {
     title: "Database layer",
-    description: "Drizzle schema is ready for Supabase Postgres with a unified items table plus detail tables.",
+    description: "Drizzle schema is ready for Supabase Postgres with a unified projects table plus detail tables.",
     status: "Ready",
     detail: "Swap mock queries to live selects once DATABASE_URL is present."
   },

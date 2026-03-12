@@ -18,7 +18,7 @@ export function AppHeader({ userEmail }: AppHeaderProps) {
       <div className="flex flex-wrap items-center gap-3">
         <Badge variant="outline" className="gap-2">
           <Database className="size-3.5" />
-          Unified item model
+          Unified project model
         </Badge>
         <Badge variant="success" className="gap-2">
           <WandSparkles className="size-3.5" />

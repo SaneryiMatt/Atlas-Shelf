@@ -72,14 +72,14 @@ export function TravelsOverview({ stats, activeTrips, archive }: TravelsOverview
         </SectionCard>
       </section>
 
-      <SectionCard title="Travel-specific data model" description="A detail table keeps place metadata clean while the shared item table powers cross-product views.">
+      <SectionCard title="Travel-specific data model" description="A detail table keeps place metadata clean while the shared project table powers cross-product views.">
         <div className="grid gap-4 md:grid-cols-3">
           <div className="rounded-3xl bg-background/70 p-5 text-sm leading-6 text-muted-foreground">
             <MapPinned className="mb-3 size-5 text-primary" />
             Country, city, region, date range, budget, and highlights live in travel_details without leaking into other content types.
           </div>
           <div className="rounded-3xl bg-background/70 p-5 text-sm leading-6 text-muted-foreground">
-            Shared timeline and analytics screens can still query travels through the common items table.
+            Shared timeline, notes, tags, and photos can still query travels through the common projects table.
           </div>
           <div className="rounded-3xl bg-background/70 p-5 text-sm leading-6 text-muted-foreground">
             The file src/modules/travels/travel-form-schema.ts is ready for validated create and edit flows when forms are added.

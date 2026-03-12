@@ -83,3 +83,25 @@ export interface SettingsPanel {
   detail: string;
 }
 
+export interface ProjectPreview {
+  id: string;
+  title: string;
+  type: ItemType;
+  status: string;
+  updatedAtLabel: string;
+}
+
+export interface ProjectNotePreview {
+  id: string;
+  projectTitle: string;
+  noteType: string;
+  noteTitle: string;
+  recordedAtLabel: string;
+}
+
+export interface ProjectTagPreview {
+  id: string;
+  name: string;
+  usageCount: number;
+}
+

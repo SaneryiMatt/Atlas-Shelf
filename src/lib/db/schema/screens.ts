@@ -1,13 +1,14 @@
 import { integer, pgTable, text, uuid } from "drizzle-orm/pg-core";
 
 import { screenFormatEnum } from "@/lib/db/schema/enums";
-import { items } from "@/lib/db/schema/items";
+import { projects } from "@/lib/db/schema/projects";
 
 export const screenDetails = pgTable("screen_details", {
-  itemId: uuid("item_id")
+  projectId: uuid("project_id")
     .primaryKey()
-    .references(() => items.id, { onDelete: "cascade" }),
+    .references(() => projects.id, { onDelete: "cascade" }),
   format: screenFormatEnum("format").notNull(),
+  creator: text("creator"),
   director: text("director"),
   studio: text("studio"),
   releaseYear: integer("release_year"),

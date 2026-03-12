@@ -3,7 +3,12 @@ import { CheckCircle2, CircleDashed, DatabaseZap, WandSparkles } from "lucide-re
 import { PageHeader } from "@/components/shared/page-header";
 import { SectionCard } from "@/components/shared/section-card";
 import { Badge } from "@/components/ui/badge";
-import type { SettingsPanel } from "@/lib/types/items";
+import type {
+  ProjectNotePreview,
+  ProjectPreview,
+  ProjectTagPreview,
+  SettingsPanel
+} from "@/lib/types/items";
 
 interface SettingsOverviewProps {
   envStatus: Array<{
@@ -12,9 +17,16 @@ interface SettingsOverviewProps {
     hint: string;
   }>;
   panels: SettingsPanel[];
+  databasePreview: {
+    status: "live" | "unavailable";
+    message: string;
+    projects: ProjectPreview[];
+    notes: ProjectNotePreview[];
+    tags: ProjectTagPreview[];
+  } | null;
 }
 
-export function SettingsOverview({ envStatus, panels }: SettingsOverviewProps) {
+export function SettingsOverview({ envStatus, panels, databasePreview }: SettingsOverviewProps) {
   return (
     <div className="space-y-8">
       <PageHeader
@@ -56,6 +68,80 @@ export function SettingsOverview({ envStatus, panels }: SettingsOverviewProps) {
           </div>
         </SectionCard>
       </section>
+
+      <SectionCard
+        title="Database preview"
+        description="A live read from projects, project_notes, and tags. This verifies the query layer against the new schema."
+      >
+        <div className="flex flex-wrap items-center gap-3">
+          <Badge variant={databasePreview?.status === "live" ? "success" : "outline"}>
+            {databasePreview?.status === "live" ? "Live data" : "Unavailable"}
+          </Badge>
+          <p className="text-sm leading-6 text-muted-foreground">
+            {databasePreview?.message ?? "No database preview status available."}
+          </p>
+        </div>
+
+        <div className="mt-6 grid gap-6 xl:grid-cols-3">
+          <div className="space-y-3 rounded-3xl border border-border/60 bg-background/70 p-5">
+            <p className="font-medium text-foreground">Recent projects</p>
+            <div className="space-y-3">
+              {databasePreview?.projects.length ? (
+                databasePreview.projects.map((project) => (
+                  <div key={project.id} className="rounded-2xl border border-border/50 bg-background/80 p-4">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="font-medium text-foreground">{project.title}</p>
+                      <Badge variant="secondary">{project.type}</Badge>
+                    </div>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      {project.status} - Updated {project.updatedAtLabel}
+                    </p>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm leading-6 text-muted-foreground">No live project rows are available yet.</p>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-3 rounded-3xl border border-border/60 bg-background/70 p-5">
+            <p className="font-medium text-foreground">Recent notes</p>
+            <div className="space-y-3">
+              {databasePreview?.notes.length ? (
+                databasePreview.notes.map((note) => (
+                  <div key={note.id} className="rounded-2xl border border-border/50 bg-background/80 p-4">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="font-medium text-foreground">{note.noteTitle}</p>
+                      <Badge variant="outline">{note.noteType}</Badge>
+                    </div>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      {note.projectTitle} - {note.recordedAtLabel}
+                    </p>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm leading-6 text-muted-foreground">No live note rows are available yet.</p>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-3 rounded-3xl border border-border/60 bg-background/70 p-5">
+            <p className="font-medium text-foreground">Popular tags</p>
+            <div className="space-y-3">
+              {databasePreview?.tags.length ? (
+                databasePreview.tags.map((tag) => (
+                  <div key={tag.id} className="flex items-center justify-between rounded-2xl border border-border/50 bg-background/80 px-4 py-3">
+                    <p className="font-medium text-foreground">{tag.name}</p>
+                    <Badge variant="secondary">{tag.usageCount}</Badge>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm leading-6 text-muted-foreground">No live tag rows are available yet.</p>
+              )}
+            </div>
+          </div>
+        </div>
+      </SectionCard>
 
       <SectionCard title="Production handoff posture" description="The remaining work is mostly service wiring and CRUD flow implementation.">
         <div className="grid gap-4 md:grid-cols-3">

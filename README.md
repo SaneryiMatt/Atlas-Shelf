@@ -17,7 +17,7 @@ A production-ready foundation for a personal media and travel tracking platform 
 - `src/app`: route entrypoints and shared app layouts
 - `src/modules`: feature-grouped page rendering and module-specific schemas
 - `src/components`: shared layout, data display, and shadcn-style UI primitives
-- `src/lib/db/schema`: unified `items` table with detail tables for books, screens, and travels
+- `src/lib/db/schema`: unified `projects` table with detail tables plus normalized tags, notes, and photos
 - `src/lib/db/queries`: page-facing server query functions that can swap from mock data to database reads
 
 ## Getting started
