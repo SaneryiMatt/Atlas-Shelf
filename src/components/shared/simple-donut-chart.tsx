@@ -6,32 +6,50 @@ interface SimpleDonutChartProps {
   centerValue?: string;
 }
 
-const chartSize = 180;
-const strokeWidth = 24;
+const chartSize = 160;
+const strokeWidth = 20;
 const radius = (chartSize - strokeWidth) / 2;
 const circumference = 2 * Math.PI * radius;
+
+// 优雅的配色方案
+const defaultColors = [
+  "#3b82f6", // blue
+  "#a855f7", // purple
+  "#10b981", // emerald
+  "#f59e0b", // amber
+  "#ec4899", // pink
+  "#06b6d4", // cyan
+];
 
 export function SimpleDonutChart({ items, centerLabel, centerValue }: SimpleDonutChartProps) {
   const total = items.reduce((sum, item) => sum + item.value, 0);
   let progress = 0;
 
+  // 为每个项目分配颜色
+  const itemsWithColors = items.map((item, index) => ({
+    ...item,
+    color: item.accent ?? defaultColors[index % defaultColors.length]
+  }));
+
   return (
-    <div className="grid gap-5 lg:grid-cols-[180px_minmax(0,1fr)] lg:items-center">
-      <div className="relative mx-auto size-[180px]">
+    <div className="flex flex-col items-center gap-5">
+      {/* 饼图 */}
+      <div className="relative size-[160px]">
         <svg viewBox={`0 0 ${chartSize} ${chartSize}`} className="-rotate-90">
+          {/* 背景圆环 */}
           <circle
             cx={chartSize / 2}
             cy={chartSize / 2}
             r={radius}
             fill="none"
-            stroke="rgba(255,255,255,0.08)"
+            stroke="rgba(255,255,255,0.06)"
             strokeWidth={strokeWidth}
           />
+          {/* 数据段 */}
           {total > 0
-            ? items.map((item) => {
+            ? itemsWithColors.map((item) => {
                 const segmentLength = (item.value / total) * circumference;
                 const dashOffset = -progress * circumference;
-
                 progress += item.value / total;
 
                 return (
@@ -41,33 +59,40 @@ export function SimpleDonutChart({ items, centerLabel, centerValue }: SimpleDonu
                     cy={chartSize / 2}
                     r={radius}
                     fill="none"
-                    stroke={item.accent ?? "#8b735b"}
+                    stroke={item.color}
                     strokeWidth={strokeWidth}
                     strokeDasharray={`${segmentLength} ${circumference}`}
                     strokeDashoffset={dashOffset}
+                    strokeLinecap="round"
+                    className="transition-all duration-500"
                   />
                 );
               })
             : null}
         </svg>
 
-        <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
-          <div className="text-3xl font-semibold text-foreground">{centerValue ?? total}</div>
-          <div className="mt-1 text-xs leading-5 text-muted-foreground">{centerLabel ?? "总数"}</div>
+        {/* 中心内容 */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <div className="text-2xl font-bold text-foreground">{centerValue ?? total}</div>
+          <div className="text-xs text-muted-foreground/70">{centerLabel ?? "总数"}</div>
         </div>
       </div>
 
-      <div className="space-y-3">
-        {items.map((item) => (
-          <div key={item.label} className="flex items-start justify-between gap-4 rounded-lg border border-border bg-background/70 px-4 py-3">
-            <div className="flex min-w-0 items-center gap-3">
+      {/* 图例 */}
+      <div className="w-full space-y-2">
+        {itemsWithColors.map((item) => (
+          <div 
+            key={item.label} 
+            className="flex items-center justify-between rounded-lg px-3 py-2 transition-colors hover:bg-accent/20"
+          >
+            <div className="flex items-center gap-2.5">
               <span
-                className="mt-0.5 size-2.5 shrink-0 rounded-full"
-                style={{ backgroundColor: item.accent ?? "#8b735b" }}
+                className="size-2.5 rounded-full"
+                style={{ backgroundColor: item.color }}
               />
-              <span className="text-sm font-medium text-foreground">{item.label}</span>
+              <span className="text-sm text-foreground/90">{item.label}</span>
             </div>
-            <span className="shrink-0 text-sm text-muted-foreground">{item.displayValue}</span>
+            <span className="text-sm font-medium text-muted-foreground">{item.displayValue}</span>
           </div>
         ))}
       </div>
