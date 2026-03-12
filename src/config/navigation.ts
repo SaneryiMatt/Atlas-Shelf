@@ -1,14 +1,6 @@
-import {
-  BookOpen,
-  Clapperboard,
-  Compass,
-  LayoutDashboard,
-  Search,
-  Settings,
-  TimerReset
-} from "lucide-react";
+import { BookOpen, Clapperboard, Compass, LayoutDashboard, Search, Settings } from "lucide-react";
 
-import { analyticsFeatureEnabled, timelineFeatureEnabled } from "@/config/features";
+import { analyticsFeatureEnabled } from "@/config/features";
 
 export const productName = "Atlas Shelf";
 export const productTagline = "你的书影音与旅行记录";
@@ -18,25 +10,25 @@ export const primaryNavigation = [
     title: "首页",
     href: "/",
     icon: LayoutDashboard,
-    description: "最近记录、进行中内容和快捷入口"
+    description: "集中查看当前在读、在看、年度分析和最近记录。"
   },
   {
     title: "书籍",
     href: "/books",
     icon: BookOpen,
-    description: "在读、想读和阅读笔记"
+    description: "管理阅读进度、评分、标签和笔记。"
   },
   {
     title: "影视",
     href: "/movies",
     icon: Clapperboard,
-    description: "电影记录、评分和观后感"
+    description: "管理电影、剧集、动漫和纪录片记录。"
   },
   {
     title: "旅行",
     href: "/travels",
     icon: Compass,
-    description: "想去的地方、已去过的地点和旅程回忆"
+    description: "整理想去的地方、去过的地点和行程回忆。"
   }
 ] as const;
 
@@ -46,15 +38,6 @@ export const quickAccessLinks = [
     href: "/search",
     icon: Search
   },
-  ...(timelineFeatureEnabled
-    ? [
-        {
-          title: "时间线",
-          href: "/timeline",
-          icon: TimerReset
-        }
-      ]
-    : []),
   {
     title: "设置",
     href: "/settings",
@@ -66,21 +49,21 @@ export function getPageHeaderMeta(pathname: string) {
   if (pathname === "/") {
     return {
       title: "首页",
-      description: "看看最近在读、在看和准备去的地方。"
+      description: "集中查看当前在读、在看、年度分析和最近时间线。"
     };
   }
 
   if (pathname === "/books") {
     return {
       title: "书籍",
-      description: "整理阅读进度、评分和笔记。"
+      description: "整理阅读进度、评分、标签和笔记。"
     };
   }
 
   if (pathname.startsWith("/books/")) {
     return {
       title: "书籍详情",
-      description: "查看这本书的记录、标签和图片。"
+      description: "查看这本书的记录、标签、笔记和图片。"
     };
   }
 
@@ -101,7 +84,7 @@ export function getPageHeaderMeta(pathname: string) {
   if (pathname === "/travels") {
     return {
       title: "旅行",
-      description: "记录想去的地方、去过的地点和旅程计划。"
+      description: "记录想去的地方、去过的地点和旅行计划。"
     };
   }
 
@@ -119,17 +102,10 @@ export function getPageHeaderMeta(pathname: string) {
     };
   }
 
-  if (timelineFeatureEnabled && pathname === "/timeline") {
-    return {
-      title: "时间线",
-      description: "按时间查看最近记录。"
-    };
-  }
-
   if (analyticsFeatureEnabled && pathname === "/analytics") {
     return {
       title: "分析",
-      description: "看看最近的记录节奏和偏好变化。"
+      description: "查看近期记录节奏和偏好变化。"
     };
   }
 

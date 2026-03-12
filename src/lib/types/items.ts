@@ -76,6 +76,18 @@ export interface TimelineEvent {
   kind: ItemType;
   badge: string;
   description: string;
+  href?: string;
+}
+
+export interface TimelineMonthGroup {
+  key: string;
+  label: string;
+  events: TimelineEvent[];
+}
+
+export interface TimelinePageData {
+  totalCount: number;
+  groups: TimelineMonthGroup[];
 }
 
 export interface AnalyticsMetric {
@@ -88,6 +100,21 @@ export interface CategoryBreakdown {
   label: string;
   value: string;
   accent: string;
+}
+
+export interface ChartDatum {
+  label: string;
+  value: number;
+  displayValue: string;
+  accent?: string;
+}
+
+export interface DashboardAnalyticsData {
+  year: number;
+  annualTotal: number;
+  typeDistribution: ChartDatum[];
+  ratingDistribution: ChartDatum[];
+  monthlyTrend: ChartDatum[];
 }
 
 export interface SettingsPanel {

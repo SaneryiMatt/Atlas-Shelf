@@ -62,9 +62,9 @@ export async function uploadUserAsset(input: {
   };
 }
 
-export async function removeStoredAsset(path: string) {
+export async function removeStoredAsset(path: string, bucket = mediaStorageBucket) {
   const supabase = createSupabaseAdminClient();
-  const { error } = await supabase.storage.from(mediaStorageBucket).remove([path]);
+  const { error } = await supabase.storage.from(bucket).remove([path]);
 
   if (error) {
     throw error;
