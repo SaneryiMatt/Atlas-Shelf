@@ -173,6 +173,6 @@ export async function getMoviesPageData(searchParams?: { page?: string; sort?: s
     items: mockList.items,
     sort,
     pagination: mockList.pagination,
-    canCreateMovies: Boolean(databaseAvailable)
+    canCreateMovies: true
   };
 }

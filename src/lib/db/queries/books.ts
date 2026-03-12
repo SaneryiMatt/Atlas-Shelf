@@ -183,6 +183,6 @@ export async function getBooksPageData(searchParams?: { page?: string; sort?: st
     items: mockList.items,
     sort,
     pagination: mockList.pagination,
-    canCreateBooks: Boolean(databaseAvailable)
+    canCreateBooks: true
   };
 }
