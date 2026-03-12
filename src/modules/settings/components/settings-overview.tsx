@@ -1,6 +1,5 @@
 import { CheckCircle2, CircleDashed, DatabaseZap, WandSparkles } from "lucide-react";
 
-import { PageHeader } from "@/components/shared/page-header";
 import { SectionCard } from "@/components/shared/section-card";
 import { Badge } from "@/components/ui/badge";
 import type {
@@ -51,12 +50,11 @@ interface SettingsOverviewProps {
 
 export function SettingsOverview({ envStatus, panels, databasePreview }: SettingsOverviewProps) {
   return (
-    <div className="space-y-8">
-      <PageHeader
-        eyebrow="设置模块"
-        title="把数据、集成和 AI 接口收敛在可维护的位置。"
-        description="设置页围绕运行准备度组织，让系统可以从 mock data 平滑过渡到真实服务。"
-      />
+    <div className="mx-auto max-w-4xl px-4 py-8">
+      <header className="mb-10">
+        <h1 className="text-3xl font-semibold tracking-tight text-foreground">设置</h1>
+        <p className="mt-2 text-muted-foreground">数据、集成和接口配置</p>
+      </header>
 
       <section className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
         <SectionCard title="环境准备情况" description="接入真实服务时不需要重构页面结构。">

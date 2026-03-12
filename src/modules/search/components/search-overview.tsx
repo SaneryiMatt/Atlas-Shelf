@@ -2,7 +2,6 @@ import Link from "next/link";
 import { Compass, Film, Search, SearchX } from "lucide-react";
 
 import { GlobalSearchForm } from "@/components/shared/global-search-form";
-import { PageHeader } from "@/components/shared/page-header";
 import { SectionCard } from "@/components/shared/section-card";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -69,13 +68,14 @@ function SearchGroupSection({ group }: { group: SearchResultGroup }) {
 
 export function SearchOverview({ query, totalCount, groups }: SearchOverviewProps) {
   return (
-    <div className="space-y-8">
-      <PageHeader
-        eyebrow="全局搜索"
-        title="在 books、movies、travels 里统一检索"
-        description="搜索会覆盖标题、摘要、类型详情字段和标签，当前使用 PostgreSQL ILIKE 查询。"
-        actions={<GlobalSearchForm defaultValue={query} className="w-full max-w-xl" />}
-      />
+    <div className="mx-auto max-w-4xl px-4 py-8">
+      <header className="mb-10">
+        <h1 className="text-3xl font-semibold tracking-tight text-foreground">搜索</h1>
+        <p className="mt-2 text-muted-foreground">在书籍、影视、旅行中统一检索</p>
+        <div className="mt-4">
+          <GlobalSearchForm defaultValue={query} className="w-full max-w-md" />
+        </div>
+      </header>
 
       {!query ? (
         <SectionCard title="开始搜索" description="输入关键词后，系统会统一返回书籍、影视和旅行结果。">
