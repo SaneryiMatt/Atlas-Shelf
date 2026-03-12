@@ -7,9 +7,13 @@ export const metadata: Metadata = {
   title: "影视"
 };
 
-export default async function MoviesPage() {
-  const data = await getMoviesPageData();
+export default async function MoviesPage({
+  searchParams
+}: {
+  searchParams: Promise<{ page?: string; sort?: string }>;
+}) {
+  const params = await searchParams;
+  const data = await getMoviesPageData(params);
 
   return <MoviesOverview {...data} />;
 }
-

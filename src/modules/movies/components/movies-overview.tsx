@@ -1,24 +1,30 @@
-import { Clapperboard, MonitorPlay } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, MonitorPlay } from "lucide-react";
 
+import { AddMovieDialog } from "@/modules/movies/components/add-movie-dialog";
+import { ListControls } from "@/components/shared/list-controls";
 import { PageHeader } from "@/components/shared/page-header";
 import { SectionCard } from "@/components/shared/section-card";
 import { StatCard } from "@/components/shared/stat-card";
 import { Badge } from "@/components/ui/badge";
-import type { DashboardStat, ScreenOverviewItem } from "@/lib/types/items";
+import type { DashboardStat, ModuleListSort, PaginationInfo, ScreenListItem } from "@/lib/types/items";
 
 interface MoviesOverviewProps {
   stats: DashboardStat[];
-  currentScreens: ScreenOverviewItem[];
-  backlog: ScreenOverviewItem[];
+  items: ScreenListItem[];
+  sort: ModuleListSort;
+  pagination: PaginationInfo;
+  canCreateMovies: boolean;
 }
 
-export function MoviesOverview({ stats, currentScreens, backlog }: MoviesOverviewProps) {
+export function MoviesOverview({ stats, items, sort, pagination, canCreateMovies }: MoviesOverviewProps) {
   return (
     <div className="space-y-8">
       <PageHeader
         eyebrow="影视模块"
-        title="用同一套流程管理电影、剧集和动漫。"
-        description="影视模块把长篇剧集和单次观影作品放进同一个系统里，同时保留它们之间的差异。"
+        title="用卡片列表统一管理影视记录"
+        description="列表页支持按更新时间和评分排序，并保持与新增模态框一致的交互节奏。"
+        actions={<AddMovieDialog disabled={!canCreateMovies} />}
       />
 
       <section className="grid gap-4 md:grid-cols-3">
@@ -27,72 +33,70 @@ export function MoviesOverview({ stats, currentScreens, backlog }: MoviesOvervie
         ))}
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-        <SectionCard title="当前片单" description="正在观看或准备接下来看的内容。">
-          <div className="space-y-4">
-            {currentScreens.map((screen) => (
-              <div key={screen.id} className="rounded-3xl border border-border/60 bg-background/70 p-5">
-                <div className="flex flex-wrap items-center gap-3">
-                  <h3 className="text-lg font-semibold text-foreground">{screen.title}</h3>
-                  <Badge>{screen.status}</Badge>
-                  <span className="text-sm text-muted-foreground">{screen.format}</span>
-                </div>
-                <p className="mt-3 text-sm leading-6 text-muted-foreground">{screen.summary}</p>
-                <div className="mt-4 flex flex-wrap gap-5 text-sm text-muted-foreground">
-                  <span>{screen.director}</span>
-                  <span>{screen.platform}</span>
-                  <span>{screen.runtime}</span>
-                  <span>评分 {screen.rating}</span>
-                </div>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {screen.tags.map((tag) => (
-                    <Badge key={tag} variant="secondary">
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </SectionCard>
+      <SectionCard title="影视列表" description="卡片聚合导演、平台、评分和更新时间，点击后进入详情页查看笔记与图片。">
+        <div className="space-y-6">
+          <ListControls basePath="/movies" currentSort={sort} pagination={pagination} itemUnit="部作品" />
 
-        <SectionCard title="队列设计" description="为保留在片单里的内容提供更明确的理由。">
-          <div className="space-y-4">
-            {backlog.map((screen) => (
-              <div key={screen.id} className="rounded-3xl border border-border/60 bg-background/70 p-5">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="font-medium text-foreground">{screen.title}</p>
-                    <p className="mt-1 text-sm text-muted-foreground">{screen.format} · {screen.platform}</p>
+          {items.length ? (
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {items.map((movie) => (
+                <Link
+                  key={movie.id}
+                  href={`/movies/${movie.id}`}
+                  className="group rounded-3xl border border-border/60 bg-background/70 p-5 transition hover:-translate-y-0.5 hover:border-primary/40 hover:bg-background/90"
+                >
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="text-lg font-semibold text-foreground transition group-hover:text-primary">{movie.title}</h3>
+                    <Badge>{movie.status}</Badge>
+                    <Badge variant="secondary">{movie.format}</Badge>
                   </div>
-                  <Badge variant="outline">{screen.status}</Badge>
-                </div>
-                <p className="mt-3 text-sm leading-6 text-muted-foreground">{screen.summary}</p>
-              </div>
-            ))}
-          </div>
-          <div className="mt-5 rounded-3xl border border-dashed border-border bg-background/60 p-5 text-sm leading-6 text-muted-foreground">
-            <Clapperboard className="mb-3 size-5 text-primary" />
-            `src/modules/movies/screen-form-schema.ts` 已可支撑后续新增和编辑流程的严格校验。
-          </div>
-        </SectionCard>
-      </section>
+                  <p className="mt-4 text-sm leading-6 text-muted-foreground">{movie.summary}</p>
+                  <div className="mt-4 grid gap-2 text-sm text-muted-foreground">
+                    <p>导演：{movie.director}</p>
+                    <p>平台：{movie.platform}</p>
+                    <p>{movie.runtime}</p>
+                    <p>评分：{movie.rating}</p>
+                    <p>最近更新：{movie.updatedAtLabel}</p>
+                  </div>
+                  {movie.tags.length ? (
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {movie.tags.map((tag) => (
+                        <Badge key={tag} variant="secondary">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  ) : null}
+                  <div className="mt-5 flex items-center gap-2 text-sm font-medium text-primary">
+                    查看详情
+                    <ArrowRight className="size-4 transition group-hover:translate-x-1" />
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-3xl border border-dashed border-border bg-background/60 p-6 text-sm leading-6 text-muted-foreground">
+              当前页没有影视数据，可以切换排序、翻页，或直接新增一部作品。
+            </div>
+          )}
+        </div>
+      </SectionCard>
 
-      <SectionCard title="为什么影视需要独立详情表" description="电影、剧集、动漫和纪录片都需要灵活但有类型约束的元数据。">
+      <SectionCard title="为什么使用独立详情表" description="列表页保持轻量，详情页再补充标签、笔记和图片等扩展信息。">
         <div className="grid gap-4 md:grid-cols-3">
           <div className="rounded-3xl bg-background/70 p-5 text-sm leading-6 text-muted-foreground">
             <MonitorPlay className="mb-3 size-5 text-primary" />
-            时长、季数、集数、平台和作品形式都保留在影视详情表里，不会污染共享主表。
+            影视列表使用卡片式布局，但底层仍然依赖 `screen_details`，不会把类型专属字段挤进共享主表。
           </div>
           <div className="rounded-3xl bg-background/70 p-5 text-sm leading-6 text-muted-foreground">
-            状态值依然共用，因此分析模块可以横向比较书籍、影视和旅行计划的进展。
+            排序和分页都在服务端查询层完成，页面只负责渲染结果，详情页也沿用这个模式。
           </div>
           <div className="rounded-3xl bg-background/70 p-5 text-sm leading-6 text-muted-foreground">
-            后续要增加筛选、上映视图或情绪标签时，不需要重做架构。
+            `src/modules/movies/actions.ts` 负责新增写入，`src/lib/db/queries/movies.ts` 负责列表读取，
+            `src/lib/db/queries/project-details.ts` 负责详情聚合。
           </div>
         </div>
       </SectionCard>
     </div>
   );
 }
-

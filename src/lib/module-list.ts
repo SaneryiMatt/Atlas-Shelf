@@ -1,0 +1,45 @@
+import type { ModuleListSort, PaginationInfo } from "@/lib/types/items";
+
+export const MODULE_LIST_PAGE_SIZE = 6;
+
+export function parseModuleListParams(searchParams?: { page?: string; sort?: string }) {
+  const sort: ModuleListSort = searchParams?.sort === "rating" ? "rating" : "updated";
+  const parsedPage = Number(searchParams?.page);
+  const page = Number.isFinite(parsedPage) && parsedPage > 0 ? Math.floor(parsedPage) : 1;
+
+  return { page, sort };
+}
+
+export function buildPagination(totalItems: number, page: number, perPage = MODULE_LIST_PAGE_SIZE): PaginationInfo {
+  const totalPages = Math.max(1, Math.ceil(totalItems / perPage));
+  const currentPage = Math.min(page, totalPages);
+
+  return {
+    page: currentPage,
+    perPage,
+    totalItems,
+    totalPages,
+    hasPreviousPage: currentPage > 1,
+    hasNextPage: currentPage < totalPages
+  };
+}
+
+export function formatUpdatedAtLabel(date: Date | null) {
+  if (!date) {
+    return "更新时间未知";
+  }
+
+  return new Intl.DateTimeFormat("zh-CN", {
+    year: "numeric",
+    month: "short",
+    day: "numeric"
+  }).format(date);
+}
+
+export function formatRatingLabel(rating: string | number | null) {
+  if (rating === null || rating === undefined || rating === "") {
+    return "未评分";
+  }
+
+  return Number(rating).toFixed(1);
+}

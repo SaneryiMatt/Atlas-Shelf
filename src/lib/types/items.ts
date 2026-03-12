@@ -1,6 +1,7 @@
 export type ItemType = "book" | "screen" | "travel";
 export type ItemStatus = "wishlist" | "planned" | "in_progress" | "completed" | "paused";
 export type TrendDirection = "up" | "steady" | "down";
+export type ModuleListSort = "updated" | "rating";
 
 export interface DashboardStat {
   label: string;
@@ -25,10 +26,14 @@ export interface BookOverviewItem {
   author: string;
   status: string;
   progress: string;
-  pages: number;
+  pages: number | null;
   rating: string;
   summary: string;
   tags: string[];
+}
+
+export interface BookListItem extends BookOverviewItem {
+  updatedAtLabel: string;
 }
 
 export interface ScreenOverviewItem {
@@ -44,6 +49,10 @@ export interface ScreenOverviewItem {
   tags: string[];
 }
 
+export interface ScreenListItem extends ScreenOverviewItem {
+  updatedAtLabel: string;
+}
+
 export interface TravelOverviewItem {
   id: string;
   title: string;
@@ -53,6 +62,11 @@ export interface TravelOverviewItem {
   budget: string;
   summary: string;
   highlights: string[];
+}
+
+export interface TravelListItem extends TravelOverviewItem {
+  ratingLabel: string;
+  updatedAtLabel: string;
 }
 
 export interface TimelineEvent {
@@ -103,5 +117,107 @@ export interface ProjectTagPreview {
   id: string;
   name: string;
   usageCount: number;
+}
+
+export interface ProjectDetailField {
+  label: string;
+  value: string;
+}
+
+export interface ProjectDetailTag {
+  id: string;
+  name: string;
+  color: string;
+}
+
+export interface ProjectDetailNote {
+  id: string;
+  title: string;
+  body: string;
+  typeLabel: string;
+  recordedAtLabel: string;
+  sourceUrl: string | null;
+  pinned: boolean;
+}
+
+export interface ProjectDetailPhoto {
+  id: string;
+  url: string | null;
+  caption: string | null;
+  altText: string;
+  kindLabel: string;
+  createdAtLabel: string;
+  isPrimary: boolean;
+  storageLabel: string;
+}
+
+export interface ProjectDetailPageData {
+  id: string;
+  title: string;
+  statusLabel: string;
+  ratingLabel: string;
+  summary: string | null;
+  updatedAtLabel: string;
+  fields: ProjectDetailField[];
+  tags: ProjectDetailTag[];
+  notes: ProjectDetailNote[];
+  photos: ProjectDetailPhoto[];
+  canManage: boolean;
+}
+
+export interface BookEditorValues {
+  title: string;
+  author: string;
+  status: ItemStatus;
+  rating: string;
+  startedAt: string;
+  completedAt: string;
+  summary: string;
+  tags: string;
+}
+
+export interface MovieEditorValues {
+  title: string;
+  director: string;
+  releaseYear: string;
+  platform: string;
+  status: ItemStatus;
+  rating: string;
+  note: string;
+  tags: string;
+}
+
+export interface TravelEditorValues {
+  placeName: string;
+  country: string;
+  city: string;
+  travelDate: string;
+  description: string;
+  latitude: string;
+  longitude: string;
+}
+
+export interface BookDetailPagePayload {
+  detail: ProjectDetailPageData;
+  editor: BookEditorValues;
+}
+
+export interface MovieDetailPagePayload {
+  detail: ProjectDetailPageData;
+  editor: MovieEditorValues;
+}
+
+export interface TravelDetailPagePayload {
+  detail: ProjectDetailPageData;
+  editor: TravelEditorValues;
+}
+
+export interface PaginationInfo {
+  page: number;
+  perPage: number;
+  totalItems: number;
+  totalPages: number;
+  hasPreviousPage: boolean;
+  hasNextPage: boolean;
 }
 
