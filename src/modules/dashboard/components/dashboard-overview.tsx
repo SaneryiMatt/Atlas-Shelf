@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { ArrowRight, BookOpen, Clapperboard, Compass, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { ArrowRight, BookOpen, Clapperboard, Compass, Minus, TrendingDown, TrendingUp } from "lucide-react";
 
+import { timelineFeatureEnabled } from "@/config/features";
 import { TimelineFeed } from "@/components/shared/timeline-feed";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -70,7 +71,7 @@ interface DashboardOverviewProps {
 function StatCard({ label, value, detail, trend }: { label: string; value: string; detail: string; trend: string }) {
   const TrendIcon = trend === "up" ? TrendingUp : trend === "down" ? TrendingDown : Minus;
   const trendColor = trend === "up" ? "text-green-500" : trend === "down" ? "text-red-500" : "text-muted-foreground";
-  
+
   return (
     <div className="rounded-xl border border-border bg-card p-5 transition-colors hover:bg-accent/30">
       <div className="flex items-center justify-between">
@@ -88,7 +89,7 @@ function SectionCard({ title, description, children }: { title: string; descript
     <div className="rounded-xl border border-border bg-card">
       <div className="border-b border-border px-5 py-4">
         <h2 className="text-lg font-semibold text-foreground">{title}</h2>
-        {description && <p className="mt-1 text-sm text-muted-foreground">{description}</p>}
+        {description ? <p className="mt-1 text-sm text-muted-foreground">{description}</p> : null}
       </div>
       <div className="p-5">{children}</div>
     </div>
@@ -105,11 +106,10 @@ export function DashboardOverview({ stats, focusItems, recentMoments }: Dashboar
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
-      {/* 欢迎区域 */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-lg font-medium text-foreground">把最近想看、在读和想去的地方放在一起</h2>
-          <p className="mt-1 text-sm text-muted-foreground">今天从一本书、一部电影或一次旅行开始</p>
+          <p className="mt-1 text-sm text-muted-foreground">今天从一本书、一部电影或一次旅行开始。</p>
         </div>
         <div className="flex gap-3">
           <Button asChild size="sm">
@@ -119,21 +119,17 @@ export function DashboardOverview({ stats, focusItems, recentMoments }: Dashboar
             </Link>
           </Button>
           <Button variant="outline" size="sm" asChild>
-            <Link href="/travels">
-              查看旅行清单
-            </Link>
+            <Link href="/travels">查看旅行清单</Link>
           </Button>
         </div>
       </div>
 
-      {/* 统计卡片 */}
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {summaryStats.map((stat) => (
           <StatCard key={stat.label} {...stat} />
         ))}
       </section>
 
-      {/* 快捷入口 */}
       <SectionCard title="快捷入口" description="从这里继续浏览最常用的内容区">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {quickLinks.map((item) => {
@@ -159,8 +155,7 @@ export function DashboardOverview({ stats, focusItems, recentMoments }: Dashboar
         </div>
       </SectionCard>
 
-      {/* 内容区 */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className={cn("grid gap-6", timelineFeatureEnabled ? "lg:grid-cols-2" : "lg:grid-cols-1")}>
         <SectionCard title="正在进行" description="继续推进最近最重要的内容">
           <div className="space-y-3">
             {focusItems.map((item) => (
@@ -171,11 +166,15 @@ export function DashboardOverview({ stats, focusItems, recentMoments }: Dashboar
               >
                 <div className="flex flex-wrap items-center gap-2">
                   <h3 className="font-medium text-foreground">{item.title}</h3>
-                  <Badge variant={queueBadgeVariant[item.type]} className="text-xs">{item.status}</Badge>
-                  <Badge variant="secondary" className="text-xs">{queueTypeLabel[item.type]}</Badge>
+                  <Badge variant={queueBadgeVariant[item.type]} className="text-xs">
+                    {item.status}
+                  </Badge>
+                  <Badge variant="secondary" className="text-xs">
+                    {queueTypeLabel[item.type]}
+                  </Badge>
                 </div>
                 <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{item.summary}</p>
-                {item.tags.length > 0 && (
+                {item.tags.length > 0 ? (
                   <div className="mt-3 flex flex-wrap gap-1.5">
                     {item.tags.slice(0, 3).map((tag) => (
                       <Badge key={tag} variant="outline" className="text-xs">
@@ -183,15 +182,17 @@ export function DashboardOverview({ stats, focusItems, recentMoments }: Dashboar
                       </Badge>
                     ))}
                   </div>
-                )}
+                ) : null}
               </Link>
             ))}
           </div>
         </SectionCard>
 
-        <SectionCard title="最近动态" description="回看最近记录">
-          <TimelineFeed events={recentMoments} />
-        </SectionCard>
+        {timelineFeatureEnabled ? (
+          <SectionCard title="最近动态" description="回看最近记录">
+            <TimelineFeed events={recentMoments} />
+          </SectionCard>
+        ) : null}
       </div>
     </div>
   );

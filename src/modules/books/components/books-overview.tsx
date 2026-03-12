@@ -4,7 +4,6 @@ import { ArrowRight, TrendingUp, TrendingDown, Minus, BookOpen, Star, Clock } fr
 import { AddBookDialog } from "@/modules/books/components/add-book-dialog";
 import { ListControls } from "@/components/shared/list-controls";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { BookListItem, DashboardStat, ModuleListSort, PaginationInfo } from "@/lib/types/items";
 

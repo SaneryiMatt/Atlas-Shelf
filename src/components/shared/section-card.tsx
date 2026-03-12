@@ -12,12 +12,12 @@ interface SectionCardProps {
 
 export function SectionCard({ title, description, children, className }: SectionCardProps) {
   return (
-    <Card className={cn("h-full border-white/50 bg-white/80", className)}>
-      <CardHeader>
+    <Card className={cn("h-full rounded-xl border border-border bg-card shadow-none", className)}>
+      <CardHeader className="space-y-1 border-b border-border px-5 py-4">
         <CardTitle>{title}</CardTitle>
         {description ? <CardDescription>{description}</CardDescription> : null}
       </CardHeader>
-      <CardContent>{children}</CardContent>
+      <CardContent className="p-5">{children}</CardContent>
     </Card>
   );
 }

@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -231,9 +230,6 @@ export function AddBookDialog({ disabled = false }: AddBookDialogProps) {
       <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>新增书本</DialogTitle>
-          <DialogDescription>
-            使用服务端 action 提交数据，并通过 Drizzle 写入 `projects`、`book_details`、`project_notes` 和 `project_tags`。
-          </DialogDescription>
         </DialogHeader>
 
         <AddBookForm

@@ -13,6 +13,7 @@ import {
   travelDetails
 } from "@/lib/db/schema";
 import { formatRatingLabel, formatUpdatedAtLabel } from "@/lib/module-list";
+import { createSignedStorageUrl } from "@/lib/supabase/storage";
 import type {
   BookDetailPagePayload,
   MovieDetailPagePayload,
@@ -142,6 +143,23 @@ async function getProjectRelations(projectId: string, projectTitle: string) {
       .orderBy(desc(projectPhotos.isPrimary), asc(projectPhotos.sortOrder), desc(projectPhotos.createdAt))
   ]);
 
+  const photoUrls = await Promise.all(
+    photoRows.map(async (photo) => {
+      if (!photo.storagePath) {
+        return photo.publicUrl;
+      }
+
+      try {
+        return await createSignedStorageUrl({
+          bucket: photo.storageBucket,
+          path: photo.storagePath
+        });
+      } catch {
+        return photo.publicUrl;
+      }
+    })
+  );
+
   return {
     tags: tagRows.map((tag) => ({
       id: tag.id,
@@ -157,9 +175,9 @@ async function getProjectRelations(projectId: string, projectTitle: string) {
       sourceUrl: note.sourceUrl,
       pinned: note.pinned
     })),
-    photos: photoRows.map((photo) => ({
+    photos: photoRows.map((photo, index) => ({
       id: photo.id,
-      url: photo.publicUrl,
+      url: photoUrls[index] ?? photo.publicUrl,
       caption: photo.caption,
       altText: photo.altText?.trim() || photo.caption?.trim() || `${projectTitle} 图片`,
       kindLabel: photoKindLabels[photo.kind] ?? photo.kind,

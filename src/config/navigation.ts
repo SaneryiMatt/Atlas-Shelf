@@ -8,6 +8,8 @@ import {
   TimerReset
 } from "lucide-react";
 
+import { analyticsFeatureEnabled, timelineFeatureEnabled } from "@/config/features";
+
 export const productName = "Atlas Shelf";
 export const productTagline = "你的书影音与旅行记录";
 
@@ -44,11 +46,15 @@ export const quickAccessLinks = [
     href: "/search",
     icon: Search
   },
-  {
-    title: "时间线",
-    href: "/timeline",
-    icon: TimerReset
-  },
+  ...(timelineFeatureEnabled
+    ? [
+        {
+          title: "时间线",
+          href: "/timeline",
+          icon: TimerReset
+        }
+      ]
+    : []),
   {
     title: "设置",
     href: "/settings",
@@ -81,7 +87,7 @@ export function getPageHeaderMeta(pathname: string) {
   if (pathname === "/movies") {
     return {
       title: "影视",
-      description: "集中管理电影条目、评分和观后感。"
+      description: "集中管理作品条目、评分和观后感。"
     };
   }
 
@@ -113,14 +119,14 @@ export function getPageHeaderMeta(pathname: string) {
     };
   }
 
-  if (pathname === "/timeline") {
+  if (timelineFeatureEnabled && pathname === "/timeline") {
     return {
       title: "时间线",
       description: "按时间查看最近记录。"
     };
   }
 
-  if (pathname === "/analytics") {
+  if (analyticsFeatureEnabled && pathname === "/analytics") {
     return {
       title: "分析",
       description: "看看最近的记录节奏和偏好变化。"

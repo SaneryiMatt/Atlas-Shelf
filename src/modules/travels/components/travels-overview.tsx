@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, TrendingUp, TrendingDown, Minus, Star, Clock, MapPin, Calendar } from "lucide-react";
+import { ArrowRight, TrendingUp, TrendingDown, Minus, Star, Clock, Calendar } from "lucide-react";
 
 import { AddTravelDialog } from "@/modules/travels/components/add-travel-dialog";
 import { ListControls } from "@/components/shared/list-controls";

@@ -5,6 +5,7 @@ import { Pencil } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { DeleteProjectDialog } from "@/components/shared/delete-project-dialog";
+import { UploadProjectPhotoDialog } from "@/components/shared/upload-project-photo-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -247,6 +248,7 @@ export function BookDetailActions({ projectId, projectTitle, initialValues }: Bo
   return (
     <>
       <EditBookDialog projectId={projectId} initialValues={initialValues} />
+      <UploadProjectPhotoDialog projectId={projectId} projectTitle={projectTitle} />
       <DeleteProjectDialog
         projectId={projectId}
         projectTitle={projectTitle}
