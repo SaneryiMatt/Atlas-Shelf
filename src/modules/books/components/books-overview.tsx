@@ -1,12 +1,11 @@
 import Link from "next/link";
-import { ArrowRight, BookMarked, LibraryBig } from "lucide-react";
+import { ArrowRight, TrendingUp, TrendingDown, Minus, BookOpen, Star, Clock } from "lucide-react";
 
 import { AddBookDialog } from "@/modules/books/components/add-book-dialog";
 import { ListControls } from "@/components/shared/list-controls";
-import { PageHeader } from "@/components/shared/page-header";
-import { SectionCard } from "@/components/shared/section-card";
-import { StatCard } from "@/components/shared/stat-card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import type { BookListItem, DashboardStat, ModuleListSort, PaginationInfo } from "@/lib/types/items";
 
 interface BooksOverviewProps {
@@ -18,83 +17,110 @@ interface BooksOverviewProps {
   canCreateBooks: boolean;
 }
 
-export function BooksOverview({ stats, notes, items, sort, pagination, canCreateBooks }: BooksOverviewProps) {
+function StatCard({ label, value, detail, trend }: { label: string; value: string; detail: string; trend: string }) {
+  const TrendIcon = trend === "up" ? TrendingUp : trend === "down" ? TrendingDown : Minus;
+  const trendColor = trend === "up" ? "text-green-500" : trend === "down" ? "text-red-500" : "text-muted-foreground";
+  
   return (
-    <div className="space-y-8">
-      <PageHeader
-        eyebrow="书籍模块"
-        title="用卡片列表统一管理阅读记录"
-        description="列表页支持按更新时间和评分排序，并通过分页控制单页密度。"
-        actions={<AddBookDialog disabled={!canCreateBooks} />}
-      />
+    <div className="rounded-xl border border-border bg-card p-5 transition-colors hover:bg-accent/30">
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-medium text-muted-foreground">{label}</span>
+        <TrendIcon className={cn("size-4", trendColor)} />
+      </div>
+      <p className="mt-2 text-3xl font-semibold text-foreground">{value}</p>
+      <p className="mt-1 text-xs text-muted-foreground">{detail}</p>
+    </div>
+  );
+}
 
-      <section className="grid gap-4 md:grid-cols-3">
+function SectionCard({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
+  return (
+    <div className="rounded-xl border border-border bg-card">
+      <div className="border-b border-border px-5 py-4">
+        <h2 className="text-lg font-semibold text-foreground">{title}</h2>
+        {description && <p className="mt-1 text-sm text-muted-foreground">{description}</p>}
+      </div>
+      <div className="p-5">{children}</div>
+    </div>
+  );
+}
+
+export function BooksOverview({ stats, items, sort, pagination, canCreateBooks }: BooksOverviewProps) {
+  return (
+    <div className="mx-auto max-w-6xl space-y-6">
+      {/* 页面头部 */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 className="text-lg font-medium text-foreground">用卡片列表统一管理阅读记录</h2>
+          <p className="mt-1 text-sm text-muted-foreground">支持按更新时间和评分排序，通过分页控制单页密度</p>
+        </div>
+        <AddBookDialog disabled={!canCreateBooks} />
+      </div>
+
+      {/* 统计卡片 */}
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {stats.map((stat) => (
           <StatCard key={stat.label} {...stat} />
         ))}
       </section>
 
-      <SectionCard title="书籍列表" description="每张卡片都可以直接进入详情页，查看标签、笔记、评分和图片。">
-        <div className="space-y-6">
+      {/* 书籍列表 */}
+      <SectionCard title="书籍列表" description="每张卡片都可以直接进入详情页，查看标签、笔记、评分和图片">
+        <div className="space-y-4">
           <ListControls basePath="/books" currentSort={sort} pagination={pagination} itemUnit="本书" />
 
           {items.length ? (
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {items.map((book) => (
                 <Link
                   key={book.id}
                   href={`/books/${book.id}`}
-                  className="group rounded-3xl border border-border/60 bg-background/70 p-5 transition hover:-translate-y-0.5 hover:border-primary/40 hover:bg-background/90"
+                  className="group flex flex-col rounded-xl border border-border bg-background p-4 transition-all hover:border-foreground/20 hover:bg-accent/50"
                 >
                   <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="text-lg font-semibold text-foreground transition group-hover:text-primary">{book.title}</h3>
-                    <Badge>{book.status}</Badge>
+                    <h3 className="font-medium text-foreground">{book.title}</h3>
+                    <Badge className="text-xs">{book.status}</Badge>
                   </div>
-                  <p className="mt-2 text-sm text-muted-foreground">{book.author}</p>
-                  <p className="mt-4 text-sm leading-6 text-muted-foreground">{book.summary}</p>
-                  <div className="mt-4 grid gap-2 text-sm text-muted-foreground">
-                    <p>评分：{book.rating}</p>
-                    <p>进度：{book.progress}</p>
-                    <p>{book.pages ? `页数：${book.pages} 页` : "页数：未填写"}</p>
-                    <p>最近更新：{book.updatedAtLabel}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{book.author}</p>
+                  <p className="mt-3 line-clamp-2 text-sm text-muted-foreground">{book.summary}</p>
+                  
+                  <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1">
+                      <Star className="size-3" />
+                      {book.rating}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <BookOpen className="size-3" />
+                      {book.progress}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Clock className="size-3" />
+                      {book.updatedAtLabel}
+                    </span>
                   </div>
-                  {book.tags.length ? (
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {book.tags.map((tag) => (
-                        <Badge key={tag} variant="secondary">
+
+                  {book.tags.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      {book.tags.slice(0, 3).map((tag) => (
+                        <Badge key={tag} variant="outline" className="text-xs">
                           {tag}
                         </Badge>
                       ))}
                     </div>
-                  ) : null}
-                  <div className="mt-5 flex items-center gap-2 text-sm font-medium text-primary">
+                  )}
+                  
+                  <div className="mt-auto flex items-center pt-4 text-sm text-muted-foreground transition-colors group-hover:text-foreground">
                     查看详情
-                    <ArrowRight className="size-4 transition group-hover:translate-x-1" />
+                    <ArrowRight className="ml-1 size-4 transition-transform group-hover:translate-x-1" />
                   </div>
                 </Link>
               ))}
             </div>
           ) : (
-            <div className="rounded-3xl border border-dashed border-border bg-background/60 p-6 text-sm leading-6 text-muted-foreground">
-              当前页没有书籍数据，可以切换排序、翻页，或直接新增一本书。
+            <div className="rounded-xl border border-dashed border-border bg-background p-6 text-center text-sm text-muted-foreground">
+              当前页没有书籍数据，可以切换排序、翻页，或直接新增一本书
             </div>
           )}
-        </div>
-      </SectionCard>
-
-      <SectionCard title="校验与笔记策略" description="表单校验和查询逻辑保持分层，便于后续继续扩展详情与编辑流程。">
-        <div className="grid gap-4 md:grid-cols-3">
-          {notes.map((note) => (
-            <div key={note} className="rounded-3xl bg-background/70 p-5">
-              <LibraryBig className="size-5 text-primary" />
-              <p className="mt-4 text-sm leading-6 text-muted-foreground">{note}</p>
-            </div>
-          ))}
-        </div>
-        <div className="mt-5 rounded-3xl border border-dashed border-border bg-background/60 p-5 text-sm leading-6 text-muted-foreground">
-          <BookMarked className="mb-3 size-5 text-primary" />
-          `src/modules/books/book-form-schema.ts` 负责新增表单校验，`src/lib/db/queries/books.ts` 负责列表排序和分页读取，
-          `src/lib/db/queries/project-details.ts` 负责详情页聚合查询。
         </div>
       </SectionCard>
     </div>

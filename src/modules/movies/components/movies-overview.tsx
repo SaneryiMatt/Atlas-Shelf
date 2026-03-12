@@ -1,12 +1,10 @@
 import Link from "next/link";
-import { ArrowRight, MonitorPlay } from "lucide-react";
+import { ArrowRight, TrendingUp, TrendingDown, Minus, Star, Clock, Monitor, User } from "lucide-react";
 
 import { AddMovieDialog } from "@/modules/movies/components/add-movie-dialog";
 import { ListControls } from "@/components/shared/list-controls";
-import { PageHeader } from "@/components/shared/page-header";
-import { SectionCard } from "@/components/shared/section-card";
-import { StatCard } from "@/components/shared/stat-card";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import type { DashboardStat, ModuleListSort, PaginationInfo, ScreenListItem } from "@/lib/types/items";
 
 interface MoviesOverviewProps {
@@ -17,84 +15,114 @@ interface MoviesOverviewProps {
   canCreateMovies: boolean;
 }
 
+function StatCard({ label, value, detail, trend }: { label: string; value: string; detail: string; trend: string }) {
+  const TrendIcon = trend === "up" ? TrendingUp : trend === "down" ? TrendingDown : Minus;
+  const trendColor = trend === "up" ? "text-green-500" : trend === "down" ? "text-red-500" : "text-muted-foreground";
+  
+  return (
+    <div className="rounded-xl border border-border bg-card p-5 transition-colors hover:bg-accent/30">
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-medium text-muted-foreground">{label}</span>
+        <TrendIcon className={cn("size-4", trendColor)} />
+      </div>
+      <p className="mt-2 text-3xl font-semibold text-foreground">{value}</p>
+      <p className="mt-1 text-xs text-muted-foreground">{detail}</p>
+    </div>
+  );
+}
+
+function SectionCard({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
+  return (
+    <div className="rounded-xl border border-border bg-card">
+      <div className="border-b border-border px-5 py-4">
+        <h2 className="text-lg font-semibold text-foreground">{title}</h2>
+        {description && <p className="mt-1 text-sm text-muted-foreground">{description}</p>}
+      </div>
+      <div className="p-5">{children}</div>
+    </div>
+  );
+}
+
 export function MoviesOverview({ stats, items, sort, pagination, canCreateMovies }: MoviesOverviewProps) {
   return (
-    <div className="space-y-8">
-      <PageHeader
-        eyebrow="影视模块"
-        title="用卡片列表统一管理影视记录"
-        description="列表页支持按更新时间和评分排序，并保持与新增模态框一致的交互节奏。"
-        actions={<AddMovieDialog disabled={!canCreateMovies} />}
-      />
+    <div className="mx-auto max-w-6xl space-y-6">
+      {/* 页面头部 */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 className="text-lg font-medium text-foreground">用卡片列表统一管理影视记录</h2>
+          <p className="mt-1 text-sm text-muted-foreground">支持按更新时间和评分排序，保持与新增模态框一致的交互节奏</p>
+        </div>
+        <AddMovieDialog disabled={!canCreateMovies} />
+      </div>
 
-      <section className="grid gap-4 md:grid-cols-3">
+      {/* 统计卡片 */}
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {stats.map((stat) => (
           <StatCard key={stat.label} {...stat} />
         ))}
       </section>
 
-      <SectionCard title="影视列表" description="卡片聚合导演、平台、评分和更新时间，点击后进入详情页查看笔记与图片。">
-        <div className="space-y-6">
+      {/* 影视列表 */}
+      <SectionCard title="影视列表" description="卡片聚合导演、平台、评分和更新时间，点击后进入详情页查看笔记与图片">
+        <div className="space-y-4">
           <ListControls basePath="/movies" currentSort={sort} pagination={pagination} itemUnit="部作品" />
 
           {items.length ? (
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {items.map((movie) => (
                 <Link
                   key={movie.id}
                   href={`/movies/${movie.id}`}
-                  className="group rounded-3xl border border-border/60 bg-background/70 p-5 transition hover:-translate-y-0.5 hover:border-primary/40 hover:bg-background/90"
+                  className="group flex flex-col rounded-xl border border-border bg-background p-4 transition-all hover:border-foreground/20 hover:bg-accent/50"
                 >
                   <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="text-lg font-semibold text-foreground transition group-hover:text-primary">{movie.title}</h3>
-                    <Badge>{movie.status}</Badge>
-                    <Badge variant="secondary">{movie.format}</Badge>
+                    <h3 className="font-medium text-foreground">{movie.title}</h3>
+                    <Badge className="text-xs">{movie.status}</Badge>
+                    <Badge variant="secondary" className="text-xs">{movie.format}</Badge>
                   </div>
-                  <p className="mt-4 text-sm leading-6 text-muted-foreground">{movie.summary}</p>
-                  <div className="mt-4 grid gap-2 text-sm text-muted-foreground">
-                    <p>导演：{movie.director}</p>
-                    <p>平台：{movie.platform}</p>
-                    <p>{movie.runtime}</p>
-                    <p>评分：{movie.rating}</p>
-                    <p>最近更新：{movie.updatedAtLabel}</p>
+                  <p className="mt-3 line-clamp-2 text-sm text-muted-foreground">{movie.summary}</p>
+                  
+                  <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1">
+                      <User className="size-3" />
+                      {movie.director}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Monitor className="size-3" />
+                      {movie.platform}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Star className="size-3" />
+                      {movie.rating}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Clock className="size-3" />
+                      {movie.updatedAtLabel}
+                    </span>
                   </div>
-                  {movie.tags.length ? (
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {movie.tags.map((tag) => (
-                        <Badge key={tag} variant="secondary">
+
+                  {movie.tags.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      {movie.tags.slice(0, 3).map((tag) => (
+                        <Badge key={tag} variant="outline" className="text-xs">
                           {tag}
                         </Badge>
                       ))}
                     </div>
-                  ) : null}
-                  <div className="mt-5 flex items-center gap-2 text-sm font-medium text-primary">
+                  )}
+                  
+                  <div className="mt-auto flex items-center pt-4 text-sm text-muted-foreground transition-colors group-hover:text-foreground">
                     查看详情
-                    <ArrowRight className="size-4 transition group-hover:translate-x-1" />
+                    <ArrowRight className="ml-1 size-4 transition-transform group-hover:translate-x-1" />
                   </div>
                 </Link>
               ))}
             </div>
           ) : (
-            <div className="rounded-3xl border border-dashed border-border bg-background/60 p-6 text-sm leading-6 text-muted-foreground">
-              当前页没有影视数据，可以切换排序、翻页，或直接新增一部作品。
+            <div className="rounded-xl border border-dashed border-border bg-background p-6 text-center text-sm text-muted-foreground">
+              当前页没有影视数据，可以切换排序、翻页，或直接新增一部作品
             </div>
           )}
-        </div>
-      </SectionCard>
-
-      <SectionCard title="为什么使用独立详情表" description="列表页保持轻量，详情页再补充标签、笔记和图片等扩展信息。">
-        <div className="grid gap-4 md:grid-cols-3">
-          <div className="rounded-3xl bg-background/70 p-5 text-sm leading-6 text-muted-foreground">
-            <MonitorPlay className="mb-3 size-5 text-primary" />
-            影视列表使用卡片式布局，但底层仍然依赖 `screen_details`，不会把类型专属字段挤进共享主表。
-          </div>
-          <div className="rounded-3xl bg-background/70 p-5 text-sm leading-6 text-muted-foreground">
-            排序和分页都在服务端查询层完成，页面只负责渲染结果，详情页也沿用这个模式。
-          </div>
-          <div className="rounded-3xl bg-background/70 p-5 text-sm leading-6 text-muted-foreground">
-            `src/modules/movies/actions.ts` 负责新增写入，`src/lib/db/queries/movies.ts` 负责列表读取，
-            `src/lib/db/queries/project-details.ts` 负责详情聚合。
-          </div>
         </div>
       </SectionCard>
     </div>
