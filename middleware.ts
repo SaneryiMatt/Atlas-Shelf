@@ -1,12 +1,11 @@
-// 暂时注释掉认证中间件，方便前端开发
-// import type { NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 
-// import { updateSession } from "@/lib/supabase/middleware";
+import { updateSession } from "@/lib/supabase/middleware";
 
-// export async function middleware(request: NextRequest) {
-//   return updateSession(request);
-// }
+export async function middleware(request: NextRequest) {
+  return updateSession(request);
+}
 
-// export const config = {
-//   matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"]
-// };
+export const config = {
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"]
+};
