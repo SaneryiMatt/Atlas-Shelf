@@ -12,10 +12,10 @@ import { settingsPanels } from "@/lib/db/mock-data";
 
 function formatTimestamp(date: Date | null) {
   if (!date) {
-    return "Unknown";
+    return "未知";
   }
 
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat("zh-CN", {
     month: "short",
     day: "numeric",
     year: "numeric"
@@ -90,7 +90,7 @@ export async function getSettingsPageData() {
 
       databasePreview = {
         status: "live",
-        message: "Reading directly from projects, project_notes, and tags.",
+        message: "正在直接读取 projects、project_notes 和 tags。",
         projects: projectRows.map((project) => ({
           id: project.id,
           title: project.title,
@@ -112,11 +112,11 @@ export async function getSettingsPageData() {
         }))
       };
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Unknown database error";
+      const message = error instanceof Error ? error.message : "未知数据库错误";
 
       databasePreview = {
         status: "unavailable",
-        message: `Database preview unavailable: ${message}`,
+        message: `数据库预览不可用：${message}`,
         projects: [],
         notes: [],
         tags: []
@@ -125,7 +125,7 @@ export async function getSettingsPageData() {
   } else {
     databasePreview = {
       status: "unavailable",
-      message: "Database preview unavailable until DATABASE_URL is reachable.",
+      message: "在 DATABASE_URL 可访问之前，数据库预览不可用。",
       projects: [],
       notes: [],
       tags: []
@@ -137,27 +137,27 @@ export async function getSettingsPageData() {
       {
         key: "DATABASE_URL",
         configured: hasDatabaseUrl,
-        hint: "Used by Drizzle to connect directly to Supabase Postgres."
+        hint: "供 Drizzle 直接连接 Supabase Postgres。"
       },
       {
         key: "NEXT_PUBLIC_SUPABASE_URL",
         configured: Boolean(env.NEXT_PUBLIC_SUPABASE_URL),
-        hint: "Required for browser and server Supabase clients."
+        hint: "浏览器端和服务端 Supabase 客户端都需要此配置。"
       },
       {
         key: "NEXT_PUBLIC_SUPABASE_ANON_KEY",
         configured: Boolean(env.NEXT_PUBLIC_SUPABASE_ANON_KEY),
-        hint: "Used for public auth and storage operations scoped by Supabase policies."
+        hint: "用于受 Supabase 策略约束的公开认证与存储操作。"
       },
       {
         key: "SUPABASE_SERVICE_ROLE_KEY",
         configured: hasSupabaseServiceRole,
-        hint: "Needed only for server-side admin work such as privileged storage operations."
+        hint: "仅在服务端管理员操作中使用，例如特权存储操作。"
       },
       {
         key: "NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET",
         configured: Boolean(env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET),
-        hint: "Default bucket name used by the storage helper layer."
+        hint: "存储辅助层默认使用的 bucket 名称。"
       }
     ],
     panels: settingsPanels,

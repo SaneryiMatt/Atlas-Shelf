@@ -4,7 +4,7 @@ import { getBooksPageData } from "@/lib/db/queries/books";
 import { BooksOverview } from "@/modules/books/components/books-overview";
 
 export const metadata: Metadata = {
-  title: "Books"
+  title: "书籍"
 };
 
 export default async function BooksPage() {

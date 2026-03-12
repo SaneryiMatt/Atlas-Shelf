@@ -11,59 +11,59 @@ import {
 
 export const navigation = [
   {
-    title: "Dashboard",
+    title: "总览",
     href: "/",
     icon: LayoutDashboard,
-    description: "Unified pulse across media and travel."
+    description: "集中查看书籍、影视与旅行动态。"
   },
   {
-    title: "Books",
+    title: "书籍",
     href: "/books",
     icon: BookOpen,
-    description: "Reading pipeline, notes, and backlog."
+    description: "阅读进度、笔记与待读清单。"
   },
   {
-    title: "Movies",
+    title: "影视",
     href: "/movies",
     icon: Clapperboard,
-    description: "Films, series, anime, and watchlists."
+    description: "电影、剧集、动漫与片单管理。"
   },
   {
-    title: "Travels",
+    title: "旅行",
     href: "/travels",
     icon: Compass,
-    description: "Dream trips, bookings, and memories."
+    description: "灵感目的地、行程安排与旅行回忆。"
   },
   {
-    title: "Timeline",
+    title: "时间线",
     href: "/timeline",
     icon: TimerReset,
-    description: "A chronological view of everything tracked."
+    description: "按时间顺序查看所有记录。"
   },
   {
-    title: "Analytics",
+    title: "分析",
     href: "/analytics",
     icon: BarChart3,
-    description: "Completion patterns and habit insights."
+    description: "完成趋势与使用习惯洞察。"
   },
   {
-    title: "Settings",
+    title: "设置",
     href: "/settings",
     icon: Settings,
-    description: "Data, integrations, and AI workflow settings."
+    description: "数据、集成与 AI 工作流配置。"
   }
 ] as const;
 
 export const workspaceHighlights = [
-  "Shared item core with extensible detail tables",
-  "Server-first page composition with isolated query functions",
-  "Consistent cards, tables, and calm visual language"
+  "共享项目主表，配合可扩展的详情表",
+  "以服务端为主的页面组织，查询逻辑独立",
+  "统一的卡片、列表与克制的视觉语言"
 ] as const;
 
-export const productTagline = "Track stories, screens, and journeys in one calm workspace.";
+export const productTagline = "在一个清晰克制的空间里，记录书籍、影视与旅程。";
 
 export const productBadge = {
-  label: "Production-ready foundation",
+  label: "生产可用基础架构",
   icon: Sparkles
 };
 

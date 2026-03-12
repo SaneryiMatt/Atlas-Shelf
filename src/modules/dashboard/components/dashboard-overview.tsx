@@ -25,19 +25,19 @@ export function DashboardOverview({ stats, focusItems, recentMoments }: Dashboar
   return (
     <div className="space-y-8">
       <PageHeader
-        eyebrow="Unified command center"
-        title="Your stories, screens, and journeys in one place."
-        description="A calm production-grade foundation for tracking what you are reading, watching, and planning without scattering state across separate tools."
+        eyebrow="统一控制台"
+        title="把书、影视与旅程放在一个地方管理。"
+        description="一个克制、可生产部署的追踪系统基础，让阅读、观影与旅行规划不再分散在多个工具里。"
         actions={
           <>
             <Button className="gap-2">
               <Plus className="size-4" />
-              Add item
+              添加项目
             </Button>
             <Button variant="outline" className="gap-2" asChild>
               <Link href="/travels">
                 <Compass className="size-4" />
-                Plan next trip
+                规划下一次旅行
               </Link>
             </Button>
           </>
@@ -52,8 +52,8 @@ export function DashboardOverview({ stats, focusItems, recentMoments }: Dashboar
 
       <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
         <SectionCard
-          title="Current focus queue"
-          description="Small, intentional queues prevent backlog anxiety and keep next actions clear."
+          title="当前关注队列"
+          description="控制队列规模，可以减少积压焦虑，让下一步始终明确。"
         >
           <div className="space-y-4">
             {focusItems.map((item) => (
@@ -77,32 +77,32 @@ export function DashboardOverview({ stats, focusItems, recentMoments }: Dashboar
         </SectionCard>
 
         <SectionCard
-          title="Recent moments"
-          description="A combined timeline makes it easier to notice how your attention shifts across media and travel."
+          title="最近动态"
+          description="把不同模块放进同一条时间线，更容易看清你的注意力如何变化。"
         >
           <TimelineFeed events={recentMoments} />
         </SectionCard>
       </section>
 
       <SectionCard
-        title="Why this structure scales"
-        description="The application is organized so new content types can plug into the same shared foundation."
+        title="为什么这个结构可扩展"
+        description="应用按共享基础能力组织，新内容类型可以继续接入而不需要重构。"
       >
         <div className="grid gap-4 md:grid-cols-3">
           <div className="rounded-3xl bg-background/70 p-5">
             <Sparkles className="size-5 text-primary" />
-            <p className="mt-4 font-medium text-foreground">Shared item lifecycle</p>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">Books, screens, and travels share a consistent status model while preserving type-specific metadata.</p>
+            <p className="mt-4 font-medium text-foreground">统一生命周期</p>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">书籍、影视和旅行共享一致的状态模型，同时保留各自的专属元数据。</p>
           </div>
           <div className="rounded-3xl bg-background/70 p-5">
             <ArrowRight className="size-5 text-primary" />
-            <p className="mt-4 font-medium text-foreground">Thin route layer</p>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">App Router pages stay small because queries and render logic are grouped by module.</p>
+            <p className="mt-4 font-medium text-foreground">轻量路由层</p>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">App Router 页面保持精简，查询与渲染逻辑按模块分组管理。</p>
           </div>
           <div className="rounded-3xl bg-background/70 p-5">
             <Compass className="size-5 text-primary" />
-            <p className="mt-4 font-medium text-foreground">Future-friendly expansion</p>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">Games, podcasts, exhibitions, and courses can be added without reworking the layout system.</p>
+            <p className="mt-4 font-medium text-foreground">面向未来扩展</p>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">后续新增游戏、播客、展览或课程时，不需要重做整个布局系统。</p>
           </div>
         </div>
       </SectionCard>

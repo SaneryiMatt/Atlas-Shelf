@@ -8,7 +8,7 @@ export function SignOutButton() {
     <form action={signOutAction}>
       <Button type="submit" variant="outline" size="sm" className="gap-2">
         <LogOut className="size-4" />
-        Sign out
+        退出登录
       </Button>
     </form>
   );

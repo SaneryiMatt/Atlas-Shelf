@@ -20,13 +20,13 @@ export const metadata: Metadata = {
     default: "Atlas Shelf",
     template: "%s | Atlas Shelf"
   },
-  description: "A personal media and travel tracking system for books, movies, and places.",
+  description: "一个用于记录书籍、影视与旅行地点的个人追踪系统。",
   metadataBase: new URL("https://example.com")
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="zh-CN">
       <body className={cn(manrope.variable, fraunces.variable)}>{children}</body>
     </html>
   );

@@ -12,21 +12,21 @@ import type {
 
 export const dashboardStats: DashboardStat[] = [
   {
-    label: "Active items",
+    label: "活跃项目",
     value: "42",
-    detail: "Across reading, watching, and trip planning with a steady weekly review rhythm.",
+    detail: "覆盖阅读、观影和旅行规划，并保持每周稳定复盘。",
     trend: "up"
   },
   {
-    label: "Completed this quarter",
+    label: "本季度完成",
     value: "18",
-    detail: "A healthy balance between long-form books, comfort rewatches, and one completed trip.",
+    detail: "在长篇阅读、舒适重温和一次完整旅行之间保持了不错的平衡。",
     trend: "steady"
   },
   {
-    label: "Priority backlog",
+    label: "优先积压",
     value: "9",
-    detail: "Curated shortlist for the next 30 days to keep decisions calm and focused.",
+    detail: "未来 30 天只保留一份精简短名单，让决策更稳定。",
     trend: "down"
   }
 ];
@@ -36,75 +36,75 @@ export const dashboardFocusItems: QueueItem[] = [
     id: "book-1",
     title: "The Creative Act",
     type: "book",
-    status: "Reading",
-    meta: "Rick Rubin ? 432 pages",
-    summary: "High-signal notes and reflective pacing make this the current long-form focus.",
-    tags: ["Creativity", "Non-fiction"]
+    status: "在读",
+    meta: "Rick Rubin · 432 页",
+    summary: "当前最值得持续投入的一本，适合边读边记下高质量想法。",
+    tags: ["创作", "非虚构"]
   },
   {
     id: "screen-1",
-    title: "Perfect Days",
+    title: "完美的日子",
     type: "screen",
-    status: "Watch next",
-    meta: "Movie ? Wim Wenders ? 124 min",
-    summary: "Queued as a low-noise film pick for the next weekend reset.",
-    tags: ["Film", "Quiet"]
+    status: "下一部",
+    meta: "电影 · Wim Wenders · 124 分钟",
+    summary: "适合周末放空时看的低噪音电影，已经排到最前面。",
+    tags: ["电影", "安静"]
   },
   {
     id: "travel-1",
-    title: "Kyoto Autumn Return",
+    title: "京都秋日重访",
     type: "travel",
-    status: "Planning",
-    meta: "Japan ? 7 nights ? Late November",
-    summary: "Route, ryokan shortlist, and neighborhood food map are already scoped.",
-    tags: ["Culture", "Food"]
+    status: "规划中",
+    meta: "日本 · 7 晚 · 11 月下旬",
+    summary: "路线、旅馆候选和街区美食地图都已经开始收拢。",
+    tags: ["文化", "美食"]
   }
 ];
 
 export const dashboardRecentMoments: TimelineEvent[] = [
   {
     id: "moment-1",
-    title: "Finished Before Sunrise",
-    date: "March 8, 2026",
+    title: "看完《爱在黎明破晓前》",
+    date: "2026年3月8日",
     kind: "screen",
-    badge: "Watched",
-    description: "Closed a mini trilogy sprint and logged a reflective note on dialogue-first storytelling."
+    badge: "已观看",
+    description: "完成了一次小型三部曲冲刺，并补了一条关于对白节奏的短评。"
   },
   {
     id: "moment-2",
-    title: "Booked a Lisbon riverside stay",
-    date: "March 5, 2026",
+    title: "预订里斯本河畔住宿",
+    date: "2026年3月5日",
     kind: "travel",
-    badge: "Booked",
-    description: "Locked the base stay so the rest of the trip can be planned around walking routes and day trips."
+    badge: "已预订",
+    description: "先把住宿定下来，后续就能围绕步行路线和周边短途继续细化。"
   },
   {
     id: "moment-3",
-    title: "Captured a margin note from The Creative Act",
-    date: "March 3, 2026",
+    title: "记录《The Creative Act》的页边笔记",
+    date: "2026年3月3日",
     kind: "book",
-    badge: "Note added",
-    description: "Saved a reusable idea about keeping taste and craft separate during rough drafts."
+    badge: "新增笔记",
+    description: "留下了一条关于“审美”和“手艺”应当分离的可复用观点。"
   }
 ];
 
 export const booksStats: DashboardStat[] = [
   {
-    label: "Reading now",
+    label: "当前在读",
     value: "3",
-    detail: "One deep nonfiction title, one novel, and one light essay collection in rotation.",
+    detail: "一本文学非虚构、一本小说和一本轻量随笔并行阅读。",
     trend: "steady"
   },
   {
-    label: "Finished in 2026",
+    label: "2026 年已读完",
     value: "11",
-    detail: "Average completion pace is comfortably above the target of two books per month.",
+    detail: "当前完成速度稳定高于每月两本的目标。",
     trend: "up"
   },
   {
-    label: "Annotated titles",
+    label: "带批注书目",
     value: "27",
-    detail: "Reusable highlights and notes are increasingly captured as structured insights.",
+    detail: "越来越多高亮和笔记被整理成结构化信息。",
     trend: "up"
   }
 ];
@@ -114,34 +114,34 @@ export const currentBooks: BookOverviewItem[] = [
     id: "book-1",
     title: "The Creative Act",
     author: "Rick Rubin",
-    status: "Reading",
+    status: "在读",
     progress: "68%",
     pages: 432,
     rating: "4.6",
-    summary: "Working through it slowly and extracting prompts for future writing and product thinking.",
-    tags: ["Creativity", "Notes"]
+    summary: "正在慢慢读，并持续提炼适合写作和产品思考的提示。",
+    tags: ["创作", "笔记"]
   },
   {
     id: "book-2",
     title: "Tomorrow, and Tomorrow, and Tomorrow",
     author: "Gabrielle Zevin",
-    status: "Reading",
+    status: "在读",
     progress: "42%",
     pages: 416,
     rating: "4.4",
-    summary: "Keeping it in rotation as the more emotional, character-driven counterweight to nonfiction.",
-    tags: ["Novel", "Character"]
+    summary: "作为非虚构阅读之外更情绪化、更偏人物关系的一本搭配来读。",
+    tags: ["小说", "人物"]
   },
   {
     id: "book-3",
     title: "The Book of Delights",
     author: "Ross Gay",
-    status: "Paused",
+    status: "暂停",
     progress: "23%",
     pages: 288,
     rating: "4.1",
-    summary: "Short daily entries make it a good morning book when schedule pressure is low.",
-    tags: ["Essays", "Light"]
+    summary: "篇幅短，适合早晨压力不大的时候随手读一点。",
+    tags: ["随笔", "轻松"]
   }
 ];
 
@@ -150,60 +150,60 @@ export const bookBacklog: BookOverviewItem[] = [
     id: "book-4",
     title: "Sea of Tranquility",
     author: "Emily St. John Mandel",
-    status: "Queued",
+    status: "排队中",
     progress: "0%",
     pages: 272,
     rating: "4.3",
-    summary: "Shortlisted as the next literary fiction read once the current nonfiction title wraps.",
-    tags: ["Sci-fi", "Priority"]
+    summary: "大概率会成为当前非虚构读完后的下一本小说。",
+    tags: ["科幻", "优先"]
   },
   {
     id: "book-5",
     title: "Clear Thinking",
     author: "Shane Parrish",
-    status: "Queued",
+    status: "排队中",
     progress: "0%",
     pages: 304,
     rating: "4.0",
-    summary: "Potential systems-thinking follow-up for dashboard and analytics decisions.",
-    tags: ["Decision-making", "Non-fiction"]
+    summary: "适合作为系统思考的延伸阅读，为总览和分析模块提供灵感。",
+    tags: ["决策", "非虚构"]
   },
   {
     id: "book-6",
     title: "Pachinko",
     author: "Min Jin Lee",
-    status: "Wishlist",
+    status: "想读",
     progress: "0%",
     pages: 512,
     rating: "4.8",
-    summary: "Long-form family saga sitting in the long-weekend bucket rather than immediate queue.",
-    tags: ["Epic", "Wishlist"]
+    summary: "更适合长周末集中阅读，因此暂时不放进近期队列。",
+    tags: ["史诗", "愿望单"]
   }
 ];
 
 export const bookNotes = [
-  "Keep note capture separate from completion state so unfinished books can still generate reusable knowledge.",
-  "Support multiple reading sessions per title for better habit analytics later.",
-  "Reserve room for AI-generated summaries and quote clustering on each book record."
+  "笔记采集应与完成状态解耦，这样未读完的书也能沉淀可复用内容。",
+  "后续可以支持一本书对应多次阅读会话，为习惯分析提供更细粒度数据。",
+  "每本书都应预留 AI 摘要、引用聚类等显式字段，而不是临时拼装。"
 ];
 
 export const screenStats: DashboardStat[] = [
   {
-    label: "Watchlist focus",
+    label: "片单焦点",
     value: "7",
-    detail: "A deliberately small queue split between movies, one prestige series, and one anime season.",
+    detail: "刻意把队列控制在较小规模，包含电影、一部剧和一季动漫。",
     trend: "down"
   },
   {
-    label: "Completed in 2026",
+    label: "2026 年已看完",
     value: "24",
-    detail: "Strong follow-through on movie nights without turning the watchlist into clutter.",
+    detail: "观影执行力不错，没有让片单继续失控膨胀。",
     trend: "up"
   },
   {
-    label: "Rewatch candidates",
+    label: "重温候选",
     value: "5",
-    detail: "Saved intentionally for comfort viewing and seasonal rituals.",
+    detail: "保留下来用于舒适重看或季节性重复观看。",
     trend: "steady"
   }
 ];
@@ -211,39 +211,39 @@ export const screenStats: DashboardStat[] = [
 export const currentScreens: ScreenOverviewItem[] = [
   {
     id: "screen-1",
-    title: "Perfect Days",
-    format: "Movie",
+    title: "完美的日子",
+    format: "电影",
     director: "Wim Wenders",
-    platform: "Theater list",
-    status: "Watch next",
-    runtime: "124 min",
+    platform: "影院待看",
+    status: "下一部",
+    runtime: "124 分钟",
     rating: "4.8",
-    summary: "Expected to land as a quiet, restorative watch rather than an action-heavy weekend pick.",
-    tags: ["Film", "Calm"]
+    summary: "更像一次安静修复性的观看，而不是周末高刺激片单。",
+    tags: ["电影", "平静"]
   },
   {
     id: "screen-2",
-    title: "Frieren",
-    format: "Anime",
-    director: "Keiichiro Saito",
+    title: "葬送的芙莉莲",
+    format: "动漫",
+    director: "斋藤圭一郎",
     platform: "Crunchyroll",
-    status: "Watching",
-    runtime: "28 eps",
+    status: "观看中",
+    runtime: "28 集",
     rating: "4.9",
-    summary: "Currently the strongest long-form screen companion, with episode notes worth preserving.",
-    tags: ["Anime", "Fantasy"]
+    summary: "目前最适合作为长线追更搭档的一部，值得保留分集笔记。",
+    tags: ["动漫", "奇幻"]
   },
   {
     id: "screen-3",
-    title: "The Bear",
-    format: "Series",
+    title: "熊家餐馆",
+    format: "剧集",
     director: "Christopher Storer",
     platform: "Disney+",
-    status: "Paused",
-    runtime: "3 seasons",
+    status: "暂停",
+    runtime: "3 季",
     rating: "4.7",
-    summary: "Paused intentionally until there is enough space to absorb the tone and pacing properly.",
-    tags: ["Series", "Character"]
+    summary: "刻意暂停，等有足够心力时再回到它的节奏和情绪里。",
+    tags: ["剧集", "人物"]
   }
 ];
 
@@ -251,58 +251,58 @@ export const screenBacklog: ScreenOverviewItem[] = [
   {
     id: "screen-4",
     title: "Past Lives",
-    format: "Movie",
+    format: "电影",
     director: "Celine Song",
-    platform: "Digital rental",
-    status: "Queued",
-    runtime: "106 min",
+    platform: "数字租赁",
+    status: "排队中",
+    runtime: "106 分钟",
     rating: "4.8",
-    summary: "Pinned for a reflective solo watch night with room for post-watch journaling.",
-    tags: ["Drama", "Priority"]
+    summary: "适合留给一个能看完后顺手记点感受的独处夜晚。",
+    tags: ["剧情", "优先"]
   },
   {
     id: "screen-5",
-    title: "Shogun",
-    format: "Series",
+    title: "幕府将军",
+    format: "剧集",
     director: "Jonathan van Tulleken",
     platform: "Disney+",
-    status: "Wishlist",
-    runtime: "10 eps",
+    status: "想看",
+    runtime: "10 集",
     rating: "4.6",
-    summary: "Saved as a prestige-series commitment once another long-form show is completed.",
-    tags: ["Historical", "Queue"]
+    summary: "等另一部长篇剧集看完后，再认真投入这类高成本追剧项目。",
+    tags: ["历史", "队列"]
   },
   {
     id: "screen-6",
-    title: "Whisper of the Heart",
-    format: "Movie",
-    director: "Yoshifumi Kondo",
-    platform: "Blu-ray",
-    status: "Rewatch",
-    runtime: "111 min",
+    title: "侧耳倾听",
+    format: "电影",
+    director: "近藤喜文",
+    platform: "蓝光",
+    status: "重看",
+    runtime: "111 分钟",
     rating: "4.9",
-    summary: "Comfort rewatch candidate for times when new picks feel too mentally expensive.",
-    tags: ["Animation", "Comfort"]
+    summary: "当新内容显得过于费脑时，这是一部很好的安慰型重看候选。",
+    tags: ["动画", "舒适"]
   }
 ];
 
 export const travelStats: DashboardStat[] = [
   {
-    label: "Trips in planning",
+    label: "规划中的旅行",
     value: "4",
-    detail: "A balanced mix of one near-term city break and three slower-burn wishlist itineraries.",
+    detail: "保持一趟近期出行和三条慢慢酝酿的愿望路线。",
     trend: "steady"
   },
   {
-    label: "Visited places logged",
+    label: "已记录去过地点",
     value: "19",
-    detail: "Past trips are increasingly documented with enough detail to revisit favorite neighborhoods.",
+    detail: "过去的旅行正被补充到足够细，可以复用到下次行程设计。",
     trend: "up"
   },
   {
-    label: "Bucket list confidence",
+    label: "愿望清单把握度",
     value: "83%",
-    detail: "Most saved destinations now include timing, cost, and at least one concrete anchor idea.",
+    detail: "多数已保存目的地已经附带时间、预算和至少一个具体锚点。",
     trend: "up"
   }
 ];
@@ -310,157 +310,156 @@ export const travelStats: DashboardStat[] = [
 export const activeTrips: TravelOverviewItem[] = [
   {
     id: "travel-1",
-    title: "Kyoto Autumn Return",
-    country: "Japan",
-    window: "November 18 to November 25",
-    stage: "Planning",
-    budget: "$2,600 est.",
-    summary: "Refining the pace around foliage timing, tea houses, and one slower day outside the city center.",
-    highlights: ["Arashiyama dawn", "Uji tea route", "Ryokan shortlist"]
+    title: "京都秋日重访",
+    country: "日本",
+    window: "11 月 18 日 - 11 月 25 日",
+    stage: "规划中",
+    budget: "预计 ¥18,800",
+    summary: "正在围绕红叶时机、茶屋和一个慢节奏的郊外日进行微调。",
+    highlights: ["岚山清晨", "宇治茶路线", "旅馆候选"]
   },
   {
     id: "travel-2",
-    title: "Lisbon Light Winter",
-    country: "Portugal",
-    window: "January 12 to January 17",
-    stage: "Booked",
-    budget: "$1,450 est.",
-    summary: "Stay and flights are in place, leaving room to design a low-friction walking-first itinerary.",
-    highlights: ["Alfama stay", "Sintra day trip", "River sunset map"]
+    title: "里斯本轻冬之行",
+    country: "葡萄牙",
+    window: "1 月 12 日 - 1 月 17 日",
+    stage: "已预订",
+    budget: "预计 ¥10,500",
+    summary: "机酒已定，接下来重点是设计以步行为主、摩擦更低的路线。",
+    highlights: ["阿尔法玛住宿", "辛特拉一日", "河岸日落地图"]
   },
   {
     id: "travel-3",
-    title: "Seoul Design Weekend",
-    country: "South Korea",
-    window: "Flexible spring slot",
-    stage: "Idea",
-    budget: "$1,900 est.",
-    summary: "Saved around neighborhoods, bookstores, and exhibitions rather than a traditional checklist trip.",
-    highlights: ["Seongsu", "MMCA", "Stationery crawl"]
+    title: "首尔设计周末",
+    country: "韩国",
+    window: "春季可弹性安排",
+    stage: "灵感",
+    budget: "预计 ¥13,800",
+    summary: "更偏向街区、书店和展览的城市探索，而不是传统打卡清单。",
+    highlights: ["圣水洞", "国立现代美术馆", "文具巡游"]
   }
 ];
 
 export const travelArchive: TravelOverviewItem[] = [
   {
     id: "travel-4",
-    title: "Taipei Food Reset",
-    country: "Taiwan",
-    window: "October 2025",
-    stage: "Visited",
-    budget: "$1,120 actual",
-    summary: "A compact city trip where neighborhoods and meal pacing were more valuable than attraction count.",
-    highlights: ["Dadaocheng", "Morning market", "Tea house notes"]
+    title: "台北吃饭回血之旅",
+    country: "中国台湾",
+    window: "2025 年 10 月",
+    stage: "已到访",
+    budget: "实际 ¥8,100",
+    summary: "一次紧凑的城市旅行，街区节奏和用餐安排比景点数量更重要。",
+    highlights: ["大稻埕", "早市", "茶馆笔记"]
   },
   {
     id: "travel-5",
-    title: "Osaka Café + Record Crawl",
-    country: "Japan",
-    window: "May 2025",
-    stage: "Visited",
-    budget: "$1,780 actual",
-    summary: "Logged with reusable maps, favorite streets, and a tighter template for future Japan trips.",
-    highlights: ["Nakazakicho", "Nakanoshima", "Jazz bar list"]
+    title: "大阪咖啡与唱片漫游",
+    country: "日本",
+    window: "2025 年 5 月",
+    stage: "已到访",
+    budget: "实际 ¥12,900",
+    summary: "已经整理出可复用地图、喜欢的街道和更适合未来日本旅行的模板。",
+    highlights: ["中崎町", "中之岛", "爵士酒吧清单"]
   }
 ];
 
 export const timelineEvents: TimelineEvent[] = [
   {
     id: "timeline-1",
-    title: "Started reading The Creative Act",
-    date: "February 14, 2026",
+    title: "开始阅读《The Creative Act》",
+    date: "2026年2月14日",
     kind: "book",
-    badge: "Book",
-    description: "Promoted from backlog to active reading after a quarterly planning reset."
+    badge: "书籍",
+    description: "季度规划后，把它从积压清单提升为当前重点阅读。"
   },
   {
     id: "timeline-2",
-    title: "Finished Before Sunrise",
-    date: "March 8, 2026",
+    title: "看完《爱在黎明破晓前》",
+    date: "2026年3月8日",
     kind: "screen",
-    badge: "Movie",
-    description: "Logged with a short post-watch note about conversational pacing and emotional restraint."
+    badge: "电影",
+    description: "补了一条简短观后笔记，记录对白节奏和克制情绪表达。"
   },
   {
     id: "timeline-3",
-    title: "Booked Lisbon accommodation",
-    date: "March 5, 2026",
+    title: "预订里斯本住宿",
+    date: "2026年3月5日",
     kind: "travel",
-    badge: "Travel",
-    description: "Moved the trip from planning to booked and attached neighborhood-level references."
+    badge: "旅行",
+    description: "把行程状态从规划中推进到已预订，并附上街区参考。"
   },
   {
     id: "timeline-4",
-    title: "Added Sea of Tranquility to priority queue",
-    date: "March 2, 2026",
+    title: "把《Sea of Tranquility》加入优先队列",
+    date: "2026年3月2日",
     kind: "book",
-    badge: "Book",
-    description: "Pulled forward as the likely fiction follow-up to the current nonfiction read."
+    badge: "书籍",
+    description: "大概率会成为当前非虚构读完后的下一本小说。"
   },
   {
     id: "timeline-5",
-    title: "Paused The Bear",
-    date: "February 27, 2026",
+    title: "暂停《熊家餐馆》",
+    date: "2026年2月27日",
     kind: "screen",
-    badge: "Series",
-    description: "Paused intentionally to avoid splitting attention across too many heavy shows."
+    badge: "剧集",
+    description: "主动暂停，避免把注意力切得过碎。"
   }
 ];
 
 export const analyticsMetrics: AnalyticsMetric[] = [
   {
-    label: "Completion cadence",
-    value: "Every 5.2 days",
-    detail: "Average across all item types with travel milestones treated as stage changes."
+    label: "完成节奏",
+    value: "平均每 5.2 天",
+    detail: "跨全部项目类型统计，旅行阶段变化也计入节奏。"
   },
   {
-    label: "Average satisfaction",
+    label: "平均满意度",
     value: "4.6 / 5",
-    detail: "Books are slightly more consistent than screens, while travel memories score highest."
+    detail: "书籍评分更稳定，旅行回忆的满意度整体最高。"
   },
   {
-    label: "Intentional queue ratio",
+    label: "有明确意图的队列占比",
     value: "71%",
-    detail: "Most queued items already have a clear reason, mood, or time-box attached."
+    detail: "大多数排队项目都已经附带原因、情绪或时间范围。"
   }
 ];
 
 export const analyticsByType: CategoryBreakdown[] = [
-  { label: "Books", value: "64%", accent: "#8b6f47" },
-  { label: "Movies & series", value: "78%", accent: "#48645b" },
-  { label: "Travels", value: "52%", accent: "#7f9b91" }
+  { label: "书籍", value: "64%", accent: "#8b6f47" },
+  { label: "影视", value: "78%", accent: "#48645b" },
+  { label: "旅行", value: "52%", accent: "#7f9b91" }
 ];
 
 export const analyticsByRegion: CategoryBreakdown[] = [
-  { label: "Japan", value: "38%", accent: "#c48c66" },
-  { label: "Southern Europe", value: "24%", accent: "#7f9b91" },
-  { label: "East Asia cities", value: "18%", accent: "#5a796e" },
-  { label: "Other", value: "20%", accent: "#d4bf98" }
+  { label: "日本", value: "38%", accent: "#c48c66" },
+  { label: "南欧", value: "24%", accent: "#7f9b91" },
+  { label: "东亚城市", value: "18%", accent: "#5a796e" },
+  { label: "其他", value: "20%", accent: "#d4bf98" }
 ];
 
 export const analyticsInsights = [
-  "Shortlists perform best when capped below ten items per module.",
-  "Travel planning momentum improves when each saved place includes one anchor neighborhood.",
-  "Books with note capture enabled are twice as likely to be completed intentionally rather than abandoned."
+  "当每个模块的短名单控制在 10 项以内时，执行效果最好。",
+  "旅行规划在每个地点都附带一个街区锚点时，更容易持续推进。",
+  "开启笔记采集的书，比完全不记笔记的书更容易被主动读完。"
 ];
 
 export const settingsPanels: SettingsPanel[] = [
   {
-    title: "Database layer",
-    description: "Drizzle schema is ready for Supabase Postgres with a unified projects table plus detail tables.",
-    status: "Ready",
-    detail: "Swap mock queries to live selects once DATABASE_URL is present."
+    title: "数据库层",
+    description: "Drizzle schema 已准备好连接 Supabase Postgres，核心是统一的 projects 主表和详情表。",
+    status: "就绪",
+    detail: "DATABASE_URL 可用后，就可以把 mock 查询切换为真实 select。"
   },
   {
-    title: "AI fields",
-    description: "Pages are structured to support generated summaries, recommendations, and note distillation.",
-    status: "Modular",
-    detail: "Keep prompt construction isolated from persistence and display logic."
+    title: "AI 字段",
+    description: "页面结构已经为生成式摘要、推荐和笔记蒸馏预留位置。",
+    status: "模块化",
+    detail: "保持 prompt 构造与持久化、展示逻辑分离。"
   },
   {
-    title: "Forms and validation",
-    description: "Zod schemas are grouped by module so create and edit flows can stay local and typed.",
-    status: "Prepared",
-    detail: "Add server actions or route handlers without reworking the page tree."
+    title: "表单与校验",
+    description: "Zod schema 按模块组织，方便后续把新增和编辑流程局部扩展。",
+    status: "已准备",
+    detail: "增加 server actions 或 route handlers 时，不需要重构页面树。"
   }
 ];
-

@@ -4,7 +4,7 @@ import { getTimelinePageData } from "@/lib/db/queries/timeline";
 import { TimelineOverview } from "@/modules/timeline/components/timeline-overview";
 
 export const metadata: Metadata = {
-  title: "Timeline"
+  title: "时间线"
 };
 
 export default async function TimelinePage() {

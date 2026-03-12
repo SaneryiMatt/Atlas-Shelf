@@ -17,9 +17,9 @@ export function BooksOverview({ stats, currentBooks, backlog, notes }: BooksOver
   return (
     <div className="space-y-8">
       <PageHeader
-        eyebrow="Books module"
-        title="Reading, notes, and backlog without the clutter."
-        description="The books module is ready for structured capture around progress, highlights, and future AI-assisted synthesis."
+        eyebrow="书籍模块"
+        title="把阅读、笔记和待读清单整理得更清楚。"
+        description="书籍模块已经具备围绕进度、摘录和后续 AI 总结的结构化记录能力。"
       />
 
       <section className="grid gap-4 md:grid-cols-3">
@@ -29,7 +29,7 @@ export function BooksOverview({ stats, currentBooks, backlog, notes }: BooksOver
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-        <SectionCard title="Current reading stack" description="Active titles with progress and reusable context.">
+        <SectionCard title="当前在读" description="围绕阅读进度与可复用上下文组织当前书单。">
           <div className="space-y-4">
             {currentBooks.map((book) => (
               <div key={book.id} className="rounded-3xl border border-border/60 bg-background/70 p-5">
@@ -40,9 +40,9 @@ export function BooksOverview({ stats, currentBooks, backlog, notes }: BooksOver
                 </div>
                 <p className="mt-3 text-sm leading-6 text-muted-foreground">{book.summary}</p>
                 <div className="mt-4 flex flex-wrap gap-5 text-sm text-muted-foreground">
-                  <span>Progress {book.progress}</span>
-                  <span>{book.pages} pages</span>
-                  <span>Rating {book.rating}</span>
+                  <span>进度 {book.progress}</span>
+                  <span>{book.pages} 页</span>
+                  <span>评分 {book.rating}</span>
                 </div>
                 <div className="mt-4 flex flex-wrap gap-2">
                   {book.tags.map((tag) => (
@@ -56,7 +56,7 @@ export function BooksOverview({ stats, currentBooks, backlog, notes }: BooksOver
           </div>
         </SectionCard>
 
-        <SectionCard title="Next up" description="Priority titles worth protecting space for.">
+        <SectionCard title="下一本" description="优先级较高、值得预留时间的书。">
           <div className="space-y-4">
             {backlog.map((book) => (
               <div key={book.id} className="rounded-3xl border border-border/60 bg-background/70 p-5">
@@ -74,7 +74,7 @@ export function BooksOverview({ stats, currentBooks, backlog, notes }: BooksOver
         </SectionCard>
       </section>
 
-      <SectionCard title="Validation and note strategy" description="Feature-local schemas keep book workflows typed and maintainable.">
+      <SectionCard title="校验与笔记策略" description="模块内就近维护 schema，让书籍流程保持类型清晰且易于维护。">
         <div className="grid gap-4 md:grid-cols-3">
           {notes.map((note) => (
             <div key={note} className="rounded-3xl bg-background/70 p-5">
@@ -85,7 +85,7 @@ export function BooksOverview({ stats, currentBooks, backlog, notes }: BooksOver
         </div>
         <div className="mt-5 rounded-3xl border border-dashed border-border bg-background/60 p-5 text-sm leading-6 text-muted-foreground">
           <BookMarked className="mb-3 size-5 text-primary" />
-          The file src/modules/books/book-form-schema.ts is ready to back create and edit flows using Zod-driven validation.
+          `src/modules/books/book-form-schema.ts` 已经可以作为新增和编辑表单的 Zod 校验基础。
         </div>
       </SectionCard>
     </div>

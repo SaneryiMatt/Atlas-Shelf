@@ -62,7 +62,7 @@ export function AppSidebar() {
       </nav>
 
       <div className="mt-auto rounded-3xl border border-border/60 bg-background/70 p-5">
-        <p className="text-sm font-medium text-foreground">Architecture guardrails</p>
+        <p className="text-sm font-medium text-foreground">架构约束</p>
         <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-6 text-muted-foreground">
           {workspaceHighlights.map((highlight) => (
             <li key={highlight}>{highlight}</li>
