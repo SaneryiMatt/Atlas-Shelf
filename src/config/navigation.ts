@@ -1,69 +1,141 @@
 import {
-  BarChart3,
   BookOpen,
   Clapperboard,
   Compass,
   LayoutDashboard,
+  Search,
   Settings,
-  Sparkles,
   TimerReset
 } from "lucide-react";
 
-export const navigation = [
+export const productName = "Atlas Shelf";
+export const productTagline = "你的书影音与旅行记录";
+
+export const primaryNavigation = [
   {
-    title: "总览",
+    title: "首页",
     href: "/",
     icon: LayoutDashboard,
-    description: "集中查看书籍、影视与旅行动态。"
+    description: "最近记录、进行中内容和快捷入口"
   },
   {
     title: "书籍",
     href: "/books",
     icon: BookOpen,
-    description: "阅读进度、笔记与待读清单。"
+    description: "在读、想读和阅读笔记"
   },
   {
     title: "影视",
     href: "/movies",
     icon: Clapperboard,
-    description: "电影、剧集、动漫与片单管理。"
+    description: "电影记录、评分和观后感"
   },
   {
     title: "旅行",
     href: "/travels",
     icon: Compass,
-    description: "灵感目的地、行程安排与旅行回忆。"
+    description: "想去的地方、已去过的地点和旅程回忆"
+  }
+] as const;
+
+export const quickAccessLinks = [
+  {
+    title: "全局搜索",
+    href: "/search",
+    icon: Search
   },
   {
     title: "时间线",
     href: "/timeline",
-    icon: TimerReset,
-    description: "按时间顺序查看所有记录。"
-  },
-  {
-    title: "分析",
-    href: "/analytics",
-    icon: BarChart3,
-    description: "完成趋势与使用习惯洞察。"
+    icon: TimerReset
   },
   {
     title: "设置",
     href: "/settings",
-    icon: Settings,
-    description: "数据、集成与 AI 工作流配置。"
+    icon: Settings
   }
 ] as const;
 
-export const workspaceHighlights = [
-  "共享项目主表，配合可扩展的详情表",
-  "以服务端为主的页面组织，查询逻辑独立",
-  "统一的卡片、列表与克制的视觉语言"
-] as const;
+export function getPageHeaderMeta(pathname: string) {
+  if (pathname === "/") {
+    return {
+      title: "首页",
+      description: "看看最近在读、在看和准备去的地方。"
+    };
+  }
 
-export const productTagline = "在一个清晰克制的空间里，记录书籍、影视与旅程。";
+  if (pathname === "/books") {
+    return {
+      title: "书籍",
+      description: "整理阅读进度、评分和笔记。"
+    };
+  }
 
-export const productBadge = {
-  label: "生产可用基础架构",
-  icon: Sparkles
-};
+  if (pathname.startsWith("/books/")) {
+    return {
+      title: "书籍详情",
+      description: "查看这本书的记录、标签和图片。"
+    };
+  }
 
+  if (pathname === "/movies") {
+    return {
+      title: "影视",
+      description: "集中管理电影条目、评分和观后感。"
+    };
+  }
+
+  if (pathname.startsWith("/movies/")) {
+    return {
+      title: "影视详情",
+      description: "查看作品信息、笔记和图片。"
+    };
+  }
+
+  if (pathname === "/travels") {
+    return {
+      title: "旅行",
+      description: "记录想去的地方、去过的地点和旅程计划。"
+    };
+  }
+
+  if (pathname.startsWith("/travels/")) {
+    return {
+      title: "旅行详情",
+      description: "查看地点信息、笔记和图片。"
+    };
+  }
+
+  if (pathname === "/search") {
+    return {
+      title: "搜索",
+      description: "快速找到书籍、影视和旅行记录。"
+    };
+  }
+
+  if (pathname === "/timeline") {
+    return {
+      title: "时间线",
+      description: "按时间查看最近记录。"
+    };
+  }
+
+  if (pathname === "/analytics") {
+    return {
+      title: "分析",
+      description: "看看最近的记录节奏和偏好变化。"
+    };
+  }
+
+  if (pathname === "/settings") {
+    return {
+      title: "设置",
+      description: "管理账户、连接和个性化配置。"
+    };
+  }
+
+  return {
+    title: "首页",
+    description: "你的书影音与旅行记录。"
+  };
+}

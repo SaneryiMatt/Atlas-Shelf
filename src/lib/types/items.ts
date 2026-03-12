@@ -119,6 +119,34 @@ export interface ProjectTagPreview {
   usageCount: number;
 }
 
+export type SearchResultKind = "book" | "movie" | "travel";
+
+export interface SearchResultItem {
+  id: string;
+  kind: SearchResultKind;
+  title: string;
+  href: string;
+  summary: string;
+  meta: string;
+  statusLabel: string;
+  ratingLabel: string;
+  updatedAtLabel: string;
+  tags: string[];
+}
+
+export interface SearchResultGroup {
+  key: SearchResultKind;
+  title: string;
+  description: string;
+  items: SearchResultItem[];
+}
+
+export interface SearchPageData {
+  query: string;
+  totalCount: number;
+  groups: SearchResultGroup[];
+}
+
 export interface ProjectDetailField {
   label: string;
   value: string;

@@ -10,12 +10,15 @@ interface AppShellProps {
 
 export function AppShell({ children, userEmail }: AppShellProps) {
   return (
-    <div className="min-h-screen bg-page-glow px-4 py-6 sm:px-6 lg:px-8">
-      <div className="mx-auto grid max-w-[1480px] gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
-        <AppSidebar />
-        <div className="space-y-6">
+    <div className="min-h-screen bg-page-glow px-4 py-4 sm:px-6 lg:px-8 lg:py-6">
+      <div className="mx-auto grid max-w-[1440px] gap-5 xl:grid-cols-[280px_minmax(0,1fr)]">
+        <div className="hidden xl:block">
+          <AppSidebar />
+        </div>
+
+        <div className="min-w-0 space-y-5">
           <AppHeader userEmail={userEmail} />
-          <main>{children}</main>
+          <main className="min-w-0">{children}</main>
         </div>
       </div>
     </div>
