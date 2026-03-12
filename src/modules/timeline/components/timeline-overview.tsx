@@ -1,16 +1,18 @@
 import { CalendarDays, TimerReset } from "lucide-react";
 
+import { PageHeader } from "@/components/shared/page-header";
 import { SectionCard } from "@/components/shared/section-card";
 import { TimelineFeed } from "@/components/shared/timeline-feed";
 import type { TimelinePageData } from "@/lib/types/items";
 
 export function TimelineOverview({ totalCount, groups }: TimelinePageData) {
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8">
-      <header className="mb-10">
-        <h1 className="text-3xl font-semibold tracking-tight text-foreground">Timeline</h1>
-        <p className="mt-2 text-muted-foreground">按时间回看全部条目</p>
-      </header>
+    <div className="mx-auto max-w-6xl space-y-6">
+      <PageHeader
+        eyebrow="Timeline"
+        title="按时间回看全部条目"
+        description="把书籍、影视和旅行放进同一条时间线，按月份快速浏览你的记录节奏。"
+      />
 
       <section className="grid gap-4 md:grid-cols-3">
         <div className="rounded-xl border border-border bg-card p-5">

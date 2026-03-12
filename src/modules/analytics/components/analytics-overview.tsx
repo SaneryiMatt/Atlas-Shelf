@@ -1,6 +1,7 @@
 import { BarChart3, Lightbulb } from "lucide-react";
 
 import { BarList } from "@/components/shared/bar-list";
+import { PageHeader } from "@/components/shared/page-header";
 import { SectionCard } from "@/components/shared/section-card";
 import { Card, CardContent } from "@/components/ui/card";
 import type { AnalyticsMetric, CategoryBreakdown } from "@/lib/types/items";
@@ -14,11 +15,12 @@ interface AnalyticsOverviewProps {
 
 export function AnalyticsOverview({ metrics, byType, byRegion, insights }: AnalyticsOverviewProps) {
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8">
-      <header className="mb-10">
-        <h1 className="text-3xl font-semibold tracking-tight text-foreground">分析</h1>
-        <p className="mt-2 text-muted-foreground">模式与趋势洞察</p>
-      </header>
+    <div className="space-y-8">
+      <PageHeader
+        eyebrow="分析模块"
+        title="只展示真正有助于决策的模式与趋势。"
+        description="分析模块强调清晰而不是虚荣指标，只呈现会影响下一步选择的信号。"
+      />
 
       <section className="grid gap-4 md:grid-cols-3">
         {metrics.map((metric) => (
