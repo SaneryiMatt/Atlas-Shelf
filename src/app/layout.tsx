@@ -1,18 +1,13 @@
-import type { Metadata } from "next";
-import { Fraunces, Manrope } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Inter } from "next/font/google";
 import type { ReactNode } from "react";
 
 import "@/app/globals.css";
 import { cn } from "@/lib/utils";
 
-const manrope = Manrope({
+const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-manrope"
-});
-
-const fraunces = Fraunces({
-  subsets: ["latin"],
-  variable: "--font-fraunces"
+  variable: "--font-inter"
 });
 
 export const metadata: Metadata = {
@@ -24,10 +19,14 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://example.com")
 };
 
+export const viewport: Viewport = {
+  themeColor: "#0a0a0a"
+};
+
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
-    <html lang="zh-CN">
-      <body className={cn(manrope.variable, fraunces.variable)}>{children}</body>
+    <html lang="zh-CN" className="dark">
+      <body className={cn(inter.variable, "font-sans")}>{children}</body>
     </html>
   );
 }

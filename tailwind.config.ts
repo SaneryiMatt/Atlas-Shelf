@@ -55,14 +55,13 @@ const config: Config = {
         sm: "calc(var(--radius) - 4px)"
       },
       boxShadow: {
-        soft: "0 18px 60px -28px rgba(25, 33, 28, 0.28)"
+        soft: "0 18px 60px -28px rgba(0, 0, 0, 0.5)"
       },
       backgroundImage: {
-        "page-glow": "radial-gradient(circle at top left, rgba(223, 208, 182, 0.5), transparent 28%), radial-gradient(circle at top right, rgba(186, 205, 193, 0.45), transparent 26%)"
+        "page-glow": "radial-gradient(circle at top left, rgba(40, 40, 40, 0.3), transparent 40%)"
       },
       fontFamily: {
-        sans: ["var(--font-manrope)", "sans-serif"],
-        serif: ["var(--font-fraunces)", "serif"]
+        sans: ["var(--font-inter)", "system-ui", "sans-serif"]
       }
     }
   },

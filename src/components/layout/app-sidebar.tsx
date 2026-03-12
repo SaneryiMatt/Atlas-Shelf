@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { primaryNavigation, productName, productTagline, quickAccessLinks } from "@/config/navigation";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 function isActivePath(pathname: string, href: string) {
@@ -24,19 +23,16 @@ export function SidebarContent({ onNavigate }: SidebarContentProps) {
 
   return (
     <>
-      <div className="space-y-3">
-        <Badge variant="warm" className="w-fit">
-          记录日常
-        </Badge>
-        <div className="space-y-2">
-          <Link href="/" className="font-serif text-3xl text-foreground" onClick={onNavigate}>
-            {productName}
-          </Link>
-          <p className="text-sm leading-6 text-muted-foreground">{productTagline}</p>
-        </div>
+      {/* Logo 区域 */}
+      <div className="space-y-1">
+        <Link href="/" className="text-xl font-semibold text-foreground" onClick={onNavigate}>
+          {productName}
+        </Link>
+        <p className="text-xs text-muted-foreground">{productTagline}</p>
       </div>
 
-      <nav className="grid gap-2">
+      {/* 主导航 */}
+      <nav className="mt-6 flex flex-col gap-1">
         {primaryNavigation.map((item) => {
           const Icon = item.icon;
           const active = isActivePath(pathname, item.href);
@@ -47,54 +43,48 @@ export function SidebarContent({ onNavigate }: SidebarContentProps) {
               href={item.href}
               onClick={onNavigate}
               className={cn(
-                "group rounded-2xl border px-4 py-3 transition-colors",
+                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                 active
-                  ? "border-primary/20 bg-primary/10"
-                  : "border-transparent bg-transparent hover:border-border hover:bg-background/70"
+                  ? "bg-accent text-foreground"
+                  : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
               )}
             >
-              <div className="flex items-center gap-3">
-                <span
-                  className={cn(
-                    "flex size-10 items-center justify-center rounded-2xl",
-                    active ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"
-                  )}
-                >
-                  <Icon className="size-4" />
-                </span>
-                <div className="space-y-1">
-                  <p className="font-medium text-foreground">{item.title}</p>
-                  <p className="text-xs leading-5 text-muted-foreground">{item.description}</p>
-                </div>
-              </div>
+              <Icon className="size-4" />
+              {item.title}
             </Link>
           );
         })}
       </nav>
 
-      <div className="mt-auto rounded-3xl border border-border/60 bg-background/70 p-5">
-        <p className="text-sm font-medium text-foreground">快捷入口</p>
-        <div className="mt-4 grid gap-2">
-          {quickAccessLinks.map((item) => {
-            const Icon = item.icon;
-            const active = isActivePath(pathname, item.href);
+      {/* 分隔线 */}
+      <div className="my-4 h-px bg-border" />
 
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={onNavigate}
-                className={cn(
-                  "flex items-center gap-3 rounded-2xl px-3 py-2 text-sm transition-colors",
-                  active ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-background hover:text-foreground"
-                )}
-              >
-                <Icon className="size-4" />
-                {item.title}
-              </Link>
-            );
-          })}
-        </div>
+      {/* 快捷入口 */}
+      <div className="flex flex-col gap-1">
+        <p className="mb-2 px-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          快捷入口
+        </p>
+        {quickAccessLinks.map((item) => {
+          const Icon = item.icon;
+          const active = isActivePath(pathname, item.href);
+
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={onNavigate}
+              className={cn(
+                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+                active
+                  ? "bg-accent text-foreground"
+                  : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+              )}
+            >
+              <Icon className="size-4" />
+              {item.title}
+            </Link>
+          );
+        })}
       </div>
     </>
   );
@@ -102,7 +92,7 @@ export function SidebarContent({ onNavigate }: SidebarContentProps) {
 
 export function AppSidebar() {
   return (
-    <aside className="flex h-full flex-col gap-6 rounded-[2rem] border border-white/50 bg-[linear-gradient(180deg,rgba(255,255,255,0.95),rgba(244,242,235,0.88))] p-6 shadow-soft">
+    <aside className="sticky top-0 flex h-screen flex-col gap-4 bg-background p-4">
       <SidebarContent />
     </aside>
   );

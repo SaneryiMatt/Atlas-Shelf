@@ -3,24 +3,33 @@
 @tailwind utilities;
 
 :root {
-  --background: 42 33% 95%;
-  --foreground: 154 18% 15%;
-  --card: 0 0% 100%;
-  --card-foreground: 154 18% 15%;
-  --primary: 152 22% 26%;
-  --primary-foreground: 42 33% 97%;
-  --secondary: 40 26% 89%;
-  --secondary-foreground: 154 18% 18%;
-  --muted: 40 20% 91%;
-  --muted-foreground: 154 10% 39%;
-  --accent: 36 35% 86%;
-  --accent-foreground: 154 18% 18%;
+  /* 深色现代主题 - 灵感来自 Vercel/OpenAI 风格 */
+  --background: 0 0% 4%;
+  --foreground: 0 0% 98%;
+  --card: 0 0% 7%;
+  --card-foreground: 0 0% 98%;
+  --popover: 0 0% 7%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 0 0% 98%;
+  --primary-foreground: 0 0% 4%;
+  --secondary: 0 0% 12%;
+  --secondary-foreground: 0 0% 98%;
+  --muted: 0 0% 12%;
+  --muted-foreground: 0 0% 64%;
+  --accent: 0 0% 15%;
+  --accent-foreground: 0 0% 98%;
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 98%;
-  --border: 32 18% 82%;
-  --input: 32 18% 82%;
-  --ring: 152 22% 26%;
-  --radius: 1.35rem;
+  --border: 0 0% 18%;
+  --input: 0 0% 18%;
+  --ring: 0 0% 98%;
+  --radius: 0.75rem;
+  
+  /* 自定义颜色 */
+  --success: 142 76% 36%;
+  --success-foreground: 0 0% 98%;
+  --warning: 38 92% 50%;
+  --warning-foreground: 0 0% 4%;
 }
 
 * {
