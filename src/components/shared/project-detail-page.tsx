@@ -62,7 +62,7 @@ export function ProjectDetailPage({
           </div>
           
           {/* 操作按钮 */}
-          {actions && <div className="shrink-0">{actions}</div>}
+          {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
         </div>
       </header>
 
