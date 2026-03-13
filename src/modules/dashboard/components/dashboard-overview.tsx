@@ -58,18 +58,8 @@ export function DashboardOverview({ stats, focusItems, recentMoments, analytics 
     <div className="mx-auto max-w-5xl px-4 py-8">
       {/* 简洁标题 */}
       <header className="mb-12">
-        <h1 className="text-3xl font-semibold tracking-tight text-foreground">Dashboard</h1>
-        <p className="mt-2 text-muted-foreground">
-          {analytics.year} 年度概览
-        </p>
+        <h1 className="text-3xl font-semibold tracking-tight text-foreground">{analytics.year} 年度概览</h1>
       </header>
-
-      {/* 统计数据 - 横向排列 */}
-      <section className="mb-10 flex flex-wrap items-center rounded-lg border border-border/40 bg-card/20 py-5">
-        {stats.map((stat, index) => (
-          <StatCard key={stat.label} {...stat} index={index} />
-        ))}
-      </section>
 
       {/* 图表区域 */}
       <section className="mb-10 grid gap-6 lg:grid-cols-3">

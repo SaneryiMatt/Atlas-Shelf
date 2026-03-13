@@ -1,8 +1,8 @@
-"use client";
+﻿"use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { Trash2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -40,9 +40,11 @@ export function DeleteProjectDialog({
   redirectTo,
   action
 }: DeleteProjectDialogProps) {
+  const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [state, formAction, isPending] = useActionState(action, initialState);
+  const pendingRefreshPathRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (state.status !== "success") {
@@ -50,9 +52,18 @@ export function DeleteProjectDialog({
     }
 
     setOpen(false);
-    router.push(redirectTo);
-    router.refresh();
+    pendingRefreshPathRef.current = redirectTo;
+    router.replace(redirectTo);
   }, [redirectTo, router, state.status]);
+
+  useEffect(() => {
+    if (pendingRefreshPathRef.current !== pathname) {
+      return;
+    }
+
+    pendingRefreshPathRef.current = null;
+    router.refresh();
+  }, [pathname, router]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -66,16 +77,12 @@ export function DeleteProjectDialog({
         <DialogHeader>
           <DialogTitle>确认删除{itemLabel}</DialogTitle>
           <DialogDescription>
-            这会删除“{projectTitle}”及其关联的标签、笔记和图片记录。该操作不可撤销。
+            {`这会删除“${projectTitle}”及其关联的标签、笔记和图片记录。该操作不可撤销。`}
           </DialogDescription>
         </DialogHeader>
 
         <form action={formAction} className="space-y-5">
           <input type="hidden" name="projectId" value={projectId} />
-
-          <div className="rounded-3xl border border-red-200 bg-red-50 p-5 text-sm leading-6 text-red-700">
-            请确认你要删除这条记录。删除后，详情页和列表页都会立即同步。
-          </div>
 
           {state.message ? (
             <div
