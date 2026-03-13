@@ -152,6 +152,6 @@ export async function getTravelsPageData(searchParams?: { page?: string; sort?: 
     items: mockList.items,
     sort,
     pagination: mockList.pagination,
-    canCreateTravels: Boolean(databaseAvailable)
+    canCreateTravels: true
   };
 }

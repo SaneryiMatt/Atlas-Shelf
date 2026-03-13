@@ -7,9 +7,9 @@ import { usePathname } from "next/navigation";
 import { getPageHeaderMeta, primaryNavigation } from "@/config/navigation";
 import { SidebarContent } from "@/components/layout/app-sidebar";
 import { SignOutButton } from "@/components/auth/sign-out-button";
+import { NavSearch } from "@/components/shared/nav-search";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
@@ -80,14 +80,7 @@ export function AppHeader({ userEmail }: AppHeaderProps) {
         {/* 右侧操作区 */}
         <div className="flex items-center gap-2">
           {/* 搜索框 */}
-          <div className="relative hidden md:block">
-            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="搜索..."
-              className="h-9 w-64 bg-secondary/50 pl-9 text-sm placeholder:text-muted-foreground focus:bg-secondary"
-            />
-          </div>
+          <NavSearch className="hidden md:block" />
 
           {/* 搜索按钮 (移动端) */}
           <Button variant="ghost" size="icon" className="md:hidden">
