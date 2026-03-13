@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint . --max-warnings=0"
+    "lint": "eslint . --max-warnings=0",
+    "test:metadata": "node --experimental-strip-types --loader ./scripts/ts-path-loader.mjs src/lib/metadata/service.test.ts"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",

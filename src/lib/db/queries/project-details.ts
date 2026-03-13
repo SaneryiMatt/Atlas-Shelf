@@ -77,21 +77,6 @@ function formatDateInput(value: Date | string | null | undefined) {
   return value.toISOString().slice(0, 10);
 }
 
-function formatCoordinateLabel(latitude: string | number | null, longitude: string | number | null) {
-  if (latitude === null || latitude === undefined || longitude === null || longitude === undefined) {
-    return "未填写";
-  }
-
-  return `${Number(latitude).toFixed(4)}, ${Number(longitude).toFixed(4)}`;
-}
-
-function formatCoordinateInput(value: string | number | null | undefined) {
-  if (value === null || value === undefined) {
-    return "";
-  }
-
-  return String(value);
-}
 
 async function getProjectRelations(projectId: string, projectTitle: string) {
   if (!db) {
@@ -335,9 +320,7 @@ function buildMockTravelPayload(id: string): TravelDetailPagePayload | null {
       country: trip.country,
       city: "",
       travelDate: "",
-      description: trip.summary,
-      latitude: "",
-      longitude: ""
+      description: trip.summary
     }
   };
 }
@@ -485,9 +468,7 @@ export async function getTravelDetailPageData(id: string): Promise<TravelDetailP
           city: travelDetails.city,
           stage: travelDetails.stage,
           startDate: travelDetails.startDate,
-          endDate: travelDetails.endDate,
-          latitude: travelDetails.latitude,
-          longitude: travelDetails.longitude
+          endDate: travelDetails.endDate
         })
         .from(projects)
         .innerJoin(travelDetails, eq(travelDetails.projectId, projects.id))
@@ -516,7 +497,7 @@ export async function getTravelDetailPageData(id: string): Promise<TravelDetailP
             { label: "国家或地区", value: trip.country },
             { label: "城市", value: trip.city?.trim() || "未填写" },
             { label: "旅行日期", value: travelDate },
-            { label: "坐标", value: formatCoordinateLabel(trip.latitude, trip.longitude) }
+            { label: "阶段", value: travelStageLabels[trip.stage] ?? trip.stage }
           ],
           tags: relations.tags,
           notes: relations.notes,
@@ -528,9 +509,7 @@ export async function getTravelDetailPageData(id: string): Promise<TravelDetailP
           country: trip.country,
           city: trip.city ?? "",
           travelDate: formatDateInput(trip.startDate),
-          description: trip.summary ?? "",
-          latitude: formatCoordinateInput(trip.latitude),
-          longitude: formatCoordinateInput(trip.longitude)
+          description: trip.summary ?? ""
         }
       };
     } catch {

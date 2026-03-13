@@ -15,7 +15,7 @@ export interface CreateTravelFormState {
   status: "idle" | "success" | "error";
   message: string | null;
   fieldErrors: Partial<
-    Record<"placeName" | "country" | "city" | "travelDate" | "description" | "latitude" | "longitude", string>
+    Record<"placeName" | "country" | "city" | "travelDate" | "description", string>
   >;
 }
 
@@ -51,9 +51,7 @@ function getValidatedTravelValues(formData: FormData) {
     country: String(formData.get("country") ?? ""),
     city: String(formData.get("city") ?? ""),
     travelDate: String(formData.get("travelDate") ?? ""),
-    description: String(formData.get("description") ?? ""),
-    latitude: String(formData.get("latitude") ?? ""),
-    longitude: String(formData.get("longitude") ?? "")
+    description: String(formData.get("description") ?? "")
   });
 }
 
@@ -76,9 +74,7 @@ function getTravelFieldErrors(parsed: ReturnType<typeof getValidatedTravelValues
       country: flattened.country?.[0],
       city: flattened.city?.[0],
       travelDate: flattened.travelDate?.[0],
-      description: flattened.description?.[0],
-      latitude: flattened.latitude?.[0],
-      longitude: flattened.longitude?.[0]
+      description: flattened.description?.[0]
     }
   };
 }
@@ -111,8 +107,6 @@ export async function createTravelAction(
 
   const values = parsed.data;
   const stage = deriveStage(values.travelDate);
-  const latitude = values.latitude ? Number(values.latitude).toFixed(6) : null;
-  const longitude = values.longitude ? Number(values.longitude).toFixed(6) : null;
 
   try {
     const projectId = await db.transaction(async (tx) => {
@@ -135,8 +129,6 @@ export async function createTravelAction(
         country: values.country,
         stage,
         startDate: values.travelDate,
-        latitude,
-        longitude,
         highlights: []
       });
 
@@ -200,8 +192,6 @@ export async function updateTravelAction(
 
   const values = parsed.data;
   const stage = deriveStage(values.travelDate);
-  const latitude = values.latitude ? Number(values.latitude).toFixed(6) : null;
-  const longitude = values.longitude ? Number(values.longitude).toFixed(6) : null;
   const startedAt = new Date(`${values.travelDate}T00:00:00.000Z`);
 
   try {
@@ -230,9 +220,7 @@ export async function updateTravelAction(
           country: values.country,
           stage,
           startDate: values.travelDate,
-          endDate: values.travelDate,
-          latitude,
-          longitude
+          endDate: values.travelDate
         })
         .where(eq(travelDetails.projectId, projectId))
         .returning({ projectId: travelDetails.projectId });

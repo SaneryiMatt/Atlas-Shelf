@@ -115,34 +115,6 @@ function TravelEditForm({ projectId, initialValues, onSuccess }: TravelEditFormP
         {state.fieldErrors.description ? <p className="text-sm text-red-600">{state.fieldErrors.description}</p> : null}
       </div>
 
-      <div className="grid gap-5 sm:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="edit-travel-latitude">纬度</Label>
-          <Input
-            id="edit-travel-latitude"
-            name="latitude"
-            inputMode="decimal"
-            value={formValues.latitude}
-            onChange={(event) => setFormValues((current) => ({ ...current, latitude: event.target.value }))}
-            disabled={isPending}
-          />
-          {state.fieldErrors.latitude ? <p className="text-sm text-red-600">{state.fieldErrors.latitude}</p> : null}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="edit-travel-longitude">经度</Label>
-          <Input
-            id="edit-travel-longitude"
-            name="longitude"
-            inputMode="decimal"
-            value={formValues.longitude}
-            onChange={(event) => setFormValues((current) => ({ ...current, longitude: event.target.value }))}
-            disabled={isPending}
-          />
-          {state.fieldErrors.longitude ? <p className="text-sm text-red-600">{state.fieldErrors.longitude}</p> : null}
-        </div>
-      </div>
-
       {state.message ? (
         <div
           className={
@@ -194,7 +166,7 @@ function EditTravelDialog({ projectId, initialValues }: EditTravelDialogProps) {
       <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>编辑旅行地点</DialogTitle>
-          <DialogDescription>更新地点、时间、描述和坐标信息。</DialogDescription>
+          <DialogDescription>更新地点、时间和描述信息。</DialogDescription>
         </DialogHeader>
 
         <TravelEditForm

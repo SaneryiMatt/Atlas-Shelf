@@ -1,8 +1,14 @@
-import { and, asc, count, desc, eq, inArray, isNotNull, sql } from "drizzle-orm";
+import { asc, count, desc, eq, inArray, sql } from "drizzle-orm";
 
 import { db, databaseAvailable } from "@/lib/db/client";
 import { activeTrips, travelArchive, travelStats } from "@/lib/db/mock-data";
-import { buildPagination, formatRatingLabel, formatUpdatedAtLabel, MODULE_LIST_PAGE_SIZE, parseModuleListParams } from "@/lib/module-list";
+import {
+  buildPagination,
+  formatRatingLabel,
+  formatUpdatedAtLabel,
+  MODULE_LIST_PAGE_SIZE,
+  parseModuleListParams
+} from "@/lib/module-list";
 import { projects, travelDetails } from "@/lib/db/schema";
 import type { TravelListItem } from "@/lib/types/items";
 
@@ -50,7 +56,7 @@ export async function getTravelsPageData(searchParams?: { page?: string; sort?: 
 
   if (databaseAvailable && db) {
     try {
-      const [activeCountResult, visitedCountResult, geocodedCountResult, totalCountResult] = await Promise.all([
+      const [activeCountResult, visitedCountResult, totalCountResult] = await Promise.all([
         db
           .select({ count: count() })
           .from(travelDetails)
@@ -59,10 +65,6 @@ export async function getTravelsPageData(searchParams?: { page?: string; sort?: 
           .select({ count: count() })
           .from(travelDetails)
           .where(eq(travelDetails.stage, "visited")),
-        db
-          .select({ count: count() })
-          .from(travelDetails)
-          .where(and(isNotNull(travelDetails.latitude), isNotNull(travelDetails.longitude))),
         db
           .select({ count: count() })
           .from(projects)
@@ -90,8 +92,6 @@ export async function getTravelsPageData(searchParams?: { page?: string; sort?: 
           city: travelDetails.city,
           stage: travelDetails.stage,
           startDate: travelDetails.startDate,
-          latitude: travelDetails.latitude,
-          longitude: travelDetails.longitude,
           updatedAt: projects.updatedAt
         })
         .from(projects)
@@ -101,23 +101,18 @@ export async function getTravelsPageData(searchParams?: { page?: string; sort?: 
         .limit(pagination.perPage)
         .offset(offset);
 
-      const items: TravelListItem[] = travelRows.map((trip) => {
-        const coordinates =
-          trip.latitude && trip.longitude ? [`纬度 ${trip.latitude}`, `经度 ${trip.longitude}`] : ["未填写坐标"];
-
-        return {
-          id: trip.id,
-          title: trip.title,
-          country: trip.city ? `${trip.country} · ${trip.city}` : trip.country,
-          window: formatTravelDate(trip.startDate),
-          stage: travelStageLabels[trip.stage],
-          budget: trip.stage === "visited" ? "地点记录" : "待成行",
-          summary: trip.summary ?? "还没有填写地点描述。",
-          highlights: coordinates,
-          ratingLabel: formatRatingLabel(trip.rating),
-          updatedAtLabel: formatUpdatedAtLabel(trip.updatedAt)
-        };
-      });
+      const items: TravelListItem[] = travelRows.map((trip) => ({
+        id: trip.id,
+        title: trip.title,
+        country: trip.city ? `${trip.country} / ${trip.city}` : trip.country,
+        window: formatTravelDate(trip.startDate),
+        stage: travelStageLabels[trip.stage],
+        budget: trip.stage === "visited" ? "地点记录" : "待成行",
+        summary: trip.summary ?? "还没有填写地点描述。",
+        highlights: trip.city?.trim() ? [trip.city.trim()] : [],
+        ratingLabel: formatRatingLabel(trip.rating),
+        updatedAtLabel: formatUpdatedAtLabel(trip.updatedAt)
+      }));
 
       return {
         stats: [
@@ -130,13 +125,13 @@ export async function getTravelsPageData(searchParams?: { page?: string; sort?: 
           {
             label: "已到访地点",
             value: String(visitedCountResult[0]?.count ?? 0),
-            detail: "已经有旅行日期并被归档为已到访的地点数量。",
+            detail: "已经完成旅行并归档的地点数量。",
             trend: "up" as const
           },
           {
-            label: "已标记坐标",
-            value: String(geocodedCountResult[0]?.count ?? 0),
-            detail: "同时填写了纬度和经度的地点数量。",
+            label: "旅行地点总数",
+            value: String(totalCountResult[0]?.count ?? 0),
+            detail: "当前已创建的旅行地点记录总数。",
             trend: "up" as const
           }
         ],

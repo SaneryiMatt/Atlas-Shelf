@@ -4,8 +4,7 @@ import { useActionState, useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-import { createBookAction, type CreateBookFormState } from "@/modules/books/actions";
-import { bookStatusOptions } from "@/modules/books/book-form-schema";
+import { MetadataCandidates } from "@/components/shared/metadata-candidates";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -19,6 +18,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { mapMetadataCandidateToBookPatch } from "@/lib/metadata/mappers";
+import { useMetadataAutofill } from "@/lib/metadata/use-metadata-autofill";
+import type { BookEditorValues } from "@/lib/types/items";
+import { createBookAction, type CreateBookFormState } from "@/modules/books/actions";
+import { bookStatusOptions } from "@/modules/books/book-form-schema";
 
 const initialState: CreateBookFormState = {
   status: "idle",
@@ -26,7 +30,7 @@ const initialState: CreateBookFormState = {
   fieldErrors: {}
 };
 
-const initialFormValues = {
+const initialFormValues: BookEditorValues = {
   title: "",
   author: "",
   status: "planned",
@@ -36,6 +40,8 @@ const initialFormValues = {
   summary: "",
   tags: ""
 };
+
+const bookMetadataFields = ["title", "author", "summary", "tags"] as const;
 
 interface AddBookDialogProps {
   disabled?: boolean;
@@ -48,6 +54,22 @@ interface AddBookFormProps {
 function AddBookForm({ onSuccess }: AddBookFormProps) {
   const [formValues, setFormValues] = useState(initialFormValues);
   const [state, formAction, isPending] = useActionState(createBookAction, initialState);
+  const {
+    status: metadataStatus,
+    candidates: metadataCandidates,
+    appliedCandidateId,
+    hasAttemptedSearch,
+    errorMessage,
+    applyCandidate,
+    markFieldAsManual,
+    resetAutofillState
+  } = useMetadataAutofill<BookEditorValues>({
+    kind: "book",
+    query: formValues.title,
+    trackedFields: bookMetadataFields,
+    setFormValues,
+    buildPatch: mapMetadataCandidateToBookPatch
+  });
 
   useEffect(() => {
     if (state.status !== "success") {
@@ -55,8 +77,17 @@ function AddBookForm({ onSuccess }: AddBookFormProps) {
     }
 
     setFormValues(initialFormValues);
+    resetAutofillState();
     onSuccess();
-  }, [onSuccess, state.status]);
+  }, [onSuccess, resetAutofillState, state.status]);
+
+  function handleFieldChange<Key extends keyof BookEditorValues>(field: Key, value: BookEditorValues[Key]) {
+    setFormValues((current) => ({
+      ...current,
+      [field]: value
+    }));
+    markFieldAsManual(field);
+  }
 
   return (
     <form action={formAction} className="space-y-5">
@@ -67,8 +98,8 @@ function AddBookForm({ onSuccess }: AddBookFormProps) {
             id="title"
             name="title"
             value={formValues.title}
-            onChange={(event) => setFormValues((current) => ({ ...current, title: event.target.value }))}
-            placeholder="例如：悉达多"
+            onChange={(event) => handleFieldChange("title", event.target.value)}
+            placeholder="例如：《创造行为》"
             disabled={isPending}
           />
           {state.fieldErrors.title ? <p className="text-sm text-red-600">{state.fieldErrors.title}</p> : null}
@@ -80,13 +111,23 @@ function AddBookForm({ onSuccess }: AddBookFormProps) {
             id="author"
             name="author"
             value={formValues.author}
-            onChange={(event) => setFormValues((current) => ({ ...current, author: event.target.value }))}
-            placeholder="例如：赫尔曼·黑塞"
+            onChange={(event) => handleFieldChange("author", event.target.value)}
+            placeholder="例如：里克·鲁宾"
             disabled={isPending}
           />
           {state.fieldErrors.author ? <p className="text-sm text-red-600">{state.fieldErrors.author}</p> : null}
         </div>
       </div>
+
+      <MetadataCandidates
+        query={formValues.title}
+        status={metadataStatus}
+        candidates={metadataCandidates}
+        appliedCandidateId={appliedCandidateId}
+        hasAttemptedSearch={hasAttemptedSearch}
+        errorMessage={errorMessage}
+        onApplyCandidate={applyCandidate}
+      />
 
       <div className="grid gap-5 sm:grid-cols-2">
         <div className="space-y-2">
@@ -94,7 +135,7 @@ function AddBookForm({ onSuccess }: AddBookFormProps) {
           <Select
             name="status"
             value={formValues.status}
-            onValueChange={(value) => setFormValues((current) => ({ ...current, status: value }))}
+            onValueChange={(value) => handleFieldChange("status", value as BookEditorValues["status"])}
             disabled={isPending}
           >
             <SelectTrigger id="status">
@@ -121,7 +162,7 @@ function AddBookForm({ onSuccess }: AddBookFormProps) {
             max="5"
             step="0.1"
             value={formValues.rating}
-            onChange={(event) => setFormValues((current) => ({ ...current, rating: event.target.value }))}
+            onChange={(event) => handleFieldChange("rating", event.target.value)}
             placeholder="0 - 5"
             disabled={isPending}
           />
@@ -137,20 +178,20 @@ function AddBookForm({ onSuccess }: AddBookFormProps) {
             name="startedAt"
             type="date"
             value={formValues.startedAt}
-            onChange={(event) => setFormValues((current) => ({ ...current, startedAt: event.target.value }))}
+            onChange={(event) => handleFieldChange("startedAt", event.target.value)}
             disabled={isPending}
           />
           {state.fieldErrors.startedAt ? <p className="text-sm text-red-600">{state.fieldErrors.startedAt}</p> : null}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="completedAt">结束日期</Label>
+          <Label htmlFor="completedAt">完成日期</Label>
           <Input
             id="completedAt"
             name="completedAt"
             type="date"
             value={formValues.completedAt}
-            onChange={(event) => setFormValues((current) => ({ ...current, completedAt: event.target.value }))}
+            onChange={(event) => handleFieldChange("completedAt", event.target.value)}
             disabled={isPending}
           />
           {state.fieldErrors.completedAt ? <p className="text-sm text-red-600">{state.fieldErrors.completedAt}</p> : null}
@@ -163,8 +204,8 @@ function AddBookForm({ onSuccess }: AddBookFormProps) {
           id="summary"
           name="summary"
           value={formValues.summary}
-          onChange={(event) => setFormValues((current) => ({ ...current, summary: event.target.value }))}
-          placeholder="记录阅读原因、预期感受或当前想法。"
+          onChange={(event) => handleFieldChange("summary", event.target.value)}
+          placeholder="记录阅读原因、当前想法或摘要。"
           disabled={isPending}
         />
         {state.fieldErrors.summary ? <p className="text-sm text-red-600">{state.fieldErrors.summary}</p> : null}
@@ -176,11 +217,11 @@ function AddBookForm({ onSuccess }: AddBookFormProps) {
           id="tags"
           name="tags"
           value={formValues.tags}
-          onChange={(event) => setFormValues((current) => ({ ...current, tags: event.target.value }))}
-          placeholder="例如：哲学，经典，重读"
+          onChange={(event) => handleFieldChange("tags", event.target.value)}
+          placeholder="例如：创作, 艺术, 非虚构"
           disabled={isPending}
         />
-        <p className="text-xs leading-5 text-muted-foreground">使用逗号分隔多个标签，支持中文逗号。</p>
+        <p className="text-xs leading-5 text-muted-foreground">使用逗号分隔多个标签，支持中英文逗号。</p>
         {state.fieldErrors.tags ? <p className="text-sm text-red-600">{state.fieldErrors.tags}</p> : null}
       </div>
 
@@ -224,12 +265,12 @@ export function AddBookDialog({ disabled = false }: AddBookDialogProps) {
       <DialogTrigger asChild>
         <Button className="gap-2" disabled={disabled}>
           <Plus className="size-4" />
-          新增书本
+          新增书籍
         </Button>
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>新增书本</DialogTitle>
+          <DialogTitle>新增书籍</DialogTitle>
         </DialogHeader>
 
         <AddBookForm

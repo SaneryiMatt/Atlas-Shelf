@@ -16,8 +16,6 @@ export const travelDetails = pgTable("travel_details", {
   endDate: date("end_date"),
   estimatedBudget: numeric("estimated_budget", { precision: 10, scale: 2 }),
   travelStyle: text("travel_style"),
-  latitude: numeric("latitude", { precision: 9, scale: 6 }),
-  longitude: numeric("longitude", { precision: 9, scale: 6 }),
   highlights: jsonb("highlights").$type<string[]>().notNull().default(sql`'[]'::jsonb`)
 });
 

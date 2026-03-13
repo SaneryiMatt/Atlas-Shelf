@@ -248,8 +248,6 @@ export interface TravelEditorValues {
   city: string;
   travelDate: string;
   description: string;
-  latitude: string;
-  longitude: string;
 }
 
 export interface BookDetailPagePayload {

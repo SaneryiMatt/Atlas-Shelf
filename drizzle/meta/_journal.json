@@ -15,6 +15,13 @@
       "when": 1773295100000,
       "tag": "0001_project_architecture",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1773409605668,
+      "tag": "0002_numerous_living_mummy",
+      "breakpoints": true
     }
   ]
 }

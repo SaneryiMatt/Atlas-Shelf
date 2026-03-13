@@ -4,7 +4,7 @@ import { useActionState, useEffect, useState } from "react";
 import { MapPinned } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-import { createTravelAction, type CreateTravelFormState } from "@/modules/travels/actions";
+import { MetadataCandidates } from "@/components/shared/metadata-candidates";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -18,6 +18,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { mapMetadataCandidateToTravelPatch } from "@/lib/metadata/mappers";
+import { useMetadataAutofill } from "@/lib/metadata/use-metadata-autofill";
+import type { TravelEditorValues } from "@/lib/types/items";
+import { createTravelAction, type CreateTravelFormState } from "@/modules/travels/actions";
 
 const initialState: CreateTravelFormState = {
   status: "idle",
@@ -25,15 +29,15 @@ const initialState: CreateTravelFormState = {
   fieldErrors: {}
 };
 
-const initialFormValues = {
+const initialFormValues: TravelEditorValues = {
   placeName: "",
   country: "",
   city: "",
   travelDate: "",
-  description: "",
-  latitude: "",
-  longitude: ""
+  description: ""
 };
+
+const travelMetadataFields = ["placeName", "country", "city", "description"] as const;
 
 interface AddTravelDialogProps {
   disabled?: boolean;
@@ -46,6 +50,22 @@ interface AddTravelFormProps {
 function AddTravelForm({ onSuccess }: AddTravelFormProps) {
   const [formValues, setFormValues] = useState(initialFormValues);
   const [state, formAction, isPending] = useActionState(createTravelAction, initialState);
+  const {
+    status: metadataStatus,
+    candidates: metadataCandidates,
+    appliedCandidateId,
+    hasAttemptedSearch,
+    errorMessage,
+    applyCandidate,
+    markFieldAsManual,
+    resetAutofillState
+  } = useMetadataAutofill<TravelEditorValues>({
+    kind: "travel",
+    query: formValues.placeName,
+    trackedFields: travelMetadataFields,
+    setFormValues,
+    buildPatch: mapMetadataCandidateToTravelPatch
+  });
 
   useEffect(() => {
     if (state.status !== "success") {
@@ -53,8 +73,17 @@ function AddTravelForm({ onSuccess }: AddTravelFormProps) {
     }
 
     setFormValues(initialFormValues);
+    resetAutofillState();
     onSuccess();
-  }, [onSuccess, state.status]);
+  }, [onSuccess, resetAutofillState, state.status]);
+
+  function handleFieldChange<Key extends keyof TravelEditorValues>(field: Key, value: TravelEditorValues[Key]) {
+    setFormValues((current) => ({
+      ...current,
+      [field]: value
+    }));
+    markFieldAsManual(field);
+  }
 
   return (
     <form action={formAction} className="space-y-5">
@@ -65,7 +94,7 @@ function AddTravelForm({ onSuccess }: AddTravelFormProps) {
             id="placeName"
             name="placeName"
             value={formValues.placeName}
-            onChange={(event) => setFormValues((current) => ({ ...current, placeName: event.target.value }))}
+            onChange={(event) => handleFieldChange("placeName", event.target.value)}
             placeholder="例如：浅草寺"
             disabled={isPending}
           />
@@ -78,13 +107,23 @@ function AddTravelForm({ onSuccess }: AddTravelFormProps) {
             id="country"
             name="country"
             value={formValues.country}
-            onChange={(event) => setFormValues((current) => ({ ...current, country: event.target.value }))}
+            onChange={(event) => handleFieldChange("country", event.target.value)}
             placeholder="例如：日本"
             disabled={isPending}
           />
           {state.fieldErrors.country ? <p className="text-sm text-red-600">{state.fieldErrors.country}</p> : null}
         </div>
       </div>
+
+      <MetadataCandidates
+        query={formValues.placeName}
+        status={metadataStatus}
+        candidates={metadataCandidates}
+        appliedCandidateId={appliedCandidateId}
+        hasAttemptedSearch={hasAttemptedSearch}
+        errorMessage={errorMessage}
+        onApplyCandidate={applyCandidate}
+      />
 
       <div className="grid gap-5 sm:grid-cols-2">
         <div className="space-y-2">
@@ -93,7 +132,7 @@ function AddTravelForm({ onSuccess }: AddTravelFormProps) {
             id="city"
             name="city"
             value={formValues.city}
-            onChange={(event) => setFormValues((current) => ({ ...current, city: event.target.value }))}
+            onChange={(event) => handleFieldChange("city", event.target.value)}
             placeholder="例如：东京"
             disabled={isPending}
           />
@@ -107,7 +146,7 @@ function AddTravelForm({ onSuccess }: AddTravelFormProps) {
             name="travelDate"
             type="date"
             value={formValues.travelDate}
-            onChange={(event) => setFormValues((current) => ({ ...current, travelDate: event.target.value }))}
+            onChange={(event) => handleFieldChange("travelDate", event.target.value)}
             disabled={isPending}
           />
           {state.fieldErrors.travelDate ? <p className="text-sm text-red-600">{state.fieldErrors.travelDate}</p> : null}
@@ -120,41 +159,11 @@ function AddTravelForm({ onSuccess }: AddTravelFormProps) {
           id="description"
           name="description"
           value={formValues.description}
-          onChange={(event) => setFormValues((current) => ({ ...current, description: event.target.value }))}
+          onChange={(event) => handleFieldChange("description", event.target.value)}
           placeholder="记录这个地点的印象、计划或为什么值得保存。"
           disabled={isPending}
         />
         {state.fieldErrors.description ? <p className="text-sm text-red-600">{state.fieldErrors.description}</p> : null}
-      </div>
-
-      <div className="grid gap-5 sm:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="latitude">纬度</Label>
-          <Input
-            id="latitude"
-            name="latitude"
-            inputMode="decimal"
-            value={formValues.latitude}
-            onChange={(event) => setFormValues((current) => ({ ...current, latitude: event.target.value }))}
-            placeholder="例如：35.714765"
-            disabled={isPending}
-          />
-          {state.fieldErrors.latitude ? <p className="text-sm text-red-600">{state.fieldErrors.latitude}</p> : null}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="longitude">经度</Label>
-          <Input
-            id="longitude"
-            name="longitude"
-            inputMode="decimal"
-            value={formValues.longitude}
-            onChange={(event) => setFormValues((current) => ({ ...current, longitude: event.target.value }))}
-            placeholder="例如：139.796655"
-            disabled={isPending}
-          />
-          {state.fieldErrors.longitude ? <p className="text-sm text-red-600">{state.fieldErrors.longitude}</p> : null}
-        </div>
       </div>
 
       {state.message ? (
@@ -203,9 +212,7 @@ export function AddTravelDialog({ disabled = false }: AddTravelDialogProps) {
       <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>新增旅行地点</DialogTitle>
-          <DialogDescription>
-            提交后会通过服务端 action 校验表单，并将数据写入 `projects`、`travel_details` 和 `project_notes`。
-          </DialogDescription>
+          <DialogDescription>输入地点名称后会自动尝试匹配候选，并补全未手动编辑的字段。</DialogDescription>
         </DialogHeader>
 
         <AddTravelForm

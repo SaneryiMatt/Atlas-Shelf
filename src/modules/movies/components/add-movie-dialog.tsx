@@ -4,8 +4,7 @@ import { useActionState, useEffect, useState } from "react";
 import { Clapperboard } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-import { createMovieAction, type CreateMovieFormState } from "@/modules/movies/actions";
-import { movieStatusOptions } from "@/modules/movies/screen-form-schema";
+import { MetadataCandidates } from "@/components/shared/metadata-candidates";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -20,6 +19,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { mapMetadataCandidateToMoviePatch } from "@/lib/metadata/mappers";
+import { useMetadataAutofill } from "@/lib/metadata/use-metadata-autofill";
+import type { MovieEditorValues } from "@/lib/types/items";
+import { createMovieAction, type CreateMovieFormState } from "@/modules/movies/actions";
+import { movieStatusOptions } from "@/modules/movies/screen-form-schema";
 
 const initialState: CreateMovieFormState = {
   status: "idle",
@@ -27,7 +31,7 @@ const initialState: CreateMovieFormState = {
   fieldErrors: {}
 };
 
-const initialFormValues = {
+const initialFormValues: MovieEditorValues = {
   title: "",
   director: "",
   releaseYear: "",
@@ -37,6 +41,8 @@ const initialFormValues = {
   note: "",
   tags: ""
 };
+
+const movieMetadataFields = ["title", "director", "releaseYear", "platform", "note", "tags"] as const;
 
 interface AddMovieDialogProps {
   disabled?: boolean;
@@ -49,6 +55,22 @@ interface AddMovieFormProps {
 function AddMovieForm({ onSuccess }: AddMovieFormProps) {
   const [formValues, setFormValues] = useState(initialFormValues);
   const [state, formAction, isPending] = useActionState(createMovieAction, initialState);
+  const {
+    status: metadataStatus,
+    candidates: metadataCandidates,
+    appliedCandidateId,
+    hasAttemptedSearch,
+    errorMessage,
+    applyCandidate,
+    markFieldAsManual,
+    resetAutofillState
+  } = useMetadataAutofill<MovieEditorValues>({
+    kind: "movie",
+    query: formValues.title,
+    trackedFields: movieMetadataFields,
+    setFormValues,
+    buildPatch: mapMetadataCandidateToMoviePatch
+  });
 
   useEffect(() => {
     if (state.status !== "success") {
@@ -56,8 +78,17 @@ function AddMovieForm({ onSuccess }: AddMovieFormProps) {
     }
 
     setFormValues(initialFormValues);
+    resetAutofillState();
     onSuccess();
-  }, [onSuccess, state.status]);
+  }, [onSuccess, resetAutofillState, state.status]);
+
+  function handleFieldChange<Key extends keyof MovieEditorValues>(field: Key, value: MovieEditorValues[Key]) {
+    setFormValues((current) => ({
+      ...current,
+      [field]: value
+    }));
+    markFieldAsManual(field);
+  }
 
   return (
     <form action={formAction} className="space-y-5">
@@ -68,8 +99,8 @@ function AddMovieForm({ onSuccess }: AddMovieFormProps) {
             id="title"
             name="title"
             value={formValues.title}
-            onChange={(event) => setFormValues((current) => ({ ...current, title: event.target.value }))}
-            placeholder="例如：花样年华"
+            onChange={(event) => handleFieldChange("title", event.target.value)}
+            placeholder="例如：《完美的日子》"
             disabled={isPending}
           />
           {state.fieldErrors.title ? <p className="text-sm text-red-600">{state.fieldErrors.title}</p> : null}
@@ -81,13 +112,23 @@ function AddMovieForm({ onSuccess }: AddMovieFormProps) {
             id="director"
             name="director"
             value={formValues.director}
-            onChange={(event) => setFormValues((current) => ({ ...current, director: event.target.value }))}
-            placeholder="例如：王家卫"
+            onChange={(event) => handleFieldChange("director", event.target.value)}
+            placeholder="例如：维姆·文德斯"
             disabled={isPending}
           />
           {state.fieldErrors.director ? <p className="text-sm text-red-600">{state.fieldErrors.director}</p> : null}
         </div>
       </div>
+
+      <MetadataCandidates
+        query={formValues.title}
+        status={metadataStatus}
+        candidates={metadataCandidates}
+        appliedCandidateId={appliedCandidateId}
+        hasAttemptedSearch={hasAttemptedSearch}
+        errorMessage={errorMessage}
+        onApplyCandidate={applyCandidate}
+      />
 
       <div className="grid gap-5 sm:grid-cols-2">
         <div className="space-y-2">
@@ -97,8 +138,8 @@ function AddMovieForm({ onSuccess }: AddMovieFormProps) {
             name="releaseYear"
             inputMode="numeric"
             value={formValues.releaseYear}
-            onChange={(event) => setFormValues((current) => ({ ...current, releaseYear: event.target.value }))}
-            placeholder="例如：2000"
+            onChange={(event) => handleFieldChange("releaseYear", event.target.value)}
+            placeholder="例如：2024"
             disabled={isPending}
           />
           {state.fieldErrors.releaseYear ? <p className="text-sm text-red-600">{state.fieldErrors.releaseYear}</p> : null}
@@ -110,8 +151,8 @@ function AddMovieForm({ onSuccess }: AddMovieFormProps) {
             id="platform"
             name="platform"
             value={formValues.platform}
-            onChange={(event) => setFormValues((current) => ({ ...current, platform: event.target.value }))}
-            placeholder="例如：Netflix"
+            onChange={(event) => handleFieldChange("platform", event.target.value)}
+            placeholder="例如：流媒体 / 影院"
             disabled={isPending}
           />
           {state.fieldErrors.platform ? <p className="text-sm text-red-600">{state.fieldErrors.platform}</p> : null}
@@ -124,7 +165,7 @@ function AddMovieForm({ onSuccess }: AddMovieFormProps) {
           <Select
             name="status"
             value={formValues.status}
-            onValueChange={(value) => setFormValues((current) => ({ ...current, status: value }))}
+            onValueChange={(value) => handleFieldChange("status", value as MovieEditorValues["status"])}
             disabled={isPending}
           >
             <SelectTrigger id="status">
@@ -151,7 +192,7 @@ function AddMovieForm({ onSuccess }: AddMovieFormProps) {
             max="5"
             step="0.1"
             value={formValues.rating}
-            onChange={(event) => setFormValues((current) => ({ ...current, rating: event.target.value }))}
+            onChange={(event) => handleFieldChange("rating", event.target.value)}
             placeholder="0 - 5"
             disabled={isPending}
           />
@@ -165,8 +206,8 @@ function AddMovieForm({ onSuccess }: AddMovieFormProps) {
           id="note"
           name="note"
           value={formValues.note}
-          onChange={(event) => setFormValues((current) => ({ ...current, note: event.target.value }))}
-          placeholder="记录为什么想看、观影感受或保留这部片子的原因。"
+          onChange={(event) => handleFieldChange("note", event.target.value)}
+          placeholder="记录想看原因、观后感或你想保留的信息。"
           disabled={isPending}
         />
         {state.fieldErrors.note ? <p className="text-sm text-red-600">{state.fieldErrors.note}</p> : null}
@@ -178,11 +219,11 @@ function AddMovieForm({ onSuccess }: AddMovieFormProps) {
           id="tags"
           name="tags"
           value={formValues.tags}
-          onChange={(event) => setFormValues((current) => ({ ...current, tags: event.target.value }))}
-          placeholder="例如：爱情，经典，重看"
+          onChange={(event) => handleFieldChange("tags", event.target.value)}
+          placeholder="例如：剧情, 生活流, 年度片单"
           disabled={isPending}
         />
-        <p className="text-xs leading-5 text-muted-foreground">使用逗号分隔多个标签，支持中文逗号。</p>
+        <p className="text-xs leading-5 text-muted-foreground">使用逗号分隔多个标签，支持中英文逗号。</p>
         {state.fieldErrors.tags ? <p className="text-sm text-red-600">{state.fieldErrors.tags}</p> : null}
       </div>
 
@@ -226,15 +267,13 @@ export function AddMovieDialog({ disabled = false }: AddMovieDialogProps) {
       <DialogTrigger asChild>
         <Button className="gap-2" disabled={disabled}>
           <Clapperboard className="size-4" />
-          新增电影
+          新增影视
         </Button>
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>新增电影</DialogTitle>
-          <DialogDescription>
-            提交后会通过服务端 action 校验表单，并将数据写入 `projects`、`screen_details`、`project_notes` 和 `project_tags`。
-          </DialogDescription>
+          <DialogTitle>新增影视</DialogTitle>
+          <DialogDescription>输入标题后会自动尝试匹配候选，并补全未手动编辑的字段。</DialogDescription>
         </DialogHeader>
 
         <AddMovieForm
