@@ -1,4 +1,4 @@
-﻿export type ItemType = "book" | "screen" | "travel";
+export type ItemType = "book" | "screen" | "travel";
 export type ItemStatus = "wishlist" | "planned" | "in_progress" | "completed" | "paused";
 export type TrendDirection = "up" | "steady" | "down";
 export type ModuleListSort = "updated" | "rating";
@@ -274,6 +274,24 @@ export interface PaginationInfo {
   hasPreviousPage: boolean;
   hasNextPage: boolean;
 }
+export type NotificationStatus = "active" | "read" | "processed";
+export type NotificationKind = "book_stale" | "screen_stale" | "travel_upcoming";
 
+export interface NotificationItem {
+  key: string;
+  kind: NotificationKind;
+  sourceType: ItemType;
+  title: string;
+  description: string;
+  href: string;
+  meta: string;
+  status: NotificationStatus;
+  statusLabel: string;
+  triggeredAtLabel: string;
+}
 
-
+export interface NotificationCenterData {
+  unreadCount: number;
+  items: NotificationItem[];
+  canManage: boolean;
+}

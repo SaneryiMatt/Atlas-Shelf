@@ -19,4 +19,4 @@ export const noteTypeEnum = pgEnum("note_type", [
   "memory"
 ]);
 export const photoKindEnum = pgEnum("photo_kind", ["cover", "gallery", "reference"]);
-
+export const notificationStatusEnum = pgEnum("notification_status", ["active", "read", "processed"]);

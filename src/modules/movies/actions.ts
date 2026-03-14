@@ -2,14 +2,10 @@
 
 import { createHash, randomUUID } from "node:crypto";
 
-import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import { requireUser } from "@/lib/auth";
-import { db, databaseAvailable } from "@/lib/db/client";
-import { syncManagedNote, syncProjectTags } from "@/lib/db/project-write-utils";
-import { projects, screenDetails } from "@/lib/db/schema";
-import type { ItemStatus } from "@/lib/types/items";
+import { deleteOwnedProject, upsertMovie } from "@/lib/supabase/app-data";
 import { movieFormSchema, splitMovieTags } from "@/modules/movies/screen-form-schema";
 
 export interface CreateMovieFormState {
@@ -84,6 +80,7 @@ function revalidateMoviePaths(projectId: string) {
   revalidatePath("/movies");
   revalidatePath(`/movies/${projectId}`);
   revalidatePath("/settings");
+  revalidatePath("/", "layout");
 }
 
 export async function createMovieAction(
@@ -92,14 +89,6 @@ export async function createMovieAction(
 ): Promise<CreateMovieFormState> {
   await requireUser();
 
-  if (!databaseAvailable || !db) {
-    return {
-      status: "error",
-      message: "数据库当前不可用，无法保存影视条目。",
-      fieldErrors: {}
-    };
-  }
-
   const parsed = getValidatedMovieValues(formData);
 
   if (!parsed.success) {
@@ -107,47 +96,21 @@ export async function createMovieAction(
   }
 
   const values = parsed.data;
-  const normalizedTags = splitMovieTags(values.tags);
-  const note = values.note || null;
-  const rating = values.rating ? Number(values.rating).toFixed(1) : null;
-  const releaseYear = values.releaseYear ? Number(values.releaseYear) : null;
-  const status = values.status as ItemStatus;
 
   try {
-    const projectId = await db.transaction(async (tx) => {
-      const [project] = await tx
-        .insert(projects)
-        .values({
-          type: "screen",
-          status,
-          title: values.title,
-          slug: buildProjectSlug(values.title, values.director),
-          summary: note,
-          rating
-        })
-        .returning({ id: projects.id });
-
-      await tx.insert(screenDetails).values({
-        projectId: project.id,
-        format: "movie",
-        director: values.director,
-        releaseYear,
-        platform: values.platform
-      });
-
-      await syncManagedNote(tx, {
-        projectId: project.id,
-        title: "创建时备注",
-        type: "general",
-        body: note
-      });
-
-      await syncProjectTags(tx, project.id, normalizedTags);
-
-      return project.id;
+    const result = await upsertMovie({
+      title: values.title,
+      director: values.director,
+      releaseYear: values.releaseYear,
+      platform: values.platform,
+      status: values.status,
+      rating: values.rating,
+      note: values.note,
+      tags: splitMovieTags(values.tags),
+      slug: buildProjectSlug(values.title, values.director)
     });
 
-    revalidateMoviePaths(projectId);
+    revalidateMoviePaths(result.projectId);
   } catch (error) {
     const message = error instanceof Error ? error.message : "未知错误";
 
@@ -171,14 +134,6 @@ export async function updateMovieAction(
 ): Promise<CreateMovieFormState> {
   await requireUser();
 
-  if (!databaseAvailable || !db) {
-    return {
-      status: "error",
-      message: "数据库当前不可用，无法更新影视条目。",
-      fieldErrors: {}
-    };
-  }
-
   const projectId = String(formData.get("projectId") ?? "");
 
   if (!projectId) {
@@ -196,52 +151,18 @@ export async function updateMovieAction(
   }
 
   const values = parsed.data;
-  const normalizedTags = splitMovieTags(values.tags);
-  const note = values.note || null;
-  const rating = values.rating ? Number(values.rating).toFixed(1) : null;
-  const releaseYear = values.releaseYear ? Number(values.releaseYear) : null;
-  const status = values.status as ItemStatus;
 
   try {
-    await db.transaction(async (tx) => {
-      const [project] = await tx
-        .update(projects)
-        .set({
-          status,
-          title: values.title,
-          summary: note,
-          rating,
-          updatedAt: new Date()
-        })
-        .where(and(eq(projects.id, projectId), eq(projects.type, "screen")))
-        .returning({ id: projects.id });
-
-      if (!project) {
-        throw new Error("未找到对应的影视记录");
-      }
-
-      const [detail] = await tx
-        .update(screenDetails)
-        .set({
-          director: values.director,
-          releaseYear,
-          platform: values.platform
-        })
-        .where(and(eq(screenDetails.projectId, projectId), eq(screenDetails.format, "movie")))
-        .returning({ projectId: screenDetails.projectId });
-
-      if (!detail) {
-        throw new Error("影视详情记录不存在");
-      }
-
-      await syncManagedNote(tx, {
-        projectId,
-        title: "创建时备注",
-        type: "general",
-        body: note
-      });
-
-      await syncProjectTags(tx, projectId, normalizedTags);
+    await upsertMovie({
+      projectId,
+      title: values.title,
+      director: values.director,
+      releaseYear: values.releaseYear,
+      platform: values.platform,
+      status: values.status,
+      rating: values.rating,
+      note: values.note,
+      tags: splitMovieTags(values.tags)
     });
 
     revalidateMoviePaths(projectId);
@@ -268,13 +189,6 @@ export async function deleteMovieAction(
 ): Promise<DeleteMovieState> {
   await requireUser();
 
-  if (!databaseAvailable || !db) {
-    return {
-      status: "error",
-      message: "数据库当前不可用，无法删除影视条目。"
-    };
-  }
-
   const projectId = String(formData.get("projectId") ?? "");
 
   if (!projectId) {
@@ -285,18 +199,7 @@ export async function deleteMovieAction(
   }
 
   try {
-    const [deletedProject] = await db
-      .delete(projects)
-      .where(and(eq(projects.id, projectId), eq(projects.type, "screen")))
-      .returning({ id: projects.id });
-
-    if (!deletedProject) {
-      return {
-        status: "error",
-        message: "未找到对应的影视记录。"
-      };
-    }
-
+    await deleteOwnedProject(projectId);
     revalidateMoviePaths(projectId);
 
     return {

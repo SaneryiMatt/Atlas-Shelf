@@ -1,15 +1,5 @@
-import { asc, count, desc, eq, inArray, sql } from "drizzle-orm";
-
-import { db, databaseAvailable } from "@/lib/db/client";
-import { activeTrips, travelArchive, travelStats } from "@/lib/db/mock-data";
-import {
-  buildPagination,
-  formatRatingLabel,
-  formatUpdatedAtLabel,
-  MODULE_LIST_PAGE_SIZE,
-  parseModuleListParams
-} from "@/lib/module-list";
-import { projects, travelDetails } from "@/lib/db/schema";
+import { buildPagination, formatRatingLabel, formatUpdatedAtLabel, MODULE_LIST_PAGE_SIZE, parseModuleListParams } from "@/lib/module-list";
+import { getProjectRowsByKind, type RpcProjectRow } from "@/lib/supabase/app-data";
 import type { TravelListItem } from "@/lib/types/items";
 
 const travelStageLabels = {
@@ -31,127 +21,101 @@ function formatTravelDate(date: string | null) {
   }).format(new Date(`${date}T00:00:00.000Z`));
 }
 
-function buildTravelListFromMock(sort: "updated" | "rating", page: number) {
-  const items: TravelListItem[] = [...activeTrips, ...travelArchive].map((trip, index) => ({
-    ...trip,
-    ratingLabel: "未评分",
-    updatedAtLabel: `最近更新 ${index + 1}`
-  }));
-
+function sortTravelRows(rows: RpcProjectRow[], sort: "updated" | "rating") {
   if (sort === "rating") {
-    items.sort(() => 0);
+    return [...rows].sort((left, right) => {
+      const leftRating = left.rating === null || left.rating === "" ? -1 : Number(left.rating);
+      const rightRating = right.rating === null || right.rating === "" ? -1 : Number(right.rating);
+      return rightRating - leftRating || new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime();
+    });
   }
 
-  const pagination = buildPagination(items.length, page, MODULE_LIST_PAGE_SIZE);
-  const offset = (pagination.page - 1) * pagination.perPage;
+  return [...rows].sort((left, right) => new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime());
+}
+
+function toTravelListItem(row: RpcProjectRow): TravelListItem {
+  return {
+    id: row.id,
+    title: row.title,
+    country: row.city ? `${row.country ?? ""} / ${row.city}` : row.country ?? "未填写",
+    window: formatTravelDate(row.startDate),
+    stage: travelStageLabels[row.travelStage as keyof typeof travelStageLabels] ?? row.travelStage ?? "未填写",
+    budget: row.travelStage === "visited" ? "地点记录" : "待成行",
+    summary: row.summary ?? "还没有填写地点描述。",
+    highlights: row.city?.trim() ? [row.city.trim()] : [],
+    ratingLabel: formatRatingLabel(row.rating),
+    updatedAtLabel: formatUpdatedAtLabel(row.updatedAt)
+  };
+}
+
+function buildEmptyTravelsPageData(sort: "updated" | "rating", page: number) {
+  const pagination = buildPagination(0, page, MODULE_LIST_PAGE_SIZE);
 
   return {
-    items: items.slice(offset, offset + pagination.perPage),
-    pagination
+    stats: [
+      {
+        label: "待出发地点",
+        value: "0",
+        detail: "处于灵感、规划中或已预订阶段的地点数量。",
+        trend: "steady" as const
+      },
+      {
+        label: "已到访地点",
+        value: "0",
+        detail: "已经完成旅行并归档的地点数量。",
+        trend: "steady" as const
+      },
+      {
+        label: "旅行地点总数",
+        value: "0",
+        detail: "当前账号下已创建的旅行地点记录总数。",
+        trend: "steady" as const
+      }
+    ],
+    items: [] as TravelListItem[],
+    sort,
+    pagination,
+    canCreateTravels: true
   };
 }
 
 export async function getTravelsPageData(searchParams?: { page?: string; sort?: string }) {
   const { page, sort } = parseModuleListParams(searchParams);
 
-  if (databaseAvailable && db) {
-    try {
-      const [activeCountResult, visitedCountResult, totalCountResult] = await Promise.all([
-        db
-          .select({ count: count() })
-          .from(travelDetails)
-          .where(inArray(travelDetails.stage, ["idea", "planning", "booked"])),
-        db
-          .select({ count: count() })
-          .from(travelDetails)
-          .where(eq(travelDetails.stage, "visited")),
-        db
-          .select({ count: count() })
-          .from(projects)
-          .where(eq(projects.type, "travel"))
-      ]);
+  try {
+    const rows = await getProjectRowsByKind("travel");
+    const sortedRows = sortTravelRows(rows, sort);
+    const pagination = buildPagination(sortedRows.length, page, MODULE_LIST_PAGE_SIZE);
+    const offset = (pagination.page - 1) * pagination.perPage;
+    const visibleRows = sortedRows.slice(offset, offset + pagination.perPage);
 
-      const pagination = buildPagination(totalCountResult[0]?.count ?? 0, page, MODULE_LIST_PAGE_SIZE);
-      const offset = (pagination.page - 1) * pagination.perPage;
-      const orderBy =
-        sort === "rating"
-          ? [
-              asc(sql`case when ${projects.rating} is null then 1 else 0 end`),
-              desc(projects.rating),
-              desc(projects.updatedAt)
-            ]
-          : [desc(projects.updatedAt)];
-
-      const travelRows = await db
-        .select({
-          id: projects.id,
-          title: projects.title,
-          summary: projects.summary,
-          rating: projects.rating,
-          country: travelDetails.country,
-          city: travelDetails.city,
-          stage: travelDetails.stage,
-          startDate: travelDetails.startDate,
-          updatedAt: projects.updatedAt
-        })
-        .from(projects)
-        .innerJoin(travelDetails, eq(travelDetails.projectId, projects.id))
-        .where(eq(projects.type, "travel"))
-        .orderBy(...orderBy)
-        .limit(pagination.perPage)
-        .offset(offset);
-
-      const items: TravelListItem[] = travelRows.map((trip) => ({
-        id: trip.id,
-        title: trip.title,
-        country: trip.city ? `${trip.country} / ${trip.city}` : trip.country,
-        window: formatTravelDate(trip.startDate),
-        stage: travelStageLabels[trip.stage],
-        budget: trip.stage === "visited" ? "地点记录" : "待成行",
-        summary: trip.summary ?? "还没有填写地点描述。",
-        highlights: trip.city?.trim() ? [trip.city.trim()] : [],
-        ratingLabel: formatRatingLabel(trip.rating),
-        updatedAtLabel: formatUpdatedAtLabel(trip.updatedAt)
-      }));
-
-      return {
-        stats: [
-          {
-            label: "待出发地点",
-            value: String(activeCountResult[0]?.count ?? 0),
-            detail: "处于灵感、规划中或已预订阶段的地点数量。",
-            trend: "steady" as const
-          },
-          {
-            label: "已到访地点",
-            value: String(visitedCountResult[0]?.count ?? 0),
-            detail: "已经完成旅行并归档的地点数量。",
-            trend: "up" as const
-          },
-          {
-            label: "旅行地点总数",
-            value: String(totalCountResult[0]?.count ?? 0),
-            detail: "当前已创建的旅行地点记录总数。",
-            trend: "up" as const
-          }
-        ],
-        items,
-        sort,
-        pagination,
-        canCreateTravels: true
-      };
-    } catch {
-      // Fall back to mock data if the database query fails so the page still renders.
-    }
+    return {
+      stats: [
+        {
+          label: "待出发地点",
+          value: String(rows.filter((row) => ["idea", "planning", "booked"].includes(row.travelStage ?? "")).length),
+          detail: "处于灵感、规划中或已预订阶段的地点数量。",
+          trend: "steady" as const
+        },
+        {
+          label: "已到访地点",
+          value: String(rows.filter((row) => row.travelStage === "visited").length),
+          detail: "已经完成旅行并归档的地点数量。",
+          trend: "up" as const
+        },
+        {
+          label: "旅行地点总数",
+          value: String(rows.length),
+          detail: "当前账号下已创建的旅行地点记录总数。",
+          trend: "up" as const
+        }
+      ],
+      items: visibleRows.map(toTravelListItem),
+      sort,
+      pagination,
+      canCreateTravels: true
+    };
+  } catch {
+    return buildEmptyTravelsPageData(sort, page);
   }
-
-  const mockList = buildTravelListFromMock(sort, page);
-
-  return {
-    stats: travelStats,
-    items: mockList.items,
-    sort,
-    pagination: mockList.pagination,
-    canCreateTravels: true
-  };
 }

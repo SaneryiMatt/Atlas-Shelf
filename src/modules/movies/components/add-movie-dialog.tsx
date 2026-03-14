@@ -98,7 +98,7 @@ function AddMovieForm({ open, onSuccess }: AddMovieFormProps) {
 
   return (
     <>
-      <form action={formAction} className="mx-auto w-full max-w-2xl space-y-6">
+      <form action={formAction} className="mx-auto w-full max-w-xl space-y-6">
         <div className="grid gap-5 sm:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="title" className="text-sm font-medium text-foreground/90">标题</Label>

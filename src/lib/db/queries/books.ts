@@ -1,9 +1,6 @@
-import { and, asc, count, desc, eq, gte, inArray, lt, sql } from "drizzle-orm";
-
-import { db, databaseAvailable } from "@/lib/db/client";
-import { bookBacklog, bookNotes, booksStats, currentBooks } from "@/lib/db/mock-data";
-import { bookDetails, projectNotes, projectTags, projects, tags } from "@/lib/db/schema";
+import { bookNotes } from "@/lib/db/mock-data";
 import { buildPagination, formatRatingLabel, formatUpdatedAtLabel, MODULE_LIST_PAGE_SIZE, parseModuleListParams } from "@/lib/module-list";
+import { getProjectRowsByKind, type RpcProjectRow } from "@/lib/supabase/app-data";
 import type { BookListItem } from "@/lib/types/items";
 import { bookStatusLabels } from "@/modules/books/book-form-schema";
 
@@ -23,166 +20,113 @@ function formatBookProgress(status: keyof typeof bookStatusLabels) {
   }
 }
 
-function buildBookListFromMock(sort: "updated" | "rating", page: number) {
-  const items: BookListItem[] = [...currentBooks, ...bookBacklog].map((book, index) => ({
-    ...book,
-    updatedAtLabel: `最近更新 ${index + 1}`
-  }));
-
+function sortBookRows(rows: RpcProjectRow[], sort: "updated" | "rating") {
   if (sort === "rating") {
-    items.sort((left, right) => Number(right.rating) - Number(left.rating));
+    return [...rows].sort((left, right) => {
+      const leftRating = left.rating === null || left.rating === "" ? -1 : Number(left.rating);
+      const rightRating = right.rating === null || right.rating === "" ? -1 : Number(right.rating);
+      return rightRating - leftRating || new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime();
+    });
   }
 
-  const pagination = buildPagination(items.length, page, MODULE_LIST_PAGE_SIZE);
-  const offset = (pagination.page - 1) * pagination.perPage;
+  return [...rows].sort((left, right) => new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime());
+}
+
+function toBookListItem(row: RpcProjectRow): BookListItem {
+  return {
+    id: row.id,
+    title: row.title,
+    author: row.author ?? "作者未填写",
+    status: bookStatusLabels[row.status as keyof typeof bookStatusLabels] ?? row.status,
+    progress: formatBookProgress(row.status as keyof typeof bookStatusLabels),
+    pages: row.pageCount ?? null,
+    rating: formatRatingLabel(row.rating),
+    summary: row.summary ?? "还没有填写备注。",
+    tags: row.tagNames ?? [],
+    updatedAtLabel: formatUpdatedAtLabel(row.updatedAt)
+  };
+}
+
+function isThisYear(dateValue: string | null) {
+  if (!dateValue) {
+    return false;
+  }
+
+  const date = new Date(dateValue);
+  const now = new Date();
+  return !Number.isNaN(date.getTime()) && date.getUTCFullYear() === now.getUTCFullYear();
+}
+
+function buildEmptyBooksPageData(sort: "updated" | "rating", page: number) {
+  const pagination = buildPagination(0, page, MODULE_LIST_PAGE_SIZE);
 
   return {
-    items: items.slice(offset, offset + pagination.perPage),
-    pagination
+    stats: [
+      {
+        label: "当前在读",
+        value: "0",
+        detail: "统计状态为“在读”和“已暂停”的书籍数量。",
+        trend: "steady" as const
+      },
+      {
+        label: `${new Date().getUTCFullYear()} 年已读完`,
+        value: "0",
+        detail: "根据 completedAt 统计本年度已完成的阅读记录。",
+        trend: "steady" as const
+      },
+      {
+        label: "带笔记书目",
+        value: "0",
+        detail: "当前账号下已生成“创建时备注”的书籍数量。",
+        trend: "steady" as const
+      }
+    ],
+    notes: bookNotes,
+    items: [] as BookListItem[],
+    sort,
+    pagination,
+    canCreateBooks: true
   };
 }
 
 export async function getBooksPageData(searchParams?: { page?: string; sort?: string }) {
   const { page, sort } = parseModuleListParams(searchParams);
 
-  if (databaseAvailable && db) {
-    try {
-      const now = new Date();
-      const startOfYear = new Date(Date.UTC(now.getUTCFullYear(), 0, 1));
-      const startOfNextYear = new Date(Date.UTC(now.getUTCFullYear() + 1, 0, 1));
+  try {
+    const rows = await getProjectRowsByKind("book");
+    const sortedRows = sortBookRows(rows, sort);
+    const pagination = buildPagination(sortedRows.length, page, MODULE_LIST_PAGE_SIZE);
+    const offset = (pagination.page - 1) * pagination.perPage;
+    const visibleRows = sortedRows.slice(offset, offset + pagination.perPage);
 
-      const [readingNowResult, completedThisYearResult, annotatedBooksResult, totalCountResult] = await Promise.all([
-        db
-          .select({ count: count() })
-          .from(projects)
-          .where(and(eq(projects.type, "book"), inArray(projects.status, ["in_progress", "paused"]))),
-        db
-          .select({ count: count() })
-          .from(projects)
-          .where(
-            and(
-              eq(projects.type, "book"),
-              eq(projects.status, "completed"),
-              gte(projects.completedAt, startOfYear),
-              lt(projects.completedAt, startOfNextYear)
-            )
-          ),
-        db
-          .select({
-            count: sql<number>`count(distinct ${projectNotes.projectId})`
-          })
-          .from(projectNotes)
-          .innerJoin(projects, eq(projectNotes.projectId, projects.id))
-          .where(eq(projects.type, "book")),
-        db
-          .select({ count: count() })
-          .from(projects)
-          .where(eq(projects.type, "book"))
-      ]);
-
-      const pagination = buildPagination(totalCountResult[0]?.count ?? 0, page, MODULE_LIST_PAGE_SIZE);
-      const offset = (pagination.page - 1) * pagination.perPage;
-      const orderBy =
-        sort === "rating"
-          ? [
-              asc(sql`case when ${projects.rating} is null then 1 else 0 end`),
-              desc(projects.rating),
-              desc(projects.updatedAt)
-            ]
-          : [desc(projects.updatedAt)];
-
-      const bookRows = await db
-        .select({
-          id: projects.id,
-          title: projects.title,
-          status: projects.status,
-          summary: projects.summary,
-          rating: projects.rating,
-          author: bookDetails.author,
-          pageCount: bookDetails.pageCount,
-          updatedAt: projects.updatedAt
-        })
-        .from(projects)
-        .innerJoin(bookDetails, eq(bookDetails.projectId, projects.id))
-        .where(eq(projects.type, "book"))
-        .orderBy(...orderBy)
-        .limit(pagination.perPage)
-        .offset(offset);
-
-      const bookIds = bookRows.map((book) => book.id);
-      const tagRows =
-        bookIds.length > 0
-          ? await db
-              .select({
-                projectId: projectTags.projectId,
-                tagName: tags.name
-              })
-              .from(projectTags)
-              .innerJoin(tags, eq(projectTags.tagId, tags.id))
-              .where(inArray(projectTags.projectId, bookIds))
-          : [];
-
-      const tagsByProject = new Map<string, string[]>();
-
-      for (const row of tagRows) {
-        const currentTags = tagsByProject.get(row.projectId) ?? [];
-        currentTags.push(row.tagName);
-        tagsByProject.set(row.projectId, currentTags);
-      }
-
-      const items: BookListItem[] = bookRows.map((book) => ({
-        id: book.id,
-        title: book.title,
-        author: book.author,
-        status: bookStatusLabels[book.status],
-        progress: formatBookProgress(book.status),
-        pages: book.pageCount ?? null,
-        rating: formatRatingLabel(book.rating),
-        summary: book.summary ?? "还没有填写备注。",
-        tags: tagsByProject.get(book.id) ?? [],
-        updatedAtLabel: formatUpdatedAtLabel(book.updatedAt)
-      }));
-
-      return {
-        stats: [
-          {
-            label: "当前在读",
-            value: String(readingNowResult[0]?.count ?? 0),
-            detail: "统计状态为“在读”和“已暂停”的书籍数量。",
-            trend: "steady" as const
-          },
-          {
-            label: `${now.getUTCFullYear()} 年已读完`,
-            value: String(completedThisYearResult[0]?.count ?? 0),
-            detail: "根据 completed_at 统计本年度已完成的阅读记录。",
-            trend: "up" as const
-          },
-          {
-            label: "带笔记书目",
-            value: String(Number(annotatedBooksResult[0]?.count ?? 0)),
-            detail: "至少存在一条 project_notes 记录的书籍数量。",
-            trend: "up" as const
-          }
-        ],
-        notes: bookNotes,
-        items,
-        sort,
-        pagination,
-        canCreateBooks: true
-      };
-    } catch {
-      // Fall back to mock data if the database query fails so the page still renders.
-    }
+    return {
+      stats: [
+        {
+          label: "当前在读",
+          value: String(rows.filter((row) => ["in_progress", "paused"].includes(row.status)).length),
+          detail: "统计状态为“在读”和“已暂停”的书籍数量。",
+          trend: "steady" as const
+        },
+        {
+          label: `${new Date().getUTCFullYear()} 年已读完`,
+          value: String(rows.filter((row) => row.status === "completed" && isThisYear(row.completedAt)).length),
+          detail: "根据 completedAt 统计本年度已完成的阅读记录。",
+          trend: "up" as const
+        },
+        {
+          label: "带笔记书目",
+          value: String(rows.filter((row) => Boolean(row.summary?.trim())).length),
+          detail: "当前账号下已生成“创建时备注”的书籍数量。",
+          trend: "up" as const
+        }
+      ],
+      notes: bookNotes,
+      items: visibleRows.map(toBookListItem),
+      sort,
+      pagination,
+      canCreateBooks: true
+    };
+  } catch {
+    return buildEmptyBooksPageData(sort, page);
   }
-
-  const mockList = buildBookListFromMock(sort, page);
-
-  return {
-    stats: booksStats,
-    notes: bookNotes,
-    items: mockList.items,
-    sort,
-    pagination: mockList.pagination,
-    canCreateBooks: true
-  };
 }

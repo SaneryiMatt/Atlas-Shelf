@@ -1,178 +1,114 @@
-import { and, asc, count, desc, eq, gte, inArray, lt, sql } from "drizzle-orm";
-
-import { db, databaseAvailable } from "@/lib/db/client";
-import { currentScreens, screenBacklog, screenStats } from "@/lib/db/mock-data";
-import { projectNotes, projectTags, projects, screenDetails, tags } from "@/lib/db/schema";
 import { buildPagination, formatRatingLabel, formatUpdatedAtLabel, MODULE_LIST_PAGE_SIZE, parseModuleListParams } from "@/lib/module-list";
+import { getProjectRowsByKind, type RpcProjectRow } from "@/lib/supabase/app-data";
 import type { ScreenListItem } from "@/lib/types/items";
 import { movieStatusLabels } from "@/modules/movies/screen-form-schema";
 
-function buildMovieListFromMock(sort: "updated" | "rating", page: number) {
-  const items: ScreenListItem[] = [...currentScreens, ...screenBacklog].map((movie, index) => ({
-    ...movie,
-    updatedAtLabel: `最近更新 ${index + 1}`
-  }));
-
+function sortMovieRows(rows: RpcProjectRow[], sort: "updated" | "rating") {
   if (sort === "rating") {
-    items.sort((left, right) => Number(right.rating) - Number(left.rating));
+    return [...rows].sort((left, right) => {
+      const leftRating = left.rating === null || left.rating === "" ? -1 : Number(left.rating);
+      const rightRating = right.rating === null || right.rating === "" ? -1 : Number(right.rating);
+      return rightRating - leftRating || new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime();
+    });
   }
 
-  const pagination = buildPagination(items.length, page, MODULE_LIST_PAGE_SIZE);
-  const offset = (pagination.page - 1) * pagination.perPage;
+  return [...rows].sort((left, right) => new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime());
+}
+
+function toMovieListItem(row: RpcProjectRow): ScreenListItem {
+  return {
+    id: row.id,
+    title: row.title,
+    format: row.screenFormat === "movie" ? "电影" : row.screenFormat ?? "影视",
+    director: row.director?.trim() || "导演未填写",
+    platform: row.platform?.trim() || "平台未填写",
+    status: movieStatusLabels[row.status as keyof typeof movieStatusLabels] ?? row.status,
+    runtime: row.releaseYear ? `${row.releaseYear} 年上映` : "上映年份未填写",
+    rating: formatRatingLabel(row.rating),
+    summary: row.summary ?? "还没有填写备注。",
+    tags: row.tagNames ?? [],
+    updatedAtLabel: formatUpdatedAtLabel(row.updatedAt)
+  };
+}
+
+function isThisYear(dateValue: string | null) {
+  if (!dateValue) {
+    return false;
+  }
+
+  const date = new Date(dateValue);
+  const now = new Date();
+  return !Number.isNaN(date.getTime()) && date.getUTCFullYear() === now.getUTCFullYear();
+}
+
+function buildEmptyMoviesPageData(sort: "updated" | "rating", page: number) {
+  const pagination = buildPagination(0, page, MODULE_LIST_PAGE_SIZE);
 
   return {
-    items: items.slice(offset, offset + pagination.perPage),
-    pagination
+    stats: [
+      {
+        label: "当前在看",
+        value: "0",
+        detail: "统计状态为“在看”和“已暂停”的电影数量。",
+        trend: "steady" as const
+      },
+      {
+        label: `${new Date().getUTCFullYear()} 年已看完`,
+        value: "0",
+        detail: "根据 completedAt 统计本年度已完成的观影记录。",
+        trend: "steady" as const
+      },
+      {
+        label: "带笔记影片",
+        value: "0",
+        detail: "当前账号下已生成“创建时备注”的电影数量。",
+        trend: "steady" as const
+      }
+    ],
+    items: [] as ScreenListItem[],
+    sort,
+    pagination,
+    canCreateMovies: true
   };
 }
 
 export async function getMoviesPageData(searchParams?: { page?: string; sort?: string }) {
   const { page, sort } = parseModuleListParams(searchParams);
 
-  if (databaseAvailable && db) {
-    try {
-      const now = new Date();
-      const startOfYear = new Date(Date.UTC(now.getUTCFullYear(), 0, 1));
-      const startOfNextYear = new Date(Date.UTC(now.getUTCFullYear() + 1, 0, 1));
+  try {
+    const rows = await getProjectRowsByKind("movie");
+    const sortedRows = sortMovieRows(rows, sort);
+    const pagination = buildPagination(sortedRows.length, page, MODULE_LIST_PAGE_SIZE);
+    const offset = (pagination.page - 1) * pagination.perPage;
+    const visibleRows = sortedRows.slice(offset, offset + pagination.perPage);
 
-      const [watchingNowResult, completedThisYearResult, annotatedMoviesResult, totalCountResult] = await Promise.all([
-        db
-          .select({ count: count() })
-          .from(projects)
-          .innerJoin(screenDetails, eq(screenDetails.projectId, projects.id))
-          .where(and(eq(projects.type, "screen"), eq(screenDetails.format, "movie"), inArray(projects.status, ["in_progress", "paused"]))),
-        db
-          .select({ count: count() })
-          .from(projects)
-          .innerJoin(screenDetails, eq(screenDetails.projectId, projects.id))
-          .where(
-            and(
-              eq(projects.type, "screen"),
-              eq(screenDetails.format, "movie"),
-              eq(projects.status, "completed"),
-              gte(projects.completedAt, startOfYear),
-              lt(projects.completedAt, startOfNextYear)
-            )
-          ),
-        db
-          .select({
-            count: sql<number>`count(distinct ${projectNotes.projectId})`
-          })
-          .from(projectNotes)
-          .innerJoin(projects, eq(projectNotes.projectId, projects.id))
-          .innerJoin(screenDetails, eq(screenDetails.projectId, projects.id))
-          .where(and(eq(projects.type, "screen"), eq(screenDetails.format, "movie"))),
-        db
-          .select({ count: count() })
-          .from(projects)
-          .innerJoin(screenDetails, eq(screenDetails.projectId, projects.id))
-          .where(and(eq(projects.type, "screen"), eq(screenDetails.format, "movie")))
-      ]);
-
-      const pagination = buildPagination(totalCountResult[0]?.count ?? 0, page, MODULE_LIST_PAGE_SIZE);
-      const offset = (pagination.page - 1) * pagination.perPage;
-      const orderBy =
-        sort === "rating"
-          ? [
-              asc(sql`case when ${projects.rating} is null then 1 else 0 end`),
-              desc(projects.rating),
-              desc(projects.updatedAt)
-            ]
-          : [desc(projects.updatedAt)];
-
-      const movieRows = await db
-        .select({
-          id: projects.id,
-          title: projects.title,
-          status: projects.status,
-          summary: projects.summary,
-          rating: projects.rating,
-          director: screenDetails.director,
-          platform: screenDetails.platform,
-          releaseYear: screenDetails.releaseYear,
-          format: screenDetails.format,
-          updatedAt: projects.updatedAt
-        })
-        .from(projects)
-        .innerJoin(screenDetails, eq(screenDetails.projectId, projects.id))
-        .where(and(eq(projects.type, "screen"), eq(screenDetails.format, "movie")))
-        .orderBy(...orderBy)
-        .limit(pagination.perPage)
-        .offset(offset);
-
-      const movieIds = movieRows.map((movie) => movie.id);
-      const tagRows =
-        movieIds.length > 0
-          ? await db
-              .select({
-                projectId: projectTags.projectId,
-                tagName: tags.name
-              })
-              .from(projectTags)
-              .innerJoin(tags, eq(projectTags.tagId, tags.id))
-              .where(inArray(projectTags.projectId, movieIds))
-          : [];
-
-      const tagsByProject = new Map<string, string[]>();
-
-      for (const row of tagRows) {
-        const currentTags = tagsByProject.get(row.projectId) ?? [];
-        currentTags.push(row.tagName);
-        tagsByProject.set(row.projectId, currentTags);
-      }
-
-      const items: ScreenListItem[] = movieRows.map((movie) => ({
-        id: movie.id,
-        title: movie.title,
-        format: movie.format === "movie" ? "电影" : movie.format,
-        director: movie.director ?? "导演未填写",
-        platform: movie.platform ?? "平台未填写",
-        status: movieStatusLabels[movie.status],
-        runtime: movie.releaseYear ? `${movie.releaseYear} 年上映` : "上映年份未填写",
-        rating: formatRatingLabel(movie.rating),
-        summary: movie.summary ?? "还没有填写备注。",
-        tags: tagsByProject.get(movie.id) ?? [],
-        updatedAtLabel: formatUpdatedAtLabel(movie.updatedAt)
-      }));
-
-      return {
-        stats: [
-          {
-            label: "当前在看",
-            value: String(watchingNowResult[0]?.count ?? 0),
-            detail: "统计状态为“观看中”和“已暂停”的电影数量。",
-            trend: "steady" as const
-          },
-          {
-            label: `${now.getUTCFullYear()} 年已看完`,
-            value: String(completedThisYearResult[0]?.count ?? 0),
-            detail: "根据 completed_at 统计本年度已完成的观影记录。",
-            trend: "up" as const
-          },
-          {
-            label: "带笔记影片",
-            value: String(Number(annotatedMoviesResult[0]?.count ?? 0)),
-            detail: "至少存在一条 project_notes 记录的电影数量。",
-            trend: "up" as const
-          }
-        ],
-        items,
-        sort,
-        pagination,
-        canCreateMovies: true
-      };
-    } catch {
-      // Fall back to mock data if the database query fails so the page still renders.
-    }
+    return {
+      stats: [
+        {
+          label: "当前在看",
+          value: String(rows.filter((row) => ["in_progress", "paused"].includes(row.status)).length),
+          detail: "统计状态为“在看”和“已暂停”的电影数量。",
+          trend: "steady" as const
+        },
+        {
+          label: `${new Date().getUTCFullYear()} 年已看完`,
+          value: String(rows.filter((row) => row.status === "completed" && isThisYear(row.completedAt)).length),
+          detail: "根据 completedAt 统计本年度已完成的观影记录。",
+          trend: "up" as const
+        },
+        {
+          label: "带笔记影片",
+          value: String(rows.filter((row) => Boolean(row.summary?.trim())).length),
+          detail: "当前账号下已生成“创建时备注”的电影数量。",
+          trend: "up" as const
+        }
+      ],
+      items: visibleRows.map(toMovieListItem),
+      sort,
+      pagination,
+      canCreateMovies: true
+    };
+  } catch {
+    return buildEmptyMoviesPageData(sort, page);
   }
-
-  const mockList = buildMovieListFromMock(sort, page);
-
-  return {
-    stats: screenStats,
-    items: mockList.items,
-    sort,
-    pagination: mockList.pagination,
-    canCreateMovies: true
-  };
 }

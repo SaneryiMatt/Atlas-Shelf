@@ -1,12 +1,9 @@
 "use server";
 
-import { desc, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import { requireUser } from "@/lib/auth";
-import { db, databaseAvailable } from "@/lib/db/client";
-import { projectPhotos, projects } from "@/lib/db/schema";
-import { hasSupabaseConfig, hasSupabaseServiceRole } from "@/lib/env";
+import { createPhotoRecord, deletePhotoRecord } from "@/lib/supabase/app-data";
 import { mediaStorageBucket, removeStoredAsset, uploadUserAsset } from "@/lib/supabase/storage";
 import {
   acceptedPhotoMimeTypes,
@@ -86,7 +83,7 @@ function getValidatedPhotoFile(fileEntry: FormDataEntryValue | null) {
 
   if (!contentType) {
     return {
-      error: "仅支持 JPG、PNG、WebP 或 GIF 图片。"
+      error: "仅支持 JPG、PNG、WebP 和 GIF 图片。"
     };
   }
 
@@ -100,17 +97,23 @@ function revalidateProjectPhotoPaths(projectType: "book" | "screen" | "travel", 
   if (projectType === "book") {
     revalidatePath("/books");
     revalidatePath(`/books/${projectId}`);
+    revalidatePath("/settings");
+    revalidatePath("/", "layout");
     return;
   }
 
   if (projectType === "screen") {
     revalidatePath("/movies");
     revalidatePath(`/movies/${projectId}`);
+    revalidatePath("/settings");
+    revalidatePath("/", "layout");
     return;
   }
 
   revalidatePath("/travels");
   revalidatePath(`/travels/${projectId}`);
+  revalidatePath("/settings");
+  revalidatePath("/", "layout");
 }
 
 export async function uploadProjectPhotoAction(
@@ -118,22 +121,6 @@ export async function uploadProjectPhotoAction(
   formData: FormData
 ): Promise<UploadPhotoFormState> {
   const user = await requireUser();
-
-  if (!databaseAvailable || !db) {
-    return {
-      status: "error",
-      message: "数据库当前不可用，无法上传图片。",
-      fieldErrors: {}
-    };
-  }
-
-  if (!hasSupabaseConfig || !hasSupabaseServiceRole) {
-    return {
-      status: "error",
-      message: "Supabase Storage 尚未配置完整，无法上传图片。",
-      fieldErrors: {}
-    };
-  }
 
   const projectId = String(formData.get("projectId") ?? "");
 
@@ -152,27 +139,10 @@ export async function uploadProjectPhotoAction(
     return getPhotoFieldErrors("error" in validatedFile ? validatedFile.error : undefined);
   }
 
-  const [project] = await db
-    .select({
-      id: projects.id,
-      type: projects.type
-    })
-    .from(projects)
-    .where(eq(projects.id, projectId))
-    .limit(1);
-
-  if (!project) {
-    return {
-      status: "error",
-      message: "未找到对应的条目记录。",
-      fieldErrors: {}
-    };
-  }
-
   const photoFile = validatedFile.file;
   const contentType = validatedFile.contentType;
   const fileBuffer = await photoFile.arrayBuffer();
-  let uploadedAsset: { path: string; publicUrl: string } | null = null;
+  let uploadedAsset: { path: string; publicUrl: string | null } | null = null;
 
   try {
     uploadedAsset = await uploadUserAsset({
@@ -182,51 +152,16 @@ export async function uploadProjectPhotoAction(
       contentType
     });
 
-    if (!uploadedAsset) {
-      throw new Error("图片上传失败。");
-    }
-
     const asset = uploadedAsset;
-
-    await db.transaction(async (tx) => {
-      const [latestPhoto] = await tx
-        .select({
-          sortOrder: projectPhotos.sortOrder
-        })
-        .from(projectPhotos)
-        .where(eq(projectPhotos.projectId, projectId))
-        .orderBy(desc(projectPhotos.sortOrder), desc(projectPhotos.createdAt))
-        .limit(1);
-
-      await tx.insert(projectPhotos).values({
-        projectId,
-        kind: "gallery",
-        storageBucket: mediaStorageBucket,
-        storagePath: asset.path,
-        publicUrl: asset.publicUrl,
-        caption: null,
-        altText: null,
-        mimeType: contentType,
-        sortOrder: (latestPhoto?.sortOrder ?? -1) + 1,
-        isPrimary: false
-      });
-
-      const [updatedProject] = await tx
-        .update(projects)
-        .set({
-          updatedAt: new Date()
-        })
-        .where(eq(projects.id, projectId))
-        .returning({
-          id: projects.id
-        });
-
-      if (!updatedProject) {
-        throw new Error("未找到对应的条目记录。");
-      }
+    const result = await createPhotoRecord({
+      projectId,
+      storageBucket: mediaStorageBucket,
+      storagePath: asset.path,
+      publicUrl: asset.publicUrl,
+      contentType
     });
 
-    revalidateProjectPhotoPaths(project.type, projectId);
+    revalidateProjectPhotoPaths(result.projectType, result.projectId);
   } catch (error) {
     if (uploadedAsset) {
       try {
@@ -258,13 +193,6 @@ export async function deleteProjectPhotoAction(
 ): Promise<DeletePhotoState> {
   await requireUser();
 
-  if (!databaseAvailable || !db) {
-    return {
-      status: "error",
-      message: "数据库当前不可用，无法删除图片。"
-    };
-  }
-
   const photoId = String(formData.get("photoId") ?? "");
 
   if (!photoId) {
@@ -274,56 +202,18 @@ export async function deleteProjectPhotoAction(
     };
   }
 
-  const [existingPhoto] = await db
-    .select({
-      id: projectPhotos.id,
-      projectId: projectPhotos.projectId,
-      storageBucket: projectPhotos.storageBucket,
-      storagePath: projectPhotos.storagePath,
-      projectType: projects.type
-    })
-    .from(projectPhotos)
-    .innerJoin(projects, eq(projects.id, projectPhotos.projectId))
-    .where(eq(projectPhotos.id, photoId))
-    .limit(1);
-
-  if (!existingPhoto) {
-    return {
-      status: "error",
-      message: "未找到对应的图片记录。"
-    };
-  }
-
   try {
-    await db.transaction(async (tx) => {
-      const [deletedPhoto] = await tx
-        .delete(projectPhotos)
-        .where(eq(projectPhotos.id, photoId))
-        .returning({
-          id: projectPhotos.id
-        });
+    const deletedPhoto = await deletePhotoRecord(photoId);
 
-      if (!deletedPhoto) {
-        throw new Error("未找到对应的图片记录。");
-      }
-
-      await tx
-        .update(projects)
-        .set({
-          updatedAt: new Date()
-        })
-        .where(eq(projects.id, existingPhoto.projectId));
-    });
-
-    if (existingPhoto.storagePath) {
+    if (deletedPhoto.storagePath) {
       try {
-        await removeStoredAsset(existingPhoto.storagePath, existingPhoto.storageBucket);
+        await removeStoredAsset(deletedPhoto.storagePath, deletedPhoto.storageBucket ?? mediaStorageBucket);
       } catch {
         // Database state has already been updated. Ignore storage cleanup failures.
       }
     }
 
-    revalidateProjectPhotoPaths(existingPhoto.projectType, existingPhoto.projectId);
+    revalidateProjectPhotoPaths(deletedPhoto.projectType, deletedPhoto.projectId);
   } catch (error) {
     const message = error instanceof Error ? error.message : "未知错误";
 

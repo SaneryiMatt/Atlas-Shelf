@@ -1,16 +1,8 @@
-import { count, desc, eq, sql } from "drizzle-orm";
-
-import { db, databaseAvailable } from "@/lib/db/client";
-import { projectNotes, projectTags, projects, tags } from "@/lib/db/schema";
-import {
-  env,
-  hasDatabaseUrl,
-  hasSupabaseConfig,
-  hasSupabaseServiceRole
-} from "@/lib/env";
 import { settingsPanels } from "@/lib/db/mock-data";
+import { env, hasDatabaseUrl, hasSupabaseConfig, hasSupabaseServiceRole } from "@/lib/env";
+import { getSettingsSnapshot } from "@/lib/supabase/app-data";
 
-function formatTimestamp(date: Date | null) {
+function formatTimestamp(date: string | null) {
   if (!date) {
     return "未知";
   }
@@ -19,7 +11,7 @@ function formatTimestamp(date: Date | null) {
     month: "short",
     day: "numeric",
     year: "numeric"
-  }).format(date);
+  }).format(new Date(date));
 }
 
 export async function getSettingsPageData() {
@@ -49,83 +41,37 @@ export async function getSettingsPageData() {
       }
     | null = null;
 
-  if (databaseAvailable && db) {
-    try {
-      const [projectRows, noteRows, tagRows] = await Promise.all([
-        db
-          .select({
-            id: projects.id,
-            title: projects.title,
-            type: projects.type,
-            status: projects.status,
-            updatedAt: projects.updatedAt
-          })
-          .from(projects)
-          .orderBy(desc(projects.updatedAt))
-          .limit(6),
-        db
-          .select({
-            id: projectNotes.id,
-            projectTitle: projects.title,
-            noteType: projectNotes.type,
-            noteTitle: sql<string>`coalesce(${projectNotes.title}, left(${projectNotes.body}, 48))`,
-            recordedAt: projectNotes.recordedAt
-          })
-          .from(projectNotes)
-          .innerJoin(projects, eq(projectNotes.projectId, projects.id))
-          .orderBy(desc(projectNotes.recordedAt))
-          .limit(6),
-        db
-          .select({
-            id: tags.id,
-            name: tags.name,
-            usageCount: count(projectTags.tagId)
-          })
-          .from(tags)
-          .leftJoin(projectTags, eq(projectTags.tagId, tags.id))
-          .groupBy(tags.id, tags.name)
-          .orderBy(desc(count(projectTags.tagId)), tags.name)
-          .limit(8)
-      ]);
+  try {
+    const snapshot = await getSettingsSnapshot();
+    databasePreview = {
+      status: snapshot.status,
+      message: snapshot.message,
+      projects: snapshot.projects.map((project) => ({
+        id: project.id,
+        title: project.title,
+        type: project.type,
+        status: project.status,
+        updatedAtLabel: formatTimestamp(project.updatedAt)
+      })),
+      notes: snapshot.notes.map((note) => ({
+        id: note.id,
+        projectTitle: note.projectTitle,
+        noteType: note.noteType,
+        noteTitle: note.noteTitle,
+        recordedAtLabel: formatTimestamp(note.recordedAt)
+      })),
+      tags: snapshot.tags.map((tag) => ({
+        id: tag.id,
+        name: tag.name,
+        usageCount: Number(tag.usageCount)
+      }))
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "未知错误";
 
-      databasePreview = {
-        status: "live",
-        message: "正在直接读取 projects、project_notes 和 tags。",
-        projects: projectRows.map((project) => ({
-          id: project.id,
-          title: project.title,
-          type: project.type,
-          status: project.status,
-          updatedAtLabel: formatTimestamp(project.updatedAt)
-        })),
-        notes: noteRows.map((note) => ({
-          id: note.id,
-          projectTitle: note.projectTitle,
-          noteType: note.noteType,
-          noteTitle: note.noteTitle,
-          recordedAtLabel: formatTimestamp(note.recordedAt)
-        })),
-        tags: tagRows.map((tag) => ({
-          id: tag.id,
-          name: tag.name,
-          usageCount: Number(tag.usageCount)
-        }))
-      };
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "未知数据库错误";
-
-      databasePreview = {
-        status: "unavailable",
-        message: `数据库预览不可用：${message}`,
-        projects: [],
-        notes: [],
-        tags: []
-      };
-    }
-  } else {
     databasePreview = {
       status: "unavailable",
-      message: "在 DATABASE_URL 可访问之前，数据库预览不可用。",
+      message: `当前账号的数据预览不可用：${message}`,
       projects: [],
       notes: [],
       tags: []
@@ -137,27 +83,32 @@ export async function getSettingsPageData() {
       {
         key: "DATABASE_URL",
         configured: hasDatabaseUrl,
-        hint: "供 Drizzle 直接连接 Supabase Postgres。"
+        hint: "仅用于 Drizzle migration、回填脚本和受控后台任务。"
+      },
+      {
+        key: "LEGACY_OWNER_USER_ID",
+        configured: Boolean(env.LEGACY_OWNER_USER_ID),
+        hint: "运行强隔离迁移时，用来承接历史数据归属的 Supabase user.id。"
       },
       {
         key: "NEXT_PUBLIC_SUPABASE_URL",
         configured: Boolean(env.NEXT_PUBLIC_SUPABASE_URL),
-        hint: "浏览器端和服务端 Supabase 客户端都需要此配置。"
+        hint: "浏览器端和服务端 Supabase 客户端都依赖此配置。"
       },
       {
         key: "NEXT_PUBLIC_SUPABASE_ANON_KEY",
         configured: Boolean(env.NEXT_PUBLIC_SUPABASE_ANON_KEY),
-        hint: "用于受 Supabase 策略约束的公开认证与存储操作。"
+        hint: "运行时所有 RLS 查询、RPC 和私有存储访问都依赖此配置。"
       },
       {
         key: "SUPABASE_SERVICE_ROLE_KEY",
         configured: hasSupabaseServiceRole,
-        hint: "仅在服务端管理员操作中使用，例如特权存储操作。"
+        hint: "仅保留给一次性媒体迁移和管理员运维脚本。"
       },
       {
         key: "NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET",
         configured: Boolean(env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET),
-        hint: "存储辅助层默认使用的 bucket 名称。"
+        hint: "当前项目的私有媒体 bucket 名称。"
       }
     ],
     panels: settingsPanels,

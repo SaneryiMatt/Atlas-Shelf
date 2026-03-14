@@ -1,14 +1,11 @@
-﻿"use server";
+"use server";
 
 import { createHash, randomUUID } from "node:crypto";
 
-import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import { requireUser } from "@/lib/auth";
-import { db, databaseAvailable } from "@/lib/db/client";
-import { syncManagedNote } from "@/lib/db/project-write-utils";
-import { projects, travelDetails } from "@/lib/db/schema";
+import { deleteOwnedProject, upsertTravel } from "@/lib/supabase/app-data";
 import { travelFormSchema } from "@/modules/travels/travel-form-schema";
 
 export interface CreateTravelFormState {
@@ -37,30 +34,6 @@ function slugify(value: string) {
 
 function buildProjectSlug(placeName: string, city: string, travelDate: string) {
   return `${slugify(placeName)}-${createHash("sha1").update(`${placeName}:${city}:${travelDate}:${randomUUID()}`).digest("hex").slice(0, 8)}`;
-}
-
-function mapStatusToStage(status: "planned" | "in_progress" | "completed") {
-  if (status === "completed") {
-    return "visited";
-  }
-
-  if (status === "in_progress") {
-    return "booked";
-  }
-
-  return "planning";
-}
-
-function mapStageToStatus(stage: string): "planned" | "in_progress" | "completed" {
-  if (stage === "visited") {
-    return "completed";
-  }
-
-  if (stage === "booked") {
-    return "in_progress";
-  }
-
-  return "planned";
 }
 
 function getValidatedTravelValues(formData: FormData) {
@@ -103,6 +76,7 @@ function revalidateTravelPaths(projectId: string) {
   revalidatePath("/travels");
   revalidatePath(`/travels/${projectId}`);
   revalidatePath("/settings");
+  revalidatePath("/", "layout");
 }
 
 export async function createTravelAction(
@@ -111,14 +85,6 @@ export async function createTravelAction(
 ): Promise<CreateTravelFormState> {
   await requireUser();
 
-  if (!databaseAvailable || !db) {
-    return {
-      status: "error",
-      message: "数据库当前不可用，无法保存旅行地点。",
-      fieldErrors: {}
-    };
-  }
-
   const parsed = getValidatedTravelValues(formData);
 
   if (!parsed.success) {
@@ -126,43 +92,19 @@ export async function createTravelAction(
   }
 
   const values = parsed.data;
-  const stage = mapStatusToStage(values.status);
 
   try {
-    const projectId = await db.transaction(async (tx) => {
-      const [project] = await tx
-        .insert(projects)
-        .values({
-          type: "travel",
-          status: mapStageToStatus(stage),
-          title: values.placeName,
-          slug: buildProjectSlug(values.placeName, values.city, values.travelDate),
-          summary: values.description,
-          startedAt: new Date(`${values.travelDate}T00:00:00.000Z`),
-          completedAt: stage === "visited" ? new Date(`${values.travelDate}T00:00:00.000Z`) : null
-        })
-        .returning({ id: projects.id });
-
-      await tx.insert(travelDetails).values({
-        projectId: project.id,
-        city: values.city,
-        country: values.country,
-        stage,
-        startDate: values.travelDate,
-        highlights: []
-      });
-
-      await syncManagedNote(tx, {
-        projectId: project.id,
-        title: "创建时描述",
-        type: stage === "visited" ? "memory" : "planning",
-        body: values.description
-      });
-
-      return project.id;
+    const result = await upsertTravel({
+      placeName: values.placeName,
+      country: values.country,
+      city: values.city,
+      status: values.status,
+      travelDate: values.travelDate,
+      description: values.description,
+      slug: buildProjectSlug(values.placeName, values.city, values.travelDate)
     });
 
-    revalidateTravelPaths(projectId);
+    revalidateTravelPaths(result.projectId);
   } catch (error) {
     const message = error instanceof Error ? error.message : "未知错误";
 
@@ -186,14 +128,6 @@ export async function updateTravelAction(
 ): Promise<CreateTravelFormState> {
   await requireUser();
 
-  if (!databaseAvailable || !db) {
-    return {
-      status: "error",
-      message: "数据库当前不可用，无法更新旅行地点。",
-      fieldErrors: {}
-    };
-  }
-
   const projectId = String(formData.get("projectId") ?? "");
 
   if (!projectId) {
@@ -211,50 +145,16 @@ export async function updateTravelAction(
   }
 
   const values = parsed.data;
-  const stage = mapStatusToStage(values.status);
-  const startedAt = new Date(`${values.travelDate}T00:00:00.000Z`);
 
   try {
-    await db.transaction(async (tx) => {
-      const [project] = await tx
-        .update(projects)
-        .set({
-          status: mapStageToStatus(stage),
-          title: values.placeName,
-          summary: values.description,
-          startedAt,
-          completedAt: stage === "visited" ? startedAt : null,
-          updatedAt: new Date()
-        })
-        .where(and(eq(projects.id, projectId), eq(projects.type, "travel")))
-        .returning({ id: projects.id });
-
-      if (!project) {
-        throw new Error("未找到对应的旅行地点记录");
-      }
-
-      const [detail] = await tx
-        .update(travelDetails)
-        .set({
-          city: values.city,
-          country: values.country,
-          stage,
-          startDate: values.travelDate,
-          endDate: values.travelDate
-        })
-        .where(eq(travelDetails.projectId, projectId))
-        .returning({ projectId: travelDetails.projectId });
-
-      if (!detail) {
-        throw new Error("旅行详情记录不存在");
-      }
-
-      await syncManagedNote(tx, {
-        projectId,
-        title: "创建时描述",
-        type: stage === "visited" ? "memory" : "planning",
-        body: values.description
-      });
+    await upsertTravel({
+      projectId,
+      placeName: values.placeName,
+      country: values.country,
+      city: values.city,
+      status: values.status,
+      travelDate: values.travelDate,
+      description: values.description
     });
 
     revalidateTravelPaths(projectId);
@@ -281,13 +181,6 @@ export async function deleteTravelAction(
 ): Promise<DeleteTravelState> {
   await requireUser();
 
-  if (!databaseAvailable || !db) {
-    return {
-      status: "error",
-      message: "数据库当前不可用，无法删除旅行地点。"
-    };
-  }
-
   const projectId = String(formData.get("projectId") ?? "");
 
   if (!projectId) {
@@ -298,18 +191,7 @@ export async function deleteTravelAction(
   }
 
   try {
-    const [deletedProject] = await db
-      .delete(projects)
-      .where(and(eq(projects.id, projectId), eq(projects.type, "travel")))
-      .returning({ id: projects.id });
-
-    if (!deletedProject) {
-      return {
-        status: "error",
-        message: "未找到对应的旅行地点记录。"
-      };
-    }
-
+    await deleteOwnedProject(projectId);
     revalidateTravelPaths(projectId);
 
     return {
@@ -325,4 +207,3 @@ export async function deleteTravelAction(
     };
   }
 }
-

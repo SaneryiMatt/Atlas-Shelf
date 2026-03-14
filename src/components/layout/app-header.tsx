@@ -1,21 +1,24 @@
 "use client";
 
 import { useState } from "react";
-import { Bell, Menu, Search, Settings } from "lucide-react";
+import { Menu, Search, Settings } from "lucide-react";
 
 import { SignOutButton } from "@/components/auth/sign-out-button";
+import { NotificationCenter } from "@/components/layout/notification-center";
 import { SidebarContent } from "@/components/layout/app-sidebar";
 import { NavSearch } from "@/components/shared/nav-search";
 import { SettingsModal } from "@/components/settings/settings-modal";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import type { AppUserSummary } from "@/lib/auth";
+import type { NotificationCenterData } from "@/lib/types/items";
 
 interface AppHeaderProps {
   user: AppUserSummary;
+  notificationCenter: NotificationCenterData;
 }
 
-export function AppHeader({ user }: AppHeaderProps) {
+export function AppHeader({ user, notificationCenter }: AppHeaderProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
@@ -49,10 +52,7 @@ export function AppHeader({ user }: AppHeaderProps) {
             <span className="sr-only">搜索</span>
           </Button>
 
-          <Button variant="ghost" size="icon">
-            <Bell className="size-5" />
-            <span className="sr-only">通知</span>
-          </Button>
+          <NotificationCenter data={notificationCenter} />
 
           <Button variant="ghost" size="icon" onClick={() => setSettingsOpen(true)} className="hidden xl:flex">
             <Settings className="size-5" />

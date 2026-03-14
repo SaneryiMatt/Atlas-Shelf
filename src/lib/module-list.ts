@@ -24,8 +24,23 @@ export function buildPagination(totalItems: number, page: number, perPage = MODU
   };
 }
 
-export function formatUpdatedAtLabel(date: Date | null) {
-  if (!date) {
+function toDate(value: Date | string | null | undefined) {
+  if (!value) {
+    return null;
+  }
+
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? null : value;
+  }
+
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+export function formatUpdatedAtLabel(date: Date | string | null) {
+  const resolvedDate = toDate(date);
+
+  if (!resolvedDate) {
     return "更新时间未知";
   }
 
@@ -33,7 +48,7 @@ export function formatUpdatedAtLabel(date: Date | null) {
     year: "numeric",
     month: "short",
     day: "numeric"
-  }).format(date);
+  }).format(resolvedDate);
 }
 
 export function formatRatingLabel(rating: string | number | null) {

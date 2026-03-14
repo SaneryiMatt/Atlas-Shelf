@@ -1,3 +1,4 @@
+export * from "@/lib/db/schema/auth";
 export * from "@/lib/db/schema/enums";
 export * from "@/lib/db/schema/projects";
 export * from "@/lib/db/schema/books";
@@ -6,4 +7,4 @@ export * from "@/lib/db/schema/travels";
 export * from "@/lib/db/schema/tags";
 export * from "@/lib/db/schema/notes";
 export * from "@/lib/db/schema/photos";
-
+export * from "@/lib/db/schema/notifications";
