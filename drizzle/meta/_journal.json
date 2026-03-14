@@ -1,41 +1,55 @@
 {
-    "version":  "7",
-    "dialect":  "postgresql",
-    "entries":  [
-                    {
-                        "idx":  0,
-                        "version":  "7",
-                        "when":  1773250244511,
-                        "tag":  "0000_aspiring_mother_askani",
-                        "breakpoints":  true
-                    },
-                    {
-                        "idx":  1,
-                        "version":  "7",
-                        "when":  1773295100000,
-                        "tag":  "0001_project_architecture",
-                        "breakpoints":  true
-                    },
-                    {
-                        "idx":  2,
-                        "version":  "7",
-                        "when":  1773409605668,
-                        "tag":  "0002_numerous_living_mummy",
-                        "breakpoints":  true
-                    },
-                    {
-                        "idx":  3,
-                        "version":  "7",
-                        "when":  1773482110816,
-                        "tag":  "0003_notification_states",
-                        "breakpoints":  true
-                    },
-                    {
-                        "idx":  4,
-                        "version":  "7",
-                        "when":  1773485528546,
-                        "tag":  "0004_database_rls_isolation",
-                        "breakpoints":  true
-                    }
-                ]
+    "version": "7",
+    "dialect": "postgresql",
+    "entries": [
+        {
+            "idx": 0,
+            "version": "7",
+            "when": 1773250244511,
+            "tag": "0000_aspiring_mother_askani",
+            "breakpoints": true
+        },
+        {
+            "idx": 1,
+            "version": "7",
+            "when": 1773295100000,
+            "tag": "0001_project_architecture",
+            "breakpoints": true
+        },
+        {
+            "idx": 2,
+            "version": "7",
+            "when": 1773409605668,
+            "tag": "0002_numerous_living_mummy",
+            "breakpoints": true
+        },
+        {
+            "idx": 3,
+            "version": "7",
+            "when": 1773482110816,
+            "tag": "0003_notification_states",
+            "breakpoints": true
+        },
+        {
+            "idx": 4,
+            "version": "7",
+            "when": 1773485528546,
+            "tag": "0004_database_rls_isolation",
+            "breakpoints": true
+        },
+        {
+            "idx": 5,
+            "version": "7",
+            "when": 1773489000000,
+            "tag": "0005_authenticated_rpc_privileges",
+            "breakpoints": true
+        },
+        {
+            "idx": 6,
+            "version": "7",
+            "when": 1773490200000,
+            "tag": "0006_private_schema_rpc_helpers",
+            "breakpoints": true
+        }
+    ]
 }

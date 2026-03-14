@@ -97,10 +97,12 @@ function AddBookForm({ open, onSuccess }: AddBookFormProps) {
 
   return (
     <>
-      <form action={formAction} className="mx-auto w-full max-w-lg space-y-6">
-        <div className="grid gap-5 sm:grid-cols-2">
+      <form action={formAction} className="mx-auto w-full max-w-none space-y-5">
+        <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="title" className="text-sm font-medium text-foreground/90">标题</Label>
+            <Label htmlFor="title" className="text-sm font-medium text-foreground/90">
+              标题
+            </Label>
             <Input
               id="title"
               name="title"
@@ -108,13 +110,15 @@ function AddBookForm({ open, onSuccess }: AddBookFormProps) {
               onChange={(event) => handleFieldChange("title", event.target.value)}
               placeholder="例如：《创造行为》"
               disabled={isPending}
-              className="border-border/50 bg-background/50 transition-colors focus:border-foreground/30 focus:bg-background/80"
+              className="h-10 border-border/50 bg-background/50 transition-colors focus:border-foreground/30 focus:bg-background/80"
             />
             {state.fieldErrors.title ? <p className="text-xs text-red-400">{state.fieldErrors.title}</p> : null}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="author" className="text-sm font-medium text-foreground/90">作者</Label>
+            <Label htmlFor="author" className="text-sm font-medium text-foreground/90">
+              作者
+            </Label>
             <Input
               id="author"
               name="author"
@@ -122,22 +126,27 @@ function AddBookForm({ open, onSuccess }: AddBookFormProps) {
               onChange={(event) => handleFieldChange("author", event.target.value)}
               placeholder="例如：里克·鲁宾"
               disabled={isPending}
-              className="border-border/50 bg-background/50 transition-colors focus:border-foreground/30 focus:bg-background/80"
+              className="h-10 border-border/50 bg-background/50 transition-colors focus:border-foreground/30 focus:bg-background/80"
             />
             {state.fieldErrors.author ? <p className="text-xs text-red-400">{state.fieldErrors.author}</p> : null}
           </div>
         </div>
 
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="status" className="text-sm font-medium text-foreground/90">状态</Label>
+            <Label htmlFor="status" className="text-sm font-medium text-foreground/90">
+              状态
+            </Label>
             <Select
               name="status"
               value={formValues.status}
               onValueChange={(value) => handleFieldChange("status", value as BookEditorValues["status"])}
               disabled={isPending}
             >
-              <SelectTrigger id="status" className="border-border/50 bg-background/50 transition-colors focus:border-foreground/30 focus:bg-background/80">
+              <SelectTrigger
+                id="status"
+                className="h-10 border-border/50 bg-background/50 transition-colors focus:border-foreground/30 focus:bg-background/80"
+              >
                 <SelectValue placeholder="请选择状态" />
               </SelectTrigger>
               <SelectContent className="border-border/50 bg-card/95 backdrop-blur-xl">
@@ -152,7 +161,9 @@ function AddBookForm({ open, onSuccess }: AddBookFormProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="rating" className="text-sm font-medium text-foreground/90">评分</Label>
+            <Label htmlFor="rating" className="text-sm font-medium text-foreground/90">
+              评分
+            </Label>
             <Input
               id="rating"
               name="rating"
@@ -164,15 +175,17 @@ function AddBookForm({ open, onSuccess }: AddBookFormProps) {
               onChange={(event) => handleFieldChange("rating", event.target.value)}
               placeholder="0 - 5"
               disabled={isPending}
-              className="border-border/50 bg-background/50 transition-colors focus:border-foreground/30 focus:bg-background/80"
+              className="h-10 border-border/50 bg-background/50 transition-colors focus:border-foreground/30 focus:bg-background/80"
             />
             {state.fieldErrors.rating ? <p className="text-xs text-red-400">{state.fieldErrors.rating}</p> : null}
           </div>
         </div>
 
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="startedAt" className="text-sm font-medium text-foreground/90">开始日期</Label>
+            <Label htmlFor="startedAt" className="text-sm font-medium text-foreground/90">
+              开始日期
+            </Label>
             <Input
               id="startedAt"
               name="startedAt"
@@ -180,13 +193,15 @@ function AddBookForm({ open, onSuccess }: AddBookFormProps) {
               value={formValues.startedAt}
               onChange={(event) => handleFieldChange("startedAt", event.target.value)}
               disabled={isPending}
-              className="border-border/50 bg-background/50 transition-colors focus:border-foreground/30 focus:bg-background/80"
+              className="h-10 border-border/50 bg-background/50 transition-colors focus:border-foreground/30 focus:bg-background/80"
             />
             {state.fieldErrors.startedAt ? <p className="text-xs text-red-400">{state.fieldErrors.startedAt}</p> : null}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="completedAt" className="text-sm font-medium text-foreground/90">完成日期</Label>
+            <Label htmlFor="completedAt" className="text-sm font-medium text-foreground/90">
+              完成日期
+            </Label>
             <Input
               id="completedAt"
               name="completedAt"
@@ -194,14 +209,16 @@ function AddBookForm({ open, onSuccess }: AddBookFormProps) {
               value={formValues.completedAt}
               onChange={(event) => handleFieldChange("completedAt", event.target.value)}
               disabled={isPending}
-              className="border-border/50 bg-background/50 transition-colors focus:border-foreground/30 focus:bg-background/80"
+              className="h-10 border-border/50 bg-background/50 transition-colors focus:border-foreground/30 focus:bg-background/80"
             />
             {state.fieldErrors.completedAt ? <p className="text-xs text-red-400">{state.fieldErrors.completedAt}</p> : null}
           </div>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="summary" className="text-sm font-medium text-foreground/90">简短备注</Label>
+          <Label htmlFor="summary" className="text-sm font-medium text-foreground/90">
+            简短备注
+          </Label>
           <Textarea
             id="summary"
             name="summary"
@@ -209,13 +226,15 @@ function AddBookForm({ open, onSuccess }: AddBookFormProps) {
             onChange={(event) => handleFieldChange("summary", event.target.value)}
             placeholder="记录阅读原因、当前想法或摘要。"
             disabled={isPending}
-            className="min-h-[100px] resize-none border-border/50 bg-background/50 transition-colors focus:border-foreground/30 focus:bg-background/80"
+            className="min-h-[88px] resize-none border-border/50 bg-background/50 transition-colors focus:border-foreground/30 focus:bg-background/80"
           />
           {state.fieldErrors.summary ? <p className="text-xs text-red-400">{state.fieldErrors.summary}</p> : null}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="tags" className="text-sm font-medium text-foreground/90">标签</Label>
+          <Label htmlFor="tags" className="text-sm font-medium text-foreground/90">
+            标签
+          </Label>
           <Input
             id="tags"
             name="tags"
@@ -223,7 +242,7 @@ function AddBookForm({ open, onSuccess }: AddBookFormProps) {
             onChange={(event) => handleFieldChange("tags", event.target.value)}
             placeholder="例如：创作, 艺术, 非虚构"
             disabled={isPending}
-            className="border-border/50 bg-background/50 transition-colors focus:border-foreground/30 focus:bg-background/80"
+            className="h-10 border-border/50 bg-background/50 transition-colors focus:border-foreground/30 focus:bg-background/80"
           />
           <p className="text-xs text-muted-foreground/70">使用逗号分隔多个标签，支持中英文逗号。</p>
           {state.fieldErrors.tags ? <p className="text-xs text-red-400">{state.fieldErrors.tags}</p> : null}
@@ -241,7 +260,7 @@ function AddBookForm({ open, onSuccess }: AddBookFormProps) {
           </div>
         ) : null}
 
-        <DialogFooter className="border-t border-border/30 pt-5">
+        <DialogFooter className="border-t border-border/30 pt-4">
           <Button type="submit" size="lg" disabled={isPending} className="min-w-[120px]">
             {isPending ? "保存中..." : "保存书籍"}
           </Button>
@@ -302,8 +321,9 @@ export function AddBookDialog({ disabled = false }: AddBookDialogProps) {
           新增书籍
         </Button>
       </DialogTrigger>
+
       <DialogContent
-        className="max-h-[90vh] max-w-3xl overflow-y-auto"
+        className="max-h-[90vh] w-[min(92vw,640px)] overflow-y-auto rounded-2xl p-6 sm:p-7"
         onInteractOutside={(event) => {
           if (isMetadataSideModalTarget(event.target)) {
             event.preventDefault();
@@ -315,7 +335,7 @@ export function AddBookDialog({ disabled = false }: AddBookDialogProps) {
           }
         }}
       >
-        <DialogHeader>
+        <DialogHeader className="mb-1">
           <DialogTitle>新增书籍</DialogTitle>
         </DialogHeader>
 

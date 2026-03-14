@@ -28,7 +28,7 @@ export function MetadataSideModal({
             "rounded-2xl border border-border/40 bg-card/90 shadow-2xl backdrop-blur-xl",
             "ring-1 ring-white/[0.05]",
             "max-xl:top-[calc(50%+18.5rem)] max-xl:-translate-x-1/2 max-xl:-translate-y-1/2",
-            "xl:-translate-y-1/2 xl:translate-x-[34rem]",
+            "xl:-translate-y-1/2 xl:translate-x-[20rem]",
             "data-[state=open]:animate-in data-[state=closed]:animate-out",
             "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
             "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",

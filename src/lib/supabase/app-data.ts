@@ -124,6 +124,26 @@ function getRpcErrorMessage(error: unknown) {
     return error.message;
   }
 
+  if (error && typeof error === "object") {
+    const rpcError = error as {
+      message?: unknown;
+      details?: unknown;
+      hint?: unknown;
+      code?: unknown;
+    };
+
+    const parts = [
+      typeof rpcError.message === "string" && rpcError.message ? rpcError.message : null,
+      typeof rpcError.details === "string" && rpcError.details ? `details=${rpcError.details}` : null,
+      typeof rpcError.hint === "string" && rpcError.hint ? `hint=${rpcError.hint}` : null,
+      typeof rpcError.code === "string" && rpcError.code ? `code=${rpcError.code}` : null
+    ].filter(Boolean);
+
+    if (parts.length) {
+      return parts.join("; ");
+    }
+  }
+
   return "Unknown Supabase RPC error";
 }
 

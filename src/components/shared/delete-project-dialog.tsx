@@ -51,8 +51,7 @@ export function DeleteProjectDialog({
     }
 
     setOpen(false);
-    router.push(redirectTo);
-    router.refresh();
+    router.replace(redirectTo);
   }, [redirectTo, router, state.status]);
 
   return (
