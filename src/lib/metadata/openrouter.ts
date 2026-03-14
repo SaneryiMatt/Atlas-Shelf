@@ -412,7 +412,7 @@ export async function requestOpenRouterStructuredOutput({
       mode: preferredMode
     });
   } catch (error) {
-    if (preferredMode !== "json_schema" || !shouldRetryWithoutResponseFormat(error)) {
+    if (preferredMode !== "json_schema") {
       throw error;
     }
 

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowLeft, ImageIcon, ExternalLink } from "lucide-react";
 
 import { DeleteProjectPhotoDialog } from "@/components/shared/delete-project-photo-dialog";
+import { projectDetailActionGroupClassName } from "@/components/shared/project-detail-action-button-styles";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { ProjectDetailPageData } from "@/lib/types/items";
@@ -62,7 +63,7 @@ export function ProjectDetailPage({
           </div>
           
           {/* 操作按钮 */}
-          {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
+          {actions}
         </div>
       </header>
 

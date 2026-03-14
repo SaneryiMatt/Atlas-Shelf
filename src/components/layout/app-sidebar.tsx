@@ -32,7 +32,7 @@ export function SidebarContent({ onNavigate }: SidebarContentProps) {
       </div>
 
       {/* 主导航 */}
-      <nav className="mt-6 flex flex-col gap-1">
+      <nav className="mt-5 flex flex-col gap-1">
         {primaryNavigation.map((item) => {
           const Icon = item.icon;
           const active = isActivePath(pathname, item.href);
@@ -57,13 +57,10 @@ export function SidebarContent({ onNavigate }: SidebarContentProps) {
       </nav>
 
       {/* 分隔线 */}
-      <div className="my-4 h-px bg-border" />
+      <div className="my-3 h-px bg-border" />
 
       {/* 快捷入口 */}
-      <div className="flex flex-col gap-1">
-        <p className="mb-2 px-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-          快捷入口
-        </p>
+      <div className="flex flex-col gap-0.5">
         {quickAccessLinks.map((item) => {
           const Icon = item.icon;
           const active = isActivePath(pathname, item.href);
@@ -92,7 +89,7 @@ export function SidebarContent({ onNavigate }: SidebarContentProps) {
 
 export function AppSidebar() {
   return (
-    <aside className="sticky top-0 flex h-screen flex-col gap-4 bg-background p-4">
+    <aside className="sticky top-0 flex h-screen flex-col gap-3 bg-background p-4">
       <SidebarContent />
     </aside>
   );

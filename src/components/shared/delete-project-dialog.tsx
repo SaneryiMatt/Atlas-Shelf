@@ -1,9 +1,10 @@
 ﻿"use client";
 
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { Trash2 } from "lucide-react";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 
+import { projectDetailDangerActionButtonClassName } from "@/components/shared/project-detail-action-button-styles";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -40,11 +41,9 @@ export function DeleteProjectDialog({
   redirectTo,
   action
 }: DeleteProjectDialogProps) {
-  const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [state, formAction, isPending] = useActionState(action, initialState);
-  const pendingRefreshPathRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (state.status !== "success") {
@@ -52,23 +51,14 @@ export function DeleteProjectDialog({
     }
 
     setOpen(false);
-    pendingRefreshPathRef.current = redirectTo;
-    router.replace(redirectTo);
-  }, [redirectTo, router, state.status]);
-
-  useEffect(() => {
-    if (pendingRefreshPathRef.current !== pathname) {
-      return;
-    }
-
-    pendingRefreshPathRef.current = null;
+    router.push(redirectTo);
     router.refresh();
-  }, [pathname, router]);
+  }, [redirectTo, router, state.status]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700">
+        <Button variant="outline" className={projectDetailDangerActionButtonClassName}>
           <Trash2 className="size-4" />
           删除
         </Button>

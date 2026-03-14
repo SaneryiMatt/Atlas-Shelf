@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useActionState, useEffect, useState } from "react";
 import { Pencil } from "lucide-react";
@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 
 import { DeleteProjectDialog } from "@/components/shared/delete-project-dialog";
 import { UploadProjectPhotoDialog } from "@/components/shared/upload-project-photo-dialog";
+import { projectDetailActionButtonClassName } from "@/components/shared/project-detail-action-button-styles";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -18,9 +19,11 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type { TravelEditorValues } from "@/lib/types/items";
 import { type CreateTravelFormState, deleteTravelAction, updateTravelAction } from "@/modules/travels/actions";
+import { travelStatusOptions } from "@/modules/travels/travel-form-schema";
 
 const initialFormState: CreateTravelFormState = {
   status: "idle",
@@ -90,17 +93,39 @@ function TravelEditForm({ projectId, initialValues, onSuccess }: TravelEditFormP
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="edit-travel-travelDate">旅行日期</Label>
-          <Input
-            id="edit-travel-travelDate"
-            name="travelDate"
-            type="date"
-            value={formValues.travelDate}
-            onChange={(event) => setFormValues((current) => ({ ...current, travelDate: event.target.value }))}
+          <Label htmlFor="edit-travel-status">状态</Label>
+          <Select
+            name="status"
+            value={formValues.status}
+            onValueChange={(value) => setFormValues((current) => ({ ...current, status: value as TravelEditorValues["status"] }))}
             disabled={isPending}
-          />
-          {state.fieldErrors.travelDate ? <p className="text-sm text-red-600">{state.fieldErrors.travelDate}</p> : null}
+          >
+            <SelectTrigger id="edit-travel-status" className="border-border/70 bg-background/70 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+              <SelectValue placeholder="请选择状态" />
+            </SelectTrigger>
+            <SelectContent className="border-border/70 bg-background/80 backdrop-blur">
+              {travelStatusOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {state.fieldErrors.status ? <p className="text-sm text-red-600">{state.fieldErrors.status}</p> : null}
         </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="edit-travel-travelDate">旅行日期</Label>
+        <Input
+          id="edit-travel-travelDate"
+          name="travelDate"
+          type="date"
+          value={formValues.travelDate}
+          onChange={(event) => setFormValues((current) => ({ ...current, travelDate: event.target.value }))}
+          disabled={isPending}
+        />
+        {state.fieldErrors.travelDate ? <p className="text-sm text-red-600">{state.fieldErrors.travelDate}</p> : null}
       </div>
 
       <div className="space-y-2">
@@ -158,7 +183,7 @@ function EditTravelDialog({ projectId, initialValues }: EditTravelDialogProps) {
       }}
     >
       <DialogTrigger asChild>
-        <Button>
+        <Button variant="outline" className={projectDetailActionButtonClassName}>
           <Pencil className="size-4" />
           编辑
         </Button>

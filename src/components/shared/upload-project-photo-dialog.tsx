@@ -4,6 +4,7 @@ import { useActionState, useEffect, useState } from "react";
 import { ImagePlus } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+import { projectDetailActionButtonClassName } from "@/components/shared/project-detail-action-button-styles";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -100,7 +101,7 @@ export function UploadProjectPhotoDialog({ projectId, projectTitle }: UploadProj
       }}
     >
       <DialogTrigger asChild>
-        <Button variant="outline">
+        <Button variant="outline" className={projectDetailActionButtonClassName}>
           <ImagePlus className="size-4" />
           上传图片
         </Button>

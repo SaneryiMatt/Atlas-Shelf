@@ -144,7 +144,7 @@ export function NavSearch({ className }: NavSearchProps) {
           onFocus={() => query.trim() && setIsOpen(true)}
           onKeyDown={handleKeyDown}
           placeholder="搜索..."
-          className="h-9 w-64 bg-secondary/50 pl-9 pr-8 text-sm placeholder:text-muted-foreground focus:bg-secondary"
+          className="h-9 w-full bg-secondary/50 pl-9 pr-8 text-sm placeholder:text-muted-foreground focus:bg-secondary"
         />
         {query && (
           <button
@@ -160,7 +160,7 @@ export function NavSearch({ className }: NavSearchProps) {
 
       {/* 搜索结果下拉 */}
       {isOpen && query.trim() && (
-        <div className="absolute left-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-lg border border-border bg-card shadow-lg">
+        <div className="absolute left-0 top-full z-50 mt-2 w-full overflow-hidden rounded-lg border border-border bg-card shadow-lg">
           {isLoading ? (
             <div className="px-4 py-6 text-center text-sm text-muted-foreground">搜索中...</div>
           ) : results.length > 0 ? (

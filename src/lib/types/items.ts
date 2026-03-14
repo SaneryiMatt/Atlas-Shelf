@@ -1,4 +1,4 @@
-export type ItemType = "book" | "screen" | "travel";
+﻿export type ItemType = "book" | "screen" | "travel";
 export type ItemStatus = "wishlist" | "planned" | "in_progress" | "completed" | "paused";
 export type TrendDirection = "up" | "steady" | "down";
 export type ModuleListSort = "updated" | "rating";
@@ -246,6 +246,7 @@ export interface TravelEditorValues {
   placeName: string;
   country: string;
   city: string;
+  status: ItemStatus;
   travelDate: string;
   description: string;
 }
@@ -273,4 +274,6 @@ export interface PaginationInfo {
   hasPreviousPage: boolean;
   hasNextPage: boolean;
 }
+
+
 

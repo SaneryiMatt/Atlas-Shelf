@@ -1,4 +1,14 @@
-import { z } from "zod";
+﻿import { z } from "zod";
+
+import type { ItemStatus } from "@/lib/types/items";
+
+export const travelStatusValues = ["planned", "in_progress", "completed"] as const;
+
+export const travelStatusOptions: Array<{ value: ItemStatus; label: string }> = [
+  { value: "planned", label: "过去式" },
+  { value: "in_progress", label: "现在进行时" },
+  { value: "completed", label: "完成时" }
+];
 
 function isValidDate(value: string) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
@@ -15,16 +25,18 @@ function isValidDate(value: string) {
   );
 }
 
-export const travelFormSchema = z
-  .object({
-    placeName: z.string().trim().min(1, "请输入地点名称。").max(120, "地点名称不能超过 120 个字符。"),
-    country: z.string().trim().min(1, "请输入国家或地区。").max(80, "国家或地区不能超过 80 个字符。"),
-    city: z.string().trim().min(1, "请输入城市。").max(80, "城市不能超过 80 个字符。"),
-    travelDate: z
-      .string()
-      .trim()
-      .refine((value) => isValidDate(value), "请输入有效的旅行日期。"),
-    description: z.string().trim().min(1, "请输入地点描述。").max(280, "描述不能超过 280 个字符。")
-  });
+export const travelFormSchema = z.object({
+  placeName: z.string().trim().min(1, "请输入地点名称").max(120, "地点名称不能超过 120 个字符"),
+  country: z.string().trim().min(1, "请输入国家或地区").max(80, "国家或地区不能超过 80 个字符"),
+  city: z.string().trim().min(1, "请输入城市").max(80, "城市不能超过 80 个字符"),
+  status: z.enum(travelStatusValues, {
+    errorMap: () => ({ message: "请选择状态" })
+  }),
+  travelDate: z
+    .string()
+    .trim()
+    .refine((value) => isValidDate(value), "请输入有效的旅行日期"),
+  description: z.string().trim().min(1, "请输入地点描述").max(280, "描述不能超过 280 个字符")
+});
 
 export type TravelFormValues = z.infer<typeof travelFormSchema>;

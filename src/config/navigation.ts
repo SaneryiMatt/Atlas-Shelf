@@ -1,4 +1,4 @@
-import { BookOpen, Clapperboard, Compass, LayoutDashboard, Search, Settings } from "lucide-react";
+import { BookOpen, Clapperboard, Compass, LayoutDashboard, Settings } from "lucide-react";
 
 import { analyticsFeatureEnabled } from "@/config/features";
 
@@ -33,11 +33,6 @@ export const primaryNavigation = [
 ] as const;
 
 export const quickAccessLinks = [
-  {
-    title: "全局搜索",
-    href: "/search",
-    icon: Search
-  },
   {
     title: "设置",
     href: "/settings",

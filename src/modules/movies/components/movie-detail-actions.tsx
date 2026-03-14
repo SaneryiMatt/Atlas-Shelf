@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 
 import { DeleteProjectDialog } from "@/components/shared/delete-project-dialog";
 import { UploadProjectPhotoDialog } from "@/components/shared/upload-project-photo-dialog";
+import { projectDetailActionButtonClassName } from "@/components/shared/project-detail-action-button-styles";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -212,7 +213,7 @@ function EditMovieDialog({ projectId, initialValues }: EditMovieDialogProps) {
       }}
     >
       <DialogTrigger asChild>
-        <Button>
+        <Button variant="outline" className={projectDetailActionButtonClassName}>
           <Pencil className="size-4" />
           编辑
         </Button>

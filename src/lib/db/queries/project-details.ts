@@ -1,4 +1,4 @@
-import { and, asc, desc, eq } from "drizzle-orm";
+﻿import { and, asc, desc, eq } from "drizzle-orm";
 
 import { db, databaseAvailable } from "@/lib/db/client";
 import { activeTrips, bookBacklog, currentBooks, currentScreens, screenBacklog, travelArchive } from "@/lib/db/mock-data";
@@ -43,6 +43,18 @@ const travelStageLabels: Record<string, string> = {
   booked: "已预订",
   visited: "已到访"
 };
+
+function mapTravelStageToEditorStatus(stage: string): "planned" | "in_progress" | "completed" {
+  if (stage === "visited") {
+    return "completed";
+  }
+
+  if (stage === "booked") {
+    return "in_progress";
+  }
+
+  return "planned";
+}
 
 function formatDateLabel(value: Date | string | null | undefined) {
   if (!value) {
@@ -319,6 +331,7 @@ function buildMockTravelPayload(id: string): TravelDetailPagePayload | null {
       placeName: trip.title,
       country: trip.country,
       city: "",
+      status: "planned",
       travelDate: "",
       description: trip.summary
     }
@@ -508,6 +521,7 @@ export async function getTravelDetailPageData(id: string): Promise<TravelDetailP
           placeName: trip.title,
           country: trip.country,
           city: trip.city ?? "",
+          status: mapTravelStageToEditorStatus(trip.stage),
           travelDate: formatDateInput(trip.startDate),
           description: trip.summary ?? ""
         }
@@ -519,3 +533,7 @@ export async function getTravelDetailPageData(id: string): Promise<TravelDetailP
 
   return buildMockTravelPayload(id);
 }
+
+
+
+

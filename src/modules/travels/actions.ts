@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { createHash, randomUUID } from "node:crypto";
 
@@ -15,7 +15,7 @@ export interface CreateTravelFormState {
   status: "idle" | "success" | "error";
   message: string | null;
   fieldErrors: Partial<
-    Record<"placeName" | "country" | "city" | "travelDate" | "description", string>
+    Record<"placeName" | "country" | "city" | "status" | "travelDate" | "description", string>
   >;
 }
 
@@ -39,10 +39,28 @@ function buildProjectSlug(placeName: string, city: string, travelDate: string) {
   return `${slugify(placeName)}-${createHash("sha1").update(`${placeName}:${city}:${travelDate}:${randomUUID()}`).digest("hex").slice(0, 8)}`;
 }
 
-function deriveStage(travelDate: string) {
-  const today = new Date().toISOString().slice(0, 10);
+function mapStatusToStage(status: "planned" | "in_progress" | "completed") {
+  if (status === "completed") {
+    return "visited";
+  }
 
-  return travelDate <= today ? "visited" : "planning";
+  if (status === "in_progress") {
+    return "booked";
+  }
+
+  return "planning";
+}
+
+function mapStageToStatus(stage: string): "planned" | "in_progress" | "completed" {
+  if (stage === "visited") {
+    return "completed";
+  }
+
+  if (stage === "booked") {
+    return "in_progress";
+  }
+
+  return "planned";
 }
 
 function getValidatedTravelValues(formData: FormData) {
@@ -50,6 +68,7 @@ function getValidatedTravelValues(formData: FormData) {
     placeName: String(formData.get("placeName") ?? ""),
     country: String(formData.get("country") ?? ""),
     city: String(formData.get("city") ?? ""),
+    status: String(formData.get("status") ?? "planned"),
     travelDate: String(formData.get("travelDate") ?? ""),
     description: String(formData.get("description") ?? "")
   });
@@ -73,6 +92,7 @@ function getTravelFieldErrors(parsed: ReturnType<typeof getValidatedTravelValues
       placeName: flattened.placeName?.[0],
       country: flattened.country?.[0],
       city: flattened.city?.[0],
+      status: flattened.status?.[0],
       travelDate: flattened.travelDate?.[0],
       description: flattened.description?.[0]
     }
@@ -106,7 +126,7 @@ export async function createTravelAction(
   }
 
   const values = parsed.data;
-  const stage = deriveStage(values.travelDate);
+  const stage = mapStatusToStage(values.status);
 
   try {
     const projectId = await db.transaction(async (tx) => {
@@ -114,7 +134,7 @@ export async function createTravelAction(
         .insert(projects)
         .values({
           type: "travel",
-          status: stage === "visited" ? "completed" : "planned",
+          status: mapStageToStatus(stage),
           title: values.placeName,
           slug: buildProjectSlug(values.placeName, values.city, values.travelDate),
           summary: values.description,
@@ -191,7 +211,7 @@ export async function updateTravelAction(
   }
 
   const values = parsed.data;
-  const stage = deriveStage(values.travelDate);
+  const stage = mapStatusToStage(values.status);
   const startedAt = new Date(`${values.travelDate}T00:00:00.000Z`);
 
   try {
@@ -199,7 +219,7 @@ export async function updateTravelAction(
       const [project] = await tx
         .update(projects)
         .set({
-          status: stage === "visited" ? "completed" : "planned",
+          status: mapStageToStatus(stage),
           title: values.placeName,
           summary: values.description,
           startedAt,
@@ -305,3 +325,4 @@ export async function deleteTravelAction(
     };
   }
 }
+
