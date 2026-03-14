@@ -98,10 +98,10 @@ function AddMovieForm({ open, onSuccess }: AddMovieFormProps) {
 
   return (
     <>
-      <form action={formAction} className="mx-auto w-full max-w-2xl space-y-5 rounded-xl border border-border/70 bg-card/60 p-5 backdrop-blur">
+      <form action={formAction} className="mx-auto w-full max-w-2xl space-y-6">
         <div className="grid gap-5 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="title">标题</Label>
+            <Label htmlFor="title" className="text-sm font-medium text-foreground/90">标题</Label>
             <Input
               id="title"
               name="title"
@@ -109,12 +109,13 @@ function AddMovieForm({ open, onSuccess }: AddMovieFormProps) {
               onChange={(event) => handleFieldChange("title", event.target.value)}
               placeholder="例如：《完美的日子》"
               disabled={isPending}
+              className="border-border/50 bg-background/50 transition-colors focus:border-foreground/30 focus:bg-background/80"
             />
-            {state.fieldErrors.title ? <p className="text-sm text-red-600">{state.fieldErrors.title}</p> : null}
+            {state.fieldErrors.title ? <p className="text-xs text-red-400">{state.fieldErrors.title}</p> : null}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="director">导演</Label>
+            <Label htmlFor="director" className="text-sm font-medium text-foreground/90">导演</Label>
             <Input
               id="director"
               name="director"
@@ -122,14 +123,15 @@ function AddMovieForm({ open, onSuccess }: AddMovieFormProps) {
               onChange={(event) => handleFieldChange("director", event.target.value)}
               placeholder="例如：维姆·文德斯"
               disabled={isPending}
+              className="border-border/50 bg-background/50 transition-colors focus:border-foreground/30 focus:bg-background/80"
             />
-            {state.fieldErrors.director ? <p className="text-sm text-red-600">{state.fieldErrors.director}</p> : null}
+            {state.fieldErrors.director ? <p className="text-xs text-red-400">{state.fieldErrors.director}</p> : null}
           </div>
         </div>
 
         <div className="grid gap-5 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="releaseYear">上映年份</Label>
+            <Label htmlFor="releaseYear" className="text-sm font-medium text-foreground/90">上映年份</Label>
             <Input
               id="releaseYear"
               name="releaseYear"
@@ -138,12 +140,13 @@ function AddMovieForm({ open, onSuccess }: AddMovieFormProps) {
               onChange={(event) => handleFieldChange("releaseYear", event.target.value)}
               placeholder="例如：2024"
               disabled={isPending}
+              className="border-border/50 bg-background/50 transition-colors focus:border-foreground/30 focus:bg-background/80"
             />
-            {state.fieldErrors.releaseYear ? <p className="text-sm text-red-600">{state.fieldErrors.releaseYear}</p> : null}
+            {state.fieldErrors.releaseYear ? <p className="text-xs text-red-400">{state.fieldErrors.releaseYear}</p> : null}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="platform">平台</Label>
+            <Label htmlFor="platform" className="text-sm font-medium text-foreground/90">平台</Label>
             <Input
               id="platform"
               name="platform"
@@ -151,24 +154,25 @@ function AddMovieForm({ open, onSuccess }: AddMovieFormProps) {
               onChange={(event) => handleFieldChange("platform", event.target.value)}
               placeholder="例如：流媒体 / 影院"
               disabled={isPending}
+              className="border-border/50 bg-background/50 transition-colors focus:border-foreground/30 focus:bg-background/80"
             />
-            {state.fieldErrors.platform ? <p className="text-sm text-red-600">{state.fieldErrors.platform}</p> : null}
+            {state.fieldErrors.platform ? <p className="text-xs text-red-400">{state.fieldErrors.platform}</p> : null}
           </div>
         </div>
 
         <div className="grid gap-5 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="status">状态</Label>
+            <Label htmlFor="status" className="text-sm font-medium text-foreground/90">状态</Label>
             <Select
               name="status"
               value={formValues.status}
               onValueChange={(value) => handleFieldChange("status", value as MovieEditorValues["status"])}
               disabled={isPending}
             >
-              <SelectTrigger id="status" className="border-border/70 bg-background/70 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+              <SelectTrigger id="status" className="border-border/50 bg-background/50 transition-colors focus:border-foreground/30 focus:bg-background/80">
                 <SelectValue placeholder="请选择状态" />
               </SelectTrigger>
-              <SelectContent className="border-border/70 bg-background/80 backdrop-blur">
+              <SelectContent className="border-border/50 bg-card/95 backdrop-blur-xl">
                 {movieStatusOptions.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}
@@ -176,11 +180,11 @@ function AddMovieForm({ open, onSuccess }: AddMovieFormProps) {
                 ))}
               </SelectContent>
             </Select>
-            {state.fieldErrors.status ? <p className="text-sm text-red-600">{state.fieldErrors.status}</p> : null}
+            {state.fieldErrors.status ? <p className="text-xs text-red-400">{state.fieldErrors.status}</p> : null}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="rating">评分</Label>
+            <Label htmlFor="rating" className="text-sm font-medium text-foreground/90">评分</Label>
             <Input
               id="rating"
               name="rating"
@@ -192,13 +196,14 @@ function AddMovieForm({ open, onSuccess }: AddMovieFormProps) {
               onChange={(event) => handleFieldChange("rating", event.target.value)}
               placeholder="0 - 5"
               disabled={isPending}
+              className="border-border/50 bg-background/50 transition-colors focus:border-foreground/30 focus:bg-background/80"
             />
-            {state.fieldErrors.rating ? <p className="text-sm text-red-600">{state.fieldErrors.rating}</p> : null}
+            {state.fieldErrors.rating ? <p className="text-xs text-red-400">{state.fieldErrors.rating}</p> : null}
           </div>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="note">简短备注</Label>
+          <Label htmlFor="note" className="text-sm font-medium text-foreground/90">简短备注</Label>
           <Textarea
             id="note"
             name="note"
@@ -206,12 +211,13 @@ function AddMovieForm({ open, onSuccess }: AddMovieFormProps) {
             onChange={(event) => handleFieldChange("note", event.target.value)}
             placeholder="记录想看原因、观后感或你想保留的信息。"
             disabled={isPending}
+            className="min-h-[100px] resize-none border-border/50 bg-background/50 transition-colors focus:border-foreground/30 focus:bg-background/80"
           />
-          {state.fieldErrors.note ? <p className="text-sm text-red-600">{state.fieldErrors.note}</p> : null}
+          {state.fieldErrors.note ? <p className="text-xs text-red-400">{state.fieldErrors.note}</p> : null}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="tags">标签</Label>
+          <Label htmlFor="tags" className="text-sm font-medium text-foreground/90">标签</Label>
           <Input
             id="tags"
             name="tags"
@@ -219,25 +225,26 @@ function AddMovieForm({ open, onSuccess }: AddMovieFormProps) {
             onChange={(event) => handleFieldChange("tags", event.target.value)}
             placeholder="例如：剧情, 生活流, 年度片单"
             disabled={isPending}
+            className="border-border/50 bg-background/50 transition-colors focus:border-foreground/30 focus:bg-background/80"
           />
-          <p className="text-xs leading-5 text-muted-foreground">使用逗号分隔多个标签，支持中英文逗号。</p>
-          {state.fieldErrors.tags ? <p className="text-sm text-red-600">{state.fieldErrors.tags}</p> : null}
+          <p className="text-xs text-muted-foreground/70">使用逗号分隔多个标签，支持中英文逗号。</p>
+          {state.fieldErrors.tags ? <p className="text-xs text-red-400">{state.fieldErrors.tags}</p> : null}
         </div>
 
         {state.message ? (
           <div
             className={
               state.status === "success"
-                ? "rounded-lg border border-green-500/20 bg-green-500/10 px-4 py-3 text-sm text-green-400"
-                : "rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400"
+                ? "rounded-xl border border-green-500/20 bg-green-500/10 px-4 py-3 text-sm text-green-400"
+                : "rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400"
             }
           >
             {state.message}
           </div>
         ) : null}
 
-        <DialogFooter>
-          <Button type="submit" size="lg" disabled={isPending}>
+        <DialogFooter className="border-t border-border/30 pt-5">
+          <Button type="submit" size="lg" disabled={isPending} className="min-w-[120px]">
             {isPending ? "保存中..." : "保存影视条目"}
           </Button>
         </DialogFooter>
