@@ -1,4 +1,4 @@
-import { BookOpen, Clapperboard, Compass, LayoutDashboard, Settings } from "lucide-react";
+import { BookOpen, Clapperboard, Compass, LayoutDashboard } from "lucide-react";
 
 import { analyticsFeatureEnabled } from "@/config/features";
 
@@ -29,14 +29,6 @@ export const primaryNavigation = [
     href: "/travels",
     icon: Compass,
     description: "整理想去的地方、去过的地点和行程回忆。"
-  }
-] as const;
-
-export const quickAccessLinks = [
-  {
-    title: "设置",
-    href: "/settings",
-    icon: Settings
   }
 ] as const;
 

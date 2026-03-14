@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Bell, Menu, Search } from "lucide-react";
+import { Bell, Menu, Search, Settings } from "lucide-react";
 
 import { SidebarContent } from "@/components/layout/app-sidebar";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { NavSearch } from "@/components/shared/nav-search";
+import { SettingsModal } from "@/components/settings/settings-modal";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
@@ -15,6 +16,7 @@ interface AppHeaderProps {
 
 export function AppHeader({ userEmail }: AppHeaderProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   return (
     <header className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -51,12 +53,19 @@ export function AppHeader({ userEmail }: AppHeaderProps) {
             <span className="sr-only">通知</span>
           </Button>
 
+          <Button variant="ghost" size="icon" onClick={() => setSettingsOpen(true)} className="hidden xl:flex">
+            <Settings className="size-5" />
+            <span className="sr-only">设置</span>
+          </Button>
+
           <div className="flex items-center gap-2 border-l border-border pl-2">
             <span className="hidden text-sm text-muted-foreground lg:inline-block">{userEmail}</span>
             <SignOutButton />
           </div>
         </div>
       </div>
+
+      <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
     </header>
   );
 }

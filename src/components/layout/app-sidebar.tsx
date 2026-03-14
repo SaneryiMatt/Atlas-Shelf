@@ -2,9 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Settings } from "lucide-react";
+import { useState } from "react";
 
-import { primaryNavigation, productName, productTagline, quickAccessLinks } from "@/config/navigation";
+import { primaryNavigation, productName, productTagline } from "@/config/navigation";
 import { cn } from "@/lib/utils";
+import { SettingsModal } from "@/components/settings/settings-modal";
 
 function isActivePath(pathname: string, href: string) {
   if (href === "/") {
@@ -20,9 +23,10 @@ interface SidebarContentProps {
 
 export function SidebarContent({ onNavigate }: SidebarContentProps) {
   const pathname = usePathname();
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   return (
-    <>
+    <div className="flex h-full flex-col">
       {/* Logo 区域 */}
       <div className="space-y-1">
         <Link href="/" className="text-xl font-semibold text-foreground" onClick={onNavigate}>
@@ -56,34 +60,23 @@ export function SidebarContent({ onNavigate }: SidebarContentProps) {
         })}
       </nav>
 
-      {/* 分隔线 */}
-      <div className="my-3 h-px bg-border" />
-
-      {/* 快捷入口 */}
-      <div className="flex flex-col gap-0.5">
-        {quickAccessLinks.map((item) => {
-          const Icon = item.icon;
-          const active = isActivePath(pathname, item.href);
-
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={onNavigate}
-              className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
-                active
-                  ? "bg-accent text-foreground"
-                  : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
-              )}
-            >
-              <Icon className="size-4" />
-              {item.title}
-            </Link>
-          );
-        })}
+      {/* 底部设置按钮 */}
+      <div className="mt-auto pt-4">
+        <div className="h-px bg-border/60 mb-4" />
+        <button
+          onClick={() => setSettingsOpen(true)}
+          className={cn(
+            "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+            "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+          )}
+        >
+          <Settings className="size-4" />
+          设置
+        </button>
       </div>
-    </>
+
+      <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
+    </div>
   );
 }
 
