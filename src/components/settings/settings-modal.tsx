@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import {
   User,
   Palette,
@@ -14,7 +14,16 @@ import {
   Sun,
   CheckCircle2,
   CircleDashed,
-  ExternalLink
+  ExternalLink,
+  Download,
+  Upload,
+  FileJson,
+  FileSpreadsheet,
+  Trash2,
+  AlertTriangle,
+  Loader2,
+  Check,
+  FileWarning
 } from "lucide-react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 
@@ -23,6 +32,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { exportAllData, clearAllData, validateImportData } from "@/modules/settings/data-actions";
 
 type SettingsSection = "account" | "appearance" | "api" | "data" | "about";
 
@@ -297,61 +307,426 @@ function ApiSection() {
 }
 
 function DataSection() {
+  const [exportLoading, setExportLoading] = useState<"json" | "csv" | null>(null);
+  const [importLoading, setImportLoading] = useState(false);
+  const [clearLoading, setClearLoading] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [clearConfirmText, setClearConfirmText] = useState("");
+  const [importStatus, setImportStatus] = useState<{ type: "success" | "error" | "info"; message: string } | null>(null);
+  const [dragActive, setDragActive] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleExportJSON = useCallback(async () => {
+    setExportLoading("json");
+    try {
+      const result = await exportAllData();
+      if (result.status === "success" && result.data) {
+        const blob = new Blob([JSON.stringify(result.data, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `atlas-shelf-export-${new Date().toISOString().split("T")[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        setImportStatus({ type: "success", message: "数据导出成功！" });
+      } else {
+        setImportStatus({ type: "error", message: result.message || "导出失败" });
+      }
+    } catch {
+      setImportStatus({ type: "error", message: "导出时发生错误" });
+    } finally {
+      setExportLoading(null);
+    }
+  }, []);
+
+  const handleExportCSV = useCallback(async () => {
+    setExportLoading("csv");
+    try {
+      const result = await exportAllData();
+      if (result.status === "success" && result.data) {
+        const csvParts: string[] = [];
+        
+        // Books CSV
+        if (result.data.books.length > 0) {
+          csvParts.push("# 书籍数据");
+          csvParts.push("标题,作者,状态,评分,开始日期,完成日期,标签,备注");
+          for (const book of result.data.books) {
+            csvParts.push([
+              `"${book.title.replace(/"/g, '""')}"`,
+              `"${book.author.replace(/"/g, '""')}"`,
+              book.status,
+              book.rating || "",
+              book.startedAt?.split("T")[0] || "",
+              book.completedAt?.split("T")[0] || "",
+              `"${book.tags.join(", ")}"`,
+              `"${(book.summary || "").replace(/"/g, '""')}"`
+            ].join(","));
+          }
+          csvParts.push("");
+        }
+
+        // Movies CSV
+        if (result.data.movies.length > 0) {
+          csvParts.push("# 影视数据");
+          csvParts.push("标题,导演,上映年份,平台,状态,评分,标签,备注");
+          for (const movie of result.data.movies) {
+            csvParts.push([
+              `"${movie.title.replace(/"/g, '""')}"`,
+              `"${(movie.director || "").replace(/"/g, '""')}"`,
+              movie.releaseYear || "",
+              `"${(movie.platform || "").replace(/"/g, '""')}"`,
+              movie.status,
+              movie.rating || "",
+              `"${movie.tags.join(", ")}"`,
+              `"${(movie.note || "").replace(/"/g, '""')}"`
+            ].join(","));
+          }
+          csvParts.push("");
+        }
+
+        // Travels CSV
+        if (result.data.travels.length > 0) {
+          csvParts.push("# 旅行数据");
+          csvParts.push("地点,国家/地区,城市,状态,阶段,日期,描述");
+          for (const travel of result.data.travels) {
+            csvParts.push([
+              `"${travel.placeName.replace(/"/g, '""')}"`,
+              `"${travel.country.replace(/"/g, '""')}"`,
+              `"${(travel.city || "").replace(/"/g, '""')}"`,
+              travel.status,
+              travel.stage,
+              travel.travelDate || "",
+              `"${(travel.description || "").replace(/"/g, '""')}"`
+            ].join(","));
+          }
+        }
+
+        const blob = new Blob(["\uFEFF" + csvParts.join("\n")], { type: "text/csv;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `atlas-shelf-export-${new Date().toISOString().split("T")[0]}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        setImportStatus({ type: "success", message: "CSV 导出成功！" });
+      } else {
+        setImportStatus({ type: "error", message: result.message || "导出失败" });
+      }
+    } catch {
+      setImportStatus({ type: "error", message: "导出时发生错误" });
+    } finally {
+      setExportLoading(null);
+    }
+  }, []);
+
+  const processFile = useCallback(async (file: File) => {
+    setImportLoading(true);
+    setImportStatus(null);
+
+    try {
+      const text = await file.text();
+      
+      if (file.name.endsWith(".json")) {
+        const data = JSON.parse(text);
+        const validation = validateImportData(data);
+        
+        if (!validation.valid) {
+          setImportStatus({ type: "error", message: validation.message });
+          return;
+        }
+
+        const bookCount = data.books?.length || 0;
+        const movieCount = data.movies?.length || 0;
+        const travelCount = data.travels?.length || 0;
+
+        setImportStatus({
+          type: "info",
+          message: `文件验证通过：${bookCount} 本书籍、${movieCount} 部影视、${travelCount} 个旅行地点。导入功能即将上线。`
+        });
+      } else if (file.name.endsWith(".csv")) {
+        setImportStatus({
+          type: "info",
+          message: "CSV 文件已读取。完整导入功能即将上线。"
+        });
+      } else {
+        setImportStatus({ type: "error", message: "不支持的文件格式，请使用 JSON 或 CSV 文件" });
+      }
+    } catch {
+      setImportStatus({ type: "error", message: "文件解析失败，请检查文件格式是否正确" });
+    } finally {
+      setImportLoading(false);
+    }
+  }, []);
+
+  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      processFile(file);
+    }
+    e.target.value = "";
+  }, [processFile]);
+
+  const handleDrag = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+
+    const file = e.dataTransfer.files?.[0];
+    if (file && (file.name.endsWith(".json") || file.name.endsWith(".csv"))) {
+      processFile(file);
+    } else {
+      setImportStatus({ type: "error", message: "请上传 JSON 或 CSV 格式的文件" });
+    }
+  }, [processFile]);
+
+  const handleClearData = useCallback(async () => {
+    if (clearConfirmText !== "确认清空") {
+      return;
+    }
+
+    setClearLoading(true);
+    try {
+      const result = await clearAllData();
+      if (result.status === "success") {
+        setImportStatus({ type: "success", message: "所有数据已清空" });
+        setShowClearConfirm(false);
+        setClearConfirmText("");
+      } else {
+        setImportStatus({ type: "error", message: result.message });
+      }
+    } catch {
+      setImportStatus({ type: "error", message: "清空数据时发生错误" });
+    } finally {
+      setClearLoading(false);
+    }
+  }, [clearConfirmText]);
+
   return (
     <div className="space-y-6">
-      <div className="space-y-4">
-        <h3 className="text-sm font-medium text-foreground">数据导出</h3>
-        <div className="rounded-xl border border-border/40 bg-background/40 divide-y divide-border/40">
-          <SettingsRow
-            title="导出所有数据"
-            description="下载包含所有书籍、影视和旅行记录的 JSON 文件"
-            action={
-              <Button variant="outline" size="sm" disabled>
-                导出
-              </Button>
-            }
-          />
-          <SettingsRow
-            title="导出为 CSV"
-            description="导出为可用于电子表格的 CSV 格式"
-            action={
-              <Button variant="outline" size="sm" disabled>
-                导出
-              </Button>
-            }
-          />
+      {/* 状态提示 */}
+      {importStatus && (
+        <div
+          className={cn(
+            "flex items-center gap-3 rounded-xl border px-4 py-3",
+            importStatus.type === "success" && "border-green-500/20 bg-green-500/10 text-green-400",
+            importStatus.type === "error" && "border-red-500/20 bg-red-500/10 text-red-400",
+            importStatus.type === "info" && "border-blue-500/20 bg-blue-500/10 text-blue-400"
+          )}
+        >
+          {importStatus.type === "success" && <Check className="size-4 shrink-0" />}
+          {importStatus.type === "error" && <FileWarning className="size-4 shrink-0" />}
+          {importStatus.type === "info" && <Info className="size-4 shrink-0" />}
+          <p className="text-sm">{importStatus.message}</p>
+          <button
+            onClick={() => setImportStatus(null)}
+            className="ml-auto rounded p-0.5 hover:bg-white/10"
+          >
+            <X className="size-3.5" />
+          </button>
         </div>
-      </div>
+      )}
 
+      {/* 数据导出 */}
       <div className="space-y-4">
-        <h3 className="text-sm font-medium text-foreground">数据导入</h3>
-        <div className="rounded-xl border border-dashed border-border/50 bg-background/30 p-6 text-center">
-          <Database className="mx-auto size-8 text-muted-foreground/50" />
-          <p className="mt-3 text-sm text-muted-foreground">
-            拖拽文件到此处，或点击选择文件
-          </p>
-          <p className="mt-1 text-xs text-muted-foreground/60">支持 JSON、CSV 格式</p>
-          <Button variant="outline" size="sm" className="mt-4" disabled>
-            选择文件
-          </Button>
+        <div className="flex items-center gap-2">
+          <Download className="size-4 text-muted-foreground" />
+          <h3 className="text-sm font-medium text-foreground">数据导出</h3>
         </div>
-      </div>
-
-      <div className="space-y-4">
-        <h3 className="text-sm font-medium text-foreground">危险操作</h3>
-        <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-4">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="font-medium text-foreground">清空所有数据</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                永久删除所有书籍、影视和旅行记录，此操作无法撤销。
-              </p>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <button
+            onClick={handleExportJSON}
+            disabled={exportLoading !== null}
+            className={cn(
+              "group flex items-center gap-4 rounded-xl border border-border/40 bg-background/40 p-4 text-left transition-all",
+              "hover:border-foreground/20 hover:bg-accent/30",
+              "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background",
+              "disabled:cursor-not-allowed disabled:opacity-50"
+            )}
+          >
+            <div className="flex size-10 items-center justify-center rounded-lg bg-accent/60 text-foreground/70 transition-colors group-hover:bg-accent group-hover:text-foreground">
+              {exportLoading === "json" ? <Loader2 className="size-5 animate-spin" /> : <FileJson className="size-5" />}
             </div>
-            <Button variant="destructive" size="sm" disabled>
-              清空
-            </Button>
-          </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-foreground">导出为 JSON</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">完整数据备份，支持重新导入</p>
+            </div>
+          </button>
+
+          <button
+            onClick={handleExportCSV}
+            disabled={exportLoading !== null}
+            className={cn(
+              "group flex items-center gap-4 rounded-xl border border-border/40 bg-background/40 p-4 text-left transition-all",
+              "hover:border-foreground/20 hover:bg-accent/30",
+              "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background",
+              "disabled:cursor-not-allowed disabled:opacity-50"
+            )}
+          >
+            <div className="flex size-10 items-center justify-center rounded-lg bg-accent/60 text-foreground/70 transition-colors group-hover:bg-accent group-hover:text-foreground">
+              {exportLoading === "csv" ? <Loader2 className="size-5 animate-spin" /> : <FileSpreadsheet className="size-5" />}
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-foreground">导出为 CSV</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">电子表格格式，便于查看编辑</p>
+            </div>
+          </button>
         </div>
+      </div>
+
+      {/* 数据导入 */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <Upload className="size-4 text-muted-foreground" />
+          <h3 className="text-sm font-medium text-foreground">数据导入</h3>
+        </div>
+        <div
+          onDragEnter={handleDrag}
+          onDragLeave={handleDrag}
+          onDragOver={handleDrag}
+          onDrop={handleDrop}
+          className={cn(
+            "relative rounded-xl border-2 border-dashed p-8 text-center transition-all",
+            dragActive
+              ? "border-foreground/40 bg-accent/40"
+              : "border-border/50 bg-background/30 hover:border-foreground/20 hover:bg-accent/20"
+          )}
+        >
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".json,.csv"
+            onChange={handleFileSelect}
+            className="hidden"
+          />
+          
+          {importLoading ? (
+            <div className="flex flex-col items-center gap-3">
+              <Loader2 className="size-8 animate-spin text-foreground/60" />
+              <p className="text-sm text-muted-foreground">正在处理文件...</p>
+            </div>
+          ) : (
+            <>
+              <div className="mx-auto flex size-12 items-center justify-center rounded-xl bg-accent/60">
+                <Upload className="size-6 text-foreground/60" />
+              </div>
+              <p className="mt-4 text-sm font-medium text-foreground">
+                拖拽文件到此处
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                或点击下方按钮选择文件
+              </p>
+              <div className="mt-4 flex items-center justify-center gap-2 text-xs text-muted-foreground/60">
+                <FileJson className="size-3.5" />
+                <span>JSON</span>
+                <span className="mx-1">·</span>
+                <FileSpreadsheet className="size-3.5" />
+                <span>CSV</span>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-4"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                选择文件
+              </Button>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* 危险操作 */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <AlertTriangle className="size-4 text-destructive/70" />
+          <h3 className="text-sm font-medium text-foreground">危险操作</h3>
+        </div>
+
+        {!showClearConfirm ? (
+          <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-4">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-start gap-3">
+                <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-destructive/10">
+                  <Trash2 className="size-4 text-destructive" />
+                </div>
+                <div>
+                  <p className="font-medium text-foreground">清空所有数据</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    永久删除所有书籍、影视和旅行记录。此操作无法撤销，请先导出数据备份。
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => setShowClearConfirm(true)}
+              >
+                清空
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-5 space-y-4">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="size-5 shrink-0 text-destructive" />
+              <div>
+                <p className="font-medium text-destructive">确认清空所有数据？</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  此操作将永久删除所有数据，包括书籍、影视、旅行记录及其标签。请输入「确认清空」以继续。
+                </p>
+              </div>
+            </div>
+            <div className="space-y-3">
+              <Input
+                value={clearConfirmText}
+                onChange={(e) => setClearConfirmText(e.target.value)}
+                placeholder="请输入「确认清空」"
+                className="border-destructive/30 bg-background/50"
+              />
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setShowClearConfirm(false);
+                    setClearConfirmText("");
+                  }}
+                >
+                  取消
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  disabled={clearConfirmText !== "确认清空" || clearLoading}
+                  onClick={handleClearData}
+                >
+                  {clearLoading ? (
+                    <>
+                      <Loader2 className="mr-1.5 size-3.5 animate-spin" />
+                      清空中...
+                    </>
+                  ) : (
+                    "确认清空"
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -404,7 +779,7 @@ function AboutSection() {
 
       <div className="rounded-xl border border-border/40 bg-background/40 p-4">
         <p className="text-xs leading-relaxed text-muted-foreground">
-          Atlas Shelf 是一个开源的个人记录管理工具，帮助你追踪阅读、观影和旅行体验。
+          Atlas Shelf 是一个��源的个人记录管理工具，帮助你追踪阅读、观影和旅行体验。
           使用 Next.js、Supabase 和 Tailwind CSS 构建。
         </p>
       </div>
