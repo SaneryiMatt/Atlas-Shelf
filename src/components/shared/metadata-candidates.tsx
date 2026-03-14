@@ -1,4 +1,4 @@
-import { LoaderCircle, Sparkles } from "lucide-react";
+import { Check, CircleDashed, LoaderCircle } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -55,26 +55,29 @@ export function MetadataCandidates({
 }: MetadataCandidatesProps) {
   if (query.trim().length < 2) {
     return (
-      <div className="rounded-xl border border-dashed border-border bg-background/60 p-4 text-sm leading-6 text-muted-foreground">
-        输入至少 2 个字符后会自动检索候选，并优先补全未手动编辑的字段。
+      <div className="flex items-start gap-3 rounded-xl border border-dashed border-border/50 bg-accent/20 p-4">
+        <CircleDashed className="mt-0.5 size-4 shrink-0 text-muted-foreground/60" />
+        <p className="text-sm leading-relaxed text-muted-foreground">
+          输入至少 2 个字符后会自动检索候选，并优先补全未手动编辑的字段。
+        </p>
       </div>
     );
   }
 
   if (status === "loading") {
     return (
-      <div className="rounded-xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
-        <div className="flex items-center gap-2">
-          <LoaderCircle className="size-4 animate-spin" />
-          <span>正在快速匹配候选内容...</span>
+      <div className="flex items-center gap-3 rounded-xl border border-border/40 bg-accent/30 p-4">
+        <div className="relative flex size-5 items-center justify-center">
+          <LoaderCircle className="size-4 animate-spin text-foreground/70" />
         </div>
+        <span className="text-sm text-foreground/80">正在快速匹配候选内容...</span>
       </div>
     );
   }
 
   if (status === "disabled" || status === "error") {
     return (
-      <div className="rounded-xl border border-border bg-background/70 p-4 text-sm leading-6 text-muted-foreground">
+      <div className="rounded-xl border border-border/40 bg-accent/20 p-4 text-sm leading-relaxed text-muted-foreground">
         {errorMessage ?? "自动匹配当前不可用，请继续手动填写。"}
       </div>
     );
@@ -82,7 +85,7 @@ export function MetadataCandidates({
 
   if (hasAttemptedSearch && !candidates.length) {
     return (
-      <div className="rounded-xl border border-border bg-background/70 p-4 text-sm leading-6 text-muted-foreground">
+      <div className="rounded-xl border border-border/40 bg-accent/20 p-4 text-sm leading-relaxed text-muted-foreground">
         没有找到高可信度候选，你可以继续手动填写当前表单。
       </div>
     );
@@ -93,46 +96,60 @@ export function MetadataCandidates({
   }
 
   return (
-    <div className="space-y-3 rounded-xl border border-border bg-background/70 p-4">
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Sparkles className="size-4" />
-        <span>已找到最多 3 个候选，可一键应用到未手动编辑的字段。</span>
-      </div>
+    <div className="space-y-2.5">
+      <p className="text-xs text-muted-foreground/70">
+        已找到 {candidates.length} 个候选，点击应用到未手动编辑的字段
+      </p>
 
-      <div className="space-y-3">
+      <div className="space-y-2">
         {candidates.map((candidate) => {
           const meta = getCandidateMeta(candidate);
           const isApplied = candidate.id === appliedCandidateId;
 
           return (
-            <div
+            <button
               key={candidate.id}
+              type="button"
+              onClick={() => onApplyCandidate(candidate)}
               className={cn(
-                "rounded-lg border p-4 transition-colors",
-                isApplied ? "border-foreground/20 bg-accent/40" : "border-border bg-background/80"
+                "group w-full rounded-xl border p-3 text-left transition-all duration-200",
+                "hover:border-foreground/20 hover:bg-accent/40",
+                "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background",
+                isApplied
+                  ? "border-foreground/25 bg-accent/50 ring-1 ring-foreground/10"
+                  : "border-border/40 bg-background/40"
               )}
             >
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div className="min-w-0 space-y-2">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1 space-y-1.5">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="font-medium text-foreground">{candidate.title}</h3>
-                    <Badge variant="outline">{Math.round(candidate.confidence * 100)}%</Badge>
-                    {isApplied ? <Badge variant="warm">已应用</Badge> : null}
+                    <h3 className="text-sm font-medium text-foreground">{candidate.title}</h3>
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        "h-5 border-border/50 px-1.5 text-[10px] font-normal",
+                        candidate.confidence >= 0.8 && "border-green-500/30 bg-green-500/10 text-green-400"
+                      )}
+                    >
+                      {Math.round(candidate.confidence * 100)}%
+                    </Badge>
                   </div>
-                  <p className="text-sm text-muted-foreground">{meta.title}</p>
-                  <p className="text-sm leading-6 text-muted-foreground">{meta.detail}</p>
+                  <p className="text-xs text-muted-foreground">{meta.title}</p>
+                  <p className="line-clamp-2 text-xs leading-relaxed text-muted-foreground/70">{meta.detail}</p>
                 </div>
 
-                <Button
-                  type="button"
-                  size="sm"
-                  variant={isApplied ? "secondary" : "outline"}
-                  onClick={() => onApplyCandidate(candidate)}
+                <div
+                  className={cn(
+                    "flex size-6 shrink-0 items-center justify-center rounded-full transition-all",
+                    isApplied
+                      ? "bg-foreground text-background"
+                      : "border border-border/60 bg-accent/40 text-muted-foreground/50 group-hover:border-foreground/30 group-hover:text-foreground/70"
+                  )}
                 >
-                  {isApplied ? "已应用" : "应用此候选"}
-                </Button>
+                  <Check className={cn("size-3.5", !isApplied && "opacity-0 group-hover:opacity-100")} />
+                </div>
               </div>
-            </div>
+            </button>
           );
         })}
       </div>

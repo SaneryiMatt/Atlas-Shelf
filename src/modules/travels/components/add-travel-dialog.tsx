@@ -96,10 +96,10 @@ function AddTravelForm({ open, onSuccess }: AddTravelFormProps) {
 
   return (
     <>
-      <form action={formAction} className="mx-auto w-full max-w-2xl space-y-5 rounded-xl border border-border/70 bg-card/60 p-5 backdrop-blur">
+      <form action={formAction} className="mx-auto w-full max-w-2xl space-y-6">
         <div className="grid gap-5 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="placeName">地点名称</Label>
+            <Label htmlFor="placeName" className="text-sm font-medium text-foreground/90">地点名称</Label>
             <Input
               id="placeName"
               name="placeName"
@@ -107,12 +107,13 @@ function AddTravelForm({ open, onSuccess }: AddTravelFormProps) {
               onChange={(event) => handleFieldChange("placeName", event.target.value)}
               placeholder="例如：浅草寺"
               disabled={isPending}
+              className="border-border/50 bg-background/50 transition-colors focus:border-foreground/30 focus:bg-background/80"
             />
-            {state.fieldErrors.placeName ? <p className="text-sm text-red-600">{state.fieldErrors.placeName}</p> : null}
+            {state.fieldErrors.placeName ? <p className="text-xs text-red-400">{state.fieldErrors.placeName}</p> : null}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="country">国家或地区</Label>
+            <Label htmlFor="country" className="text-sm font-medium text-foreground/90">国家或地区</Label>
             <Input
               id="country"
               name="country"
@@ -120,14 +121,15 @@ function AddTravelForm({ open, onSuccess }: AddTravelFormProps) {
               onChange={(event) => handleFieldChange("country", event.target.value)}
               placeholder="例如：日本"
               disabled={isPending}
+              className="border-border/50 bg-background/50 transition-colors focus:border-foreground/30 focus:bg-background/80"
             />
-            {state.fieldErrors.country ? <p className="text-sm text-red-600">{state.fieldErrors.country}</p> : null}
+            {state.fieldErrors.country ? <p className="text-xs text-red-400">{state.fieldErrors.country}</p> : null}
           </div>
         </div>
 
         <div className="grid gap-5 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="city">城市</Label>
+            <Label htmlFor="city" className="text-sm font-medium text-foreground/90">城市</Label>
             <Input
               id="city"
               name="city"
@@ -135,22 +137,23 @@ function AddTravelForm({ open, onSuccess }: AddTravelFormProps) {
               onChange={(event) => handleFieldChange("city", event.target.value)}
               placeholder="例如：东京"
               disabled={isPending}
+              className="border-border/50 bg-background/50 transition-colors focus:border-foreground/30 focus:bg-background/80"
             />
-            {state.fieldErrors.city ? <p className="text-sm text-red-600">{state.fieldErrors.city}</p> : null}
+            {state.fieldErrors.city ? <p className="text-xs text-red-400">{state.fieldErrors.city}</p> : null}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="status">状态</Label>
+            <Label htmlFor="status" className="text-sm font-medium text-foreground/90">状态</Label>
             <Select
               name="status"
               value={formValues.status}
               onValueChange={(value) => handleFieldChange("status", value as TravelEditorValues["status"])}
               disabled={isPending}
             >
-              <SelectTrigger id="status" className="border-border/70 bg-background/70 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+              <SelectTrigger id="status" className="border-border/50 bg-background/50 transition-colors focus:border-foreground/30 focus:bg-background/80">
                 <SelectValue placeholder="请选择状态" />
               </SelectTrigger>
-              <SelectContent className="border-border/70 bg-background/80 backdrop-blur">
+              <SelectContent className="border-border/50 bg-card/95 backdrop-blur-xl">
                 {travelStatusOptions.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}
@@ -158,12 +161,12 @@ function AddTravelForm({ open, onSuccess }: AddTravelFormProps) {
                 ))}
               </SelectContent>
             </Select>
-            {state.fieldErrors.status ? <p className="text-sm text-red-600">{state.fieldErrors.status}</p> : null}
+            {state.fieldErrors.status ? <p className="text-xs text-red-400">{state.fieldErrors.status}</p> : null}
           </div>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="travelDate">旅行日期</Label>
+          <Label htmlFor="travelDate" className="text-sm font-medium text-foreground/90">旅行日期</Label>
           <Input
             id="travelDate"
             name="travelDate"
@@ -171,12 +174,13 @@ function AddTravelForm({ open, onSuccess }: AddTravelFormProps) {
             value={formValues.travelDate}
             onChange={(event) => handleFieldChange("travelDate", event.target.value)}
             disabled={isPending}
+            className="border-border/50 bg-background/50 transition-colors focus:border-foreground/30 focus:bg-background/80"
           />
-          {state.fieldErrors.travelDate ? <p className="text-sm text-red-600">{state.fieldErrors.travelDate}</p> : null}
+          {state.fieldErrors.travelDate ? <p className="text-xs text-red-400">{state.fieldErrors.travelDate}</p> : null}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="description">描述</Label>
+          <Label htmlFor="description" className="text-sm font-medium text-foreground/90">描述</Label>
           <Textarea
             id="description"
             name="description"
@@ -184,24 +188,25 @@ function AddTravelForm({ open, onSuccess }: AddTravelFormProps) {
             onChange={(event) => handleFieldChange("description", event.target.value)}
             placeholder="记录这个地点的印象、计划或为什么值得保存。"
             disabled={isPending}
+            className="min-h-[100px] resize-none border-border/50 bg-background/50 transition-colors focus:border-foreground/30 focus:bg-background/80"
           />
-          {state.fieldErrors.description ? <p className="text-sm text-red-600">{state.fieldErrors.description}</p> : null}
+          {state.fieldErrors.description ? <p className="text-xs text-red-400">{state.fieldErrors.description}</p> : null}
         </div>
 
         {state.message ? (
           <div
             className={
               state.status === "success"
-                ? "rounded-lg border border-green-500/20 bg-green-500/10 px-4 py-3 text-sm text-green-400"
-                : "rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400"
+                ? "rounded-xl border border-green-500/20 bg-green-500/10 px-4 py-3 text-sm text-green-400"
+                : "rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400"
             }
           >
             {state.message}
           </div>
         ) : null}
 
-        <DialogFooter>
-          <Button type="submit" size="lg" disabled={isPending}>
+        <DialogFooter className="border-t border-border/30 pt-5">
+          <Button type="submit" size="lg" disabled={isPending} className="min-w-[120px]">
             {isPending ? "保存中..." : "保存旅行地点"}
           </Button>
         </DialogFooter>
