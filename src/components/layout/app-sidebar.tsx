@@ -5,9 +5,10 @@ import { usePathname } from "next/navigation";
 import { Settings } from "lucide-react";
 import { useState } from "react";
 
-import { primaryNavigation, productName, productTagline } from "@/config/navigation";
-import { cn } from "@/lib/utils";
 import { SettingsModal } from "@/components/settings/settings-modal";
+import { primaryNavigation, productName, productTagline } from "@/config/navigation";
+import type { AppUserSummary } from "@/lib/auth";
+import { cn } from "@/lib/utils";
 
 function isActivePath(pathname: string, href: string) {
   if (href === "/") {
@@ -18,16 +19,16 @@ function isActivePath(pathname: string, href: string) {
 }
 
 interface SidebarContentProps {
+  user: AppUserSummary;
   onNavigate?: () => void;
 }
 
-export function SidebarContent({ onNavigate }: SidebarContentProps) {
+export function SidebarContent({ user, onNavigate }: SidebarContentProps) {
   const pathname = usePathname();
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   return (
     <div className="flex h-full flex-col">
-      {/* Logo 区域 */}
       <div className="space-y-1">
         <Link href="/" className="text-xl font-semibold text-foreground" onClick={onNavigate}>
           {productName}
@@ -35,7 +36,6 @@ export function SidebarContent({ onNavigate }: SidebarContentProps) {
         <p className="text-xs text-muted-foreground">{productTagline}</p>
       </div>
 
-      {/* 主导航 */}
       <nav className="mt-5 flex flex-col gap-1">
         {primaryNavigation.map((item) => {
           const Icon = item.icon;
@@ -60,9 +60,8 @@ export function SidebarContent({ onNavigate }: SidebarContentProps) {
         })}
       </nav>
 
-      {/* 底部设置按钮 */}
       <div className="mt-auto pt-4">
-        <div className="h-px bg-border/60 mb-4" />
+        <div className="mb-4 h-px bg-border/60" />
         <button
           onClick={() => setSettingsOpen(true)}
           className={cn(
@@ -75,15 +74,19 @@ export function SidebarContent({ onNavigate }: SidebarContentProps) {
         </button>
       </div>
 
-      <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
+      <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} user={user} />
     </div>
   );
 }
 
-export function AppSidebar() {
+interface AppSidebarProps {
+  user: AppUserSummary;
+}
+
+export function AppSidebar({ user }: AppSidebarProps) {
   return (
     <aside className="sticky top-0 flex h-screen flex-col gap-3 bg-background p-4">
-      <SidebarContent />
+      <SidebarContent user={user} />
     </aside>
   );
 }

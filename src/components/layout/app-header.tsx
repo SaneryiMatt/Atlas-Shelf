@@ -3,18 +3,19 @@
 import { useState } from "react";
 import { Bell, Menu, Search, Settings } from "lucide-react";
 
-import { SidebarContent } from "@/components/layout/app-sidebar";
 import { SignOutButton } from "@/components/auth/sign-out-button";
+import { SidebarContent } from "@/components/layout/app-sidebar";
 import { NavSearch } from "@/components/shared/nav-search";
 import { SettingsModal } from "@/components/settings/settings-modal";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import type { AppUserSummary } from "@/lib/auth";
 
 interface AppHeaderProps {
-  userEmail: string;
+  user: AppUserSummary;
 }
 
-export function AppHeader({ userEmail }: AppHeaderProps) {
+export function AppHeader({ user }: AppHeaderProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
@@ -34,7 +35,7 @@ export function AppHeader({ userEmail }: AppHeaderProps) {
                 <DialogTitle>导航菜单</DialogTitle>
               </DialogHeader>
               <div className="flex h-full flex-col">
-                <SidebarContent onNavigate={() => setDrawerOpen(false)} />
+                <SidebarContent user={user} onNavigate={() => setDrawerOpen(false)} />
               </div>
             </DialogContent>
           </Dialog>
@@ -59,13 +60,15 @@ export function AppHeader({ userEmail }: AppHeaderProps) {
           </Button>
 
           <div className="flex items-center gap-2 border-l border-border pl-2">
-            <span className="hidden text-sm text-muted-foreground lg:inline-block">{userEmail}</span>
+            <span className="hidden text-sm text-muted-foreground lg:inline-block">
+              {user.email ?? user.displayName}
+            </span>
             <SignOutButton />
           </div>
         </div>
       </div>
 
-      <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
+      <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} user={user} />
     </header>
   );
 }
