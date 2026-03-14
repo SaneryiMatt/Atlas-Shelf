@@ -23,6 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useTheme } from "@/components/theme/theme-provider";
 
 type SettingsSection = "account" | "appearance" | "api" | "data" | "about";
 
@@ -175,18 +176,25 @@ function AccountSection() {
 }
 
 function AppearanceSection() {
-  const [theme, setTheme] = useState<"system" | "light" | "dark">("dark");
+  const { theme, setTheme, resolvedTheme } = useTheme();
+
+  const themeOptions = [
+    { id: "system" as const, label: "跟随系统", icon: Monitor, description: "自动适配系统设置" },
+    { id: "light" as const, label: "浅色模式", icon: Sun, description: "明亮清爽的界面" },
+    { id: "dark" as const, label: "深色模式", icon: Moon, description: "护眼的深色主题" }
+  ];
 
   return (
     <div className="space-y-6">
       <div className="space-y-4">
-        <h3 className="text-sm font-medium text-foreground">主题模式</h3>
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-medium text-foreground">主题模式</h3>
+          <span className="text-xs text-muted-foreground">
+            当前: {resolvedTheme === "dark" ? "深色" : "浅色"}
+          </span>
+        </div>
         <div className="grid grid-cols-3 gap-3">
-          {[
-            { id: "system" as const, label: "跟随系统", icon: Monitor },
-            { id: "light" as const, label: "浅色模式", icon: Sun },
-            { id: "dark" as const, label: "深色模式", icon: Moon }
-          ].map((option) => {
+          {themeOptions.map((option) => {
             const Icon = option.icon;
             const isSelected = theme === option.id;
 
@@ -195,7 +203,7 @@ function AppearanceSection() {
                 key={option.id}
                 onClick={() => setTheme(option.id)}
                 className={cn(
-                  "flex flex-col items-center gap-3 rounded-xl border p-4 transition-all",
+                  "group flex flex-col items-center gap-3 rounded-xl border p-4 transition-all",
                   isSelected
                     ? "border-foreground/30 bg-accent/60 ring-1 ring-foreground/10"
                     : "border-border/40 bg-background/40 hover:border-foreground/20 hover:bg-accent/30"
@@ -204,17 +212,42 @@ function AppearanceSection() {
                 <div
                   className={cn(
                     "flex size-10 items-center justify-center rounded-lg transition-colors",
-                    isSelected ? "bg-foreground text-background" : "bg-accent text-foreground"
+                    isSelected ? "bg-foreground text-background" : "bg-accent text-foreground group-hover:bg-accent/80"
                   )}
                 >
                   <Icon className="size-5" />
                 </div>
-                <span className="text-sm font-medium text-foreground">{option.label}</span>
+                <div className="text-center">
+                  <span className="block text-sm font-medium text-foreground">{option.label}</span>
+                  <span className="mt-0.5 block text-[10px] text-muted-foreground">{option.description}</span>
+                </div>
               </button>
             );
           })}
         </div>
-        <p className="text-xs text-muted-foreground/70">当前版本仅支持深色模式，其他主题将在后续版本中提供。</p>
+      </div>
+
+      {/* 主题预览 */}
+      <div className="space-y-4">
+        <h3 className="text-sm font-medium text-foreground">预览效果</h3>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-xl border border-border/40 bg-[hsl(0_0%_100%)] p-4">
+            <div className="space-y-2">
+              <div className="h-2 w-12 rounded bg-[hsl(0_0%_9%)]" />
+              <div className="h-2 w-20 rounded bg-[hsl(0_0%_45%)]" />
+              <div className="mt-3 h-6 w-full rounded bg-[hsl(0_0%_96%)]" />
+            </div>
+            <p className="mt-3 text-center text-xs text-[hsl(0_0%_45%)]">浅色</p>
+          </div>
+          <div className="rounded-xl border border-border/40 bg-[hsl(0_0%_4%)] p-4">
+            <div className="space-y-2">
+              <div className="h-2 w-12 rounded bg-[hsl(0_0%_98%)]" />
+              <div className="h-2 w-20 rounded bg-[hsl(0_0%_64%)]" />
+              <div className="mt-3 h-6 w-full rounded bg-[hsl(0_0%_15%)]" />
+            </div>
+            <p className="mt-3 text-center text-xs text-[hsl(0_0%_64%)]">深色</p>
+          </div>
+        </div>
       </div>
 
       <div className="space-y-4">
@@ -404,7 +437,7 @@ function AboutSection() {
 
       <div className="rounded-xl border border-border/40 bg-background/40 p-4">
         <p className="text-xs leading-relaxed text-muted-foreground">
-          Atlas Shelf 是一个开源的个人记录管理工具，帮助你追踪阅读、观影和旅行体验。
+          Atlas Shelf 是一个��源的个人记录管理工具，帮助你追踪阅读、观影和旅行体验。
           使用 Next.js、Supabase 和 Tailwind CSS 构建。
         </p>
       </div>
