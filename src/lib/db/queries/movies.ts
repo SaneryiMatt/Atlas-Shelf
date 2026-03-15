@@ -1,4 +1,10 @@
-import { buildPagination, formatRatingLabel, formatUpdatedAtLabel, MODULE_LIST_PAGE_SIZE, parseModuleListParams } from "@/lib/module-list";
+﻿import {
+  buildPagination,
+  formatRatingLabel,
+  formatUpdatedAtLabel,
+  MODULE_LIST_PAGE_SIZE,
+  parseModuleListParams
+} from "@/lib/module-list";
 import { getProjectRowsByKind, type RpcProjectRow } from "@/lib/supabase/app-data";
 import type { ScreenListItem } from "@/lib/types/items";
 import { movieStatusLabels } from "@/modules/movies/screen-form-schema";
@@ -49,7 +55,7 @@ function buildEmptyMoviesPageData(sort: "updated" | "rating", page: number) {
       {
         label: "当前在看",
         value: "0",
-        detail: "统计状态为“在看”和“已暂停”的电影数量。",
+        detail: "统计状态为在看和已暂停的电影数量。",
         trend: "steady" as const
       },
       {
@@ -61,7 +67,7 @@ function buildEmptyMoviesPageData(sort: "updated" | "rating", page: number) {
       {
         label: "带笔记影片",
         value: "0",
-        detail: "当前账号下已生成“创建时备注”的电影数量。",
+        detail: "当前账号下已经填写备注的电影数量。",
         trend: "steady" as const
       }
     ],
@@ -74,10 +80,11 @@ function buildEmptyMoviesPageData(sort: "updated" | "rating", page: number) {
 
 export async function getMoviesPageData(searchParams?: { page?: string; sort?: string }) {
   const { page, sort } = parseModuleListParams(searchParams);
+  const resolvedSort = sort as "updated" | "rating";
 
   try {
     const rows = await getProjectRowsByKind("movie");
-    const sortedRows = sortMovieRows(rows, sort);
+    const sortedRows = sortMovieRows(rows, resolvedSort);
     const pagination = buildPagination(sortedRows.length, page, MODULE_LIST_PAGE_SIZE);
     const offset = (pagination.page - 1) * pagination.perPage;
     const visibleRows = sortedRows.slice(offset, offset + pagination.perPage);
@@ -87,7 +94,7 @@ export async function getMoviesPageData(searchParams?: { page?: string; sort?: s
         {
           label: "当前在看",
           value: String(rows.filter((row) => ["in_progress", "paused"].includes(row.status)).length),
-          detail: "统计状态为“在看”和“已暂停”的电影数量。",
+          detail: "统计状态为在看和已暂停的电影数量。",
           trend: "steady" as const
         },
         {
@@ -99,16 +106,16 @@ export async function getMoviesPageData(searchParams?: { page?: string; sort?: s
         {
           label: "带笔记影片",
           value: String(rows.filter((row) => Boolean(row.summary?.trim())).length),
-          detail: "当前账号下已生成“创建时备注”的电影数量。",
+          detail: "当前账号下已经填写备注的电影数量。",
           trend: "up" as const
         }
       ],
       items: visibleRows.map(toMovieListItem),
-      sort,
+      sort: resolvedSort,
       pagination,
       canCreateMovies: true
     };
   } catch {
-    return buildEmptyMoviesPageData(sort, page);
+    return buildEmptyMoviesPageData(resolvedSort, page);
   }
 }

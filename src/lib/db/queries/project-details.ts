@@ -1,11 +1,16 @@
-import { formatRatingLabel, formatUpdatedAtLabel } from "@/lib/module-list";
+﻿import { formatRatingLabel, formatUpdatedAtLabel } from "@/lib/module-list";
 import { getProjectDetail } from "@/lib/supabase/app-data";
 import { createSignedStorageUrl } from "@/lib/supabase/storage";
 import type {
+  ApplicationDetailPagePayload,
   BookDetailPagePayload,
   MovieDetailPagePayload,
   TravelDetailPagePayload
 } from "@/lib/types/items";
+import {
+  applicationResultLabels,
+  applicationStageLabels
+} from "@/modules/applications/application-form-schema";
 import { bookStatusLabels } from "@/modules/books/book-form-schema";
 import { movieStatusLabels } from "@/modules/movies/screen-form-schema";
 
@@ -61,12 +66,48 @@ function formatDateLabel(value: string | null | undefined) {
   }).format(date);
 }
 
+function formatDateTimeLabel(value: string | null | undefined) {
+  if (!value) {
+    return "待安排";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "待安排";
+  }
+
+  return new Intl.DateTimeFormat("zh-CN", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  }).format(date);
+}
+
 function formatDateInput(value: string | null | undefined) {
   if (!value) {
     return "";
   }
 
   return /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : value.slice(0, 10);
+}
+
+function formatDateTimeInput(value: string | null | undefined) {
+  if (!value) {
+    return "";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  const pad = (part: number) => String(part).padStart(2, "0");
+
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
 async function buildProjectRelations(projectId: string, projectTitle: string) {
@@ -164,7 +205,7 @@ export async function getBookDetailPageData(id: string): Promise<BookDetailPageP
 }
 
 export async function getMovieDetailPageData(id: string): Promise<MovieDetailPagePayload | null> {
-  const relations = await buildProjectRelations(id, "电影");
+  const relations = await buildProjectRelations(id, "影视");
 
   if (!relations || relations.project.type !== "screen") {
     return null;
@@ -244,5 +285,54 @@ export async function getTravelDetailPageData(id: string): Promise<TravelDetailP
       travelDate: formatDateInput(trip.startDate),
       description: trip.summary ?? ""
     }
+  };
+}
+
+export async function getApplicationDetailPageData(id: string): Promise<ApplicationDetailPagePayload | null> {
+  const relations = await buildProjectRelations(id, "投递");
+
+  if (!relations || relations.project.type !== "application") {
+    return null;
+  }
+
+  const application = relations.project;
+  const stageLabel = applicationStageLabels[application.applicationStage as keyof typeof applicationStageLabels] ?? application.applicationStage ?? "未填写";
+  const resultLabel = applicationResultLabels[application.applicationResult as keyof typeof applicationResultLabels] ?? application.applicationResult ?? "待定";
+
+  return {
+    detail: {
+      id: application.id,
+      title: application.title,
+      statusLabel: stageLabel,
+      ratingLabel: resultLabel,
+      summary: application.summary,
+      updatedAtLabel: formatUpdatedAtLabel(application.updatedAt),
+      fields: [
+        { label: "公司", value: application.company ?? "未填写" },
+        { label: "岗位", value: application.role ?? "未填写" },
+        { label: "来源", value: application.applicationSource ?? "未填写" },
+        { label: "投递时间", value: formatDateLabel(application.appliedAt) },
+        { label: "下一场面试", value: formatDateTimeLabel(application.interviewAt) }
+      ],
+      tags: [],
+      notes: [],
+      photos: [],
+      canManage: true
+    },
+    editor: {
+      company: application.company ?? "",
+      role: application.role ?? "",
+      source: application.applicationSource ?? "",
+      stage: application.applicationStage ?? "applied",
+      result: application.applicationResult ?? "pending",
+      appliedAt: formatDateInput(application.appliedAt),
+      interviewAt: formatDateTimeInput(application.interviewAt),
+      notes: application.summary ?? ""
+    },
+    headerMeta: [
+      { label: "进度", value: stageLabel, badge: true },
+      { label: "结果", value: resultLabel, badge: true },
+      { label: "更新", value: formatUpdatedAtLabel(application.updatedAt) }
+    ]
   };
 }

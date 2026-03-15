@@ -1,5 +1,5 @@
-import Link from "next/link";
-import { ChevronLeft, ChevronRight, Clock, Star, SlidersHorizontal } from "lucide-react";
+﻿import Link from "next/link";
+import { CalendarDays, ChevronLeft, ChevronRight, Clock, SlidersHorizontal, Star } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import type { ModuleListSort, PaginationInfo } from "@/lib/types/items";
@@ -9,7 +9,20 @@ interface ListControlsProps {
   currentSort: ModuleListSort;
   pagination: PaginationInfo;
   itemUnit: string;
+  sortOptions?: ModuleListSort[];
 }
+
+const sortLabels: Record<ModuleListSort, string> = {
+  updated: "时间",
+  rating: "评分",
+  applied: "投递"
+};
+
+const sortIcons = {
+  updated: Clock,
+  rating: Star,
+  applied: CalendarDays
+} as const;
 
 function buildHref(basePath: string, sort: ModuleListSort, page: number) {
   const params = new URLSearchParams({
@@ -20,7 +33,13 @@ function buildHref(basePath: string, sort: ModuleListSort, page: number) {
   return `${basePath}?${params.toString()}`;
 }
 
-export function ListControls({ basePath, currentSort, pagination, itemUnit }: ListControlsProps) {
+export function ListControls({
+  basePath,
+  currentSort,
+  pagination,
+  itemUnit,
+  sortOptions = ["updated", "rating"]
+}: ListControlsProps) {
   return (
     <div className="flex flex-col gap-4 rounded-lg border border-border bg-background p-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-center gap-3">
@@ -31,26 +50,23 @@ export function ListControls({ basePath, currentSort, pagination, itemUnit }: Li
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        {/* 排序按钮 */}
         <div className="flex gap-1">
-          <Button variant={currentSort === "updated" ? "secondary" : "ghost"} size="sm" asChild>
-            <Link href={buildHref(basePath, "updated", 1)}>
-              <Clock className="size-3.5" />
-              时间
-            </Link>
-          </Button>
-          <Button variant={currentSort === "rating" ? "secondary" : "ghost"} size="sm" asChild>
-            <Link href={buildHref(basePath, "rating", 1)}>
-              <Star className="size-3.5" />
-              评分
-            </Link>
-          </Button>
+          {sortOptions.map((sortOption) => {
+            const Icon = sortIcons[sortOption];
+
+            return (
+              <Button key={sortOption} variant={currentSort === sortOption ? "secondary" : "ghost"} size="sm" asChild>
+                <Link href={buildHref(basePath, sortOption, 1)}>
+                  <Icon className="size-3.5" />
+                  {sortLabels[sortOption]}
+                </Link>
+              </Button>
+            );
+          })}
         </div>
 
-        {/* 分隔线 */}
         <div className="mx-1 h-4 w-px bg-border" />
 
-        {/* 分页按钮 */}
         <div className="flex gap-1">
           {pagination.hasPreviousPage ? (
             <Button variant="ghost" size="sm" asChild>

@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { revalidatePath } from "next/cache";
 
@@ -93,7 +93,7 @@ function getValidatedPhotoFile(fileEntry: FormDataEntryValue | null) {
   };
 }
 
-function revalidateProjectPhotoPaths(projectType: "book" | "screen" | "travel", projectId: string) {
+function revalidateProjectPhotoPaths(projectType: "book" | "screen" | "travel" | "application", projectId: string) {
   if (projectType === "book") {
     revalidatePath("/books");
     revalidatePath(`/books/${projectId}`);
@@ -110,8 +110,16 @@ function revalidateProjectPhotoPaths(projectType: "book" | "screen" | "travel", 
     return;
   }
 
-  revalidatePath("/travels");
-  revalidatePath(`/travels/${projectId}`);
+  if (projectType === "travel") {
+    revalidatePath("/travels");
+    revalidatePath(`/travels/${projectId}`);
+    revalidatePath("/settings");
+    revalidatePath("/", "layout");
+    return;
+  }
+
+  revalidatePath("/applications");
+  revalidatePath(`/applications/${projectId}`);
   revalidatePath("/settings");
   revalidatePath("/", "layout");
 }
@@ -152,12 +160,11 @@ export async function uploadProjectPhotoAction(
       contentType
     });
 
-    const asset = uploadedAsset;
     const result = await createPhotoRecord({
       projectId,
       storageBucket: mediaStorageBucket,
-      storagePath: asset.path,
-      publicUrl: asset.publicUrl,
+      storagePath: uploadedAsset.path,
+      publicUrl: uploadedAsset.publicUrl,
       contentType
     });
 

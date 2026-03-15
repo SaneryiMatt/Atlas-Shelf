@@ -1,11 +1,11 @@
-import type { SupabaseClient } from "@supabase/supabase-js";
+﻿import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { env } from "@/lib/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export interface RpcProjectRow {
   id: string;
-  type: "book" | "screen" | "travel";
+  type: "book" | "screen" | "travel" | "application";
   status: string;
   title: string;
   slug: string;
@@ -28,6 +28,13 @@ export interface RpcProjectRow {
   travelStage: string | null;
   startDate: string | null;
   endDate: string | null;
+  company: string | null;
+  role: string | null;
+  applicationSource: string | null;
+  applicationStage: string | null;
+  applicationResult: string | null;
+  appliedAt: string | null;
+  interviewAt: string | null;
   tagNames: string[];
 }
 
@@ -72,7 +79,7 @@ export interface RpcSettingsSnapshot {
   projects: Array<{
     id: string;
     title: string;
-    type: "book" | "screen" | "travel";
+    type: "book" | "screen" | "travel" | "application";
     status: string;
     updatedAt: string;
   }>;
@@ -113,7 +120,7 @@ export interface RpcDeleteProjectResult {
 
 export interface RpcPhotoMutationResult {
   projectId: string;
-  projectType: "book" | "screen" | "travel";
+  projectType: "book" | "screen" | "travel" | "application";
   photoId?: string;
   storageBucket?: string;
   storagePath?: string;
@@ -166,7 +173,7 @@ export async function getDashboardProjectRows(client?: SupabaseClient) {
   return callRpc<RpcProjectRow[]>("app_dashboard_snapshot", undefined, client);
 }
 
-export async function getProjectRowsByKind(kind: "book" | "movie" | "travel", client?: SupabaseClient) {
+export async function getProjectRowsByKind(kind: "book" | "movie" | "travel" | "application", client?: SupabaseClient) {
   return callRpc<RpcProjectRow[]>("app_project_list", { kind }, client);
 }
 
@@ -175,11 +182,7 @@ export async function getProjectDetail(projectId: string, client?: SupabaseClien
 }
 
 export async function searchProjects(query: string, limit = 10, client?: SupabaseClient) {
-  return callRpc<RpcProjectRow[]>(
-    "app_search_projects",
-    { query, result_limit: limit },
-    client
-  );
+  return callRpc<RpcProjectRow[]>("app_search_projects", { query, result_limit: limit }, client);
 }
 
 export async function getNotificationFeed(client?: SupabaseClient) {
@@ -190,47 +193,74 @@ export async function getSettingsSnapshot(client?: SupabaseClient) {
   return callRpc<RpcSettingsSnapshot>("app_settings_snapshot", undefined, client);
 }
 
-export async function upsertBook(payload: {
-  projectId?: string;
-  title: string;
-  author: string;
-  status: string;
-  rating: string;
-  startedAt: string;
-  completedAt: string;
-  summary: string;
-  tags: string[];
-  slug?: string;
-}, client?: SupabaseClient) {
+export async function upsertBook(
+  payload: {
+    projectId?: string;
+    title: string;
+    author: string;
+    status: string;
+    rating: string;
+    startedAt: string;
+    completedAt: string;
+    summary: string;
+    tags: string[];
+    slug?: string;
+  },
+  client?: SupabaseClient
+) {
   return callRpc<RpcDeleteProjectResult>("app_upsert_book", { payload }, client);
 }
 
-export async function upsertMovie(payload: {
-  projectId?: string;
-  title: string;
-  director: string;
-  releaseYear: string;
-  platform: string;
-  status: string;
-  rating: string;
-  note: string;
-  tags: string[];
-  slug?: string;
-}, client?: SupabaseClient) {
+export async function upsertMovie(
+  payload: {
+    projectId?: string;
+    title: string;
+    director: string;
+    releaseYear: string;
+    platform: string;
+    status: string;
+    rating: string;
+    note: string;
+    tags: string[];
+    slug?: string;
+  },
+  client?: SupabaseClient
+) {
   return callRpc<RpcDeleteProjectResult>("app_upsert_movie", { payload }, client);
 }
 
-export async function upsertTravel(payload: {
-  projectId?: string;
-  placeName: string;
-  country: string;
-  city: string;
-  status: string;
-  travelDate: string;
-  description: string;
-  slug?: string;
-}, client?: SupabaseClient) {
+export async function upsertTravel(
+  payload: {
+    projectId?: string;
+    placeName: string;
+    country: string;
+    city: string;
+    status: string;
+    travelDate: string;
+    description: string;
+    slug?: string;
+  },
+  client?: SupabaseClient
+) {
   return callRpc<RpcDeleteProjectResult>("app_upsert_travel", { payload }, client);
+}
+
+export async function upsertApplication(
+  payload: {
+    projectId?: string;
+    company: string;
+    role: string;
+    source: string;
+    stage: string;
+    result: string;
+    appliedAt: string;
+    interviewAt: string;
+    notes: string;
+    slug?: string;
+  },
+  client?: SupabaseClient
+) {
+  return callRpc<RpcDeleteProjectResult>("app_upsert_application", { payload }, client);
 }
 
 export async function deleteOwnedProject(projectId: string, client?: SupabaseClient) {

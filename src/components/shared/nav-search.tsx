@@ -3,14 +3,14 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { BookOpen, Clapperboard, MapPin, Search, X } from "lucide-react";
+import { BookOpen, Briefcase, Clapperboard, MapPin, Search, X } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 interface SearchResultItem {
   id: string;
-  kind: "book" | "movie" | "travel";
+  kind: "book" | "movie" | "travel" | "application";
   title: string;
   href: string;
   meta: string;
@@ -19,13 +19,15 @@ interface SearchResultItem {
 const kindIcons = {
   book: BookOpen,
   movie: Clapperboard,
-  travel: MapPin
+  travel: MapPin,
+  application: Briefcase
 } as const;
 
 const kindLabels = {
   book: "书籍",
   movie: "影视",
-  travel: "旅行"
+  travel: "旅行",
+  application: "投递"
 } as const;
 
 interface NavSearchProps {

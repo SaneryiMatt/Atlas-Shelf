@@ -1,6 +1,7 @@
-import { settingsPanels } from "@/lib/db/mock-data";
+﻿import { settingsPanels } from "@/lib/db/mock-data";
 import { env, hasDatabaseUrl, hasSupabaseConfig, hasSupabaseServiceRole } from "@/lib/env";
 import { getSettingsSnapshot } from "@/lib/supabase/app-data";
+import type { ItemType } from "@/lib/types/items";
 
 function formatTimestamp(date: string | null) {
   if (!date) {
@@ -22,7 +23,7 @@ export async function getSettingsPageData() {
         projects: Array<{
           id: string;
           title: string;
-          type: "book" | "screen" | "travel";
+          type: ItemType;
           status: string;
           updatedAtLabel: string;
         }>;
@@ -71,7 +72,7 @@ export async function getSettingsPageData() {
 
     databasePreview = {
       status: "unavailable",
-      message: `当前账号的数据预览不可用：${message}`,
+      message: `当前账户的数据预览不可用：${message}`,
       projects: [],
       notes: [],
       tags: []

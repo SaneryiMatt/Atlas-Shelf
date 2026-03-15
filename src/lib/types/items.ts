@@ -1,7 +1,7 @@
-export type ItemType = "book" | "screen" | "travel";
+﻿export type ItemType = "book" | "screen" | "travel" | "application";
 export type ItemStatus = "wishlist" | "planned" | "in_progress" | "completed" | "paused";
 export type TrendDirection = "up" | "steady" | "down";
-export type ModuleListSort = "updated" | "rating";
+export type ModuleListSort = "updated" | "rating" | "applied";
 
 export interface DashboardStat {
   label: string;
@@ -13,7 +13,7 @@ export interface DashboardStat {
 export interface QueueItem {
   id: string;
   title: string;
-  type: ItemType;
+  type: "book" | "screen";
   status: string;
   meta: string;
   summary: string;
@@ -66,6 +66,23 @@ export interface TravelOverviewItem {
 
 export interface TravelListItem extends TravelOverviewItem {
   ratingLabel: string;
+  updatedAtLabel: string;
+}
+
+export interface ApplicationOverviewItem {
+  id: string;
+  title: string;
+  company: string;
+  role: string;
+  source: string;
+  stageLabel: string;
+  resultLabel: string;
+  appliedAtLabel: string;
+  interviewAtLabel: string;
+  summary: string;
+}
+
+export interface ApplicationListItem extends ApplicationOverviewItem {
   updatedAtLabel: string;
 }
 
@@ -146,7 +163,7 @@ export interface ProjectTagPreview {
   usageCount: number;
 }
 
-export type SearchResultKind = "book" | "movie" | "travel";
+export type SearchResultKind = "book" | "movie" | "travel" | "application";
 
 export interface SearchResultItem {
   id: string;
@@ -156,7 +173,8 @@ export interface SearchResultItem {
   summary: string;
   meta: string;
   statusLabel: string;
-  ratingLabel: string;
+  metricLabel: string;
+  metricValue: string;
   updatedAtLabel: string;
   tags: string[];
 }
@@ -177,6 +195,12 @@ export interface SearchPageData {
 export interface ProjectDetailField {
   label: string;
   value: string;
+}
+
+export interface ProjectDetailMetaItem {
+  label: string;
+  value: string;
+  badge?: boolean;
 }
 
 export interface ProjectDetailTag {
@@ -251,6 +275,17 @@ export interface TravelEditorValues {
   description: string;
 }
 
+export interface ApplicationEditorValues {
+  company: string;
+  role: string;
+  source: string;
+  stage: string;
+  result: string;
+  appliedAt: string;
+  interviewAt: string;
+  notes: string;
+}
+
 export interface BookDetailPagePayload {
   detail: ProjectDetailPageData;
   editor: BookEditorValues;
@@ -266,6 +301,12 @@ export interface TravelDetailPagePayload {
   editor: TravelEditorValues;
 }
 
+export interface ApplicationDetailPagePayload {
+  detail: ProjectDetailPageData;
+  editor: ApplicationEditorValues;
+  headerMeta: ProjectDetailMetaItem[];
+}
+
 export interface PaginationInfo {
   page: number;
   perPage: number;
@@ -274,13 +315,14 @@ export interface PaginationInfo {
   hasPreviousPage: boolean;
   hasNextPage: boolean;
 }
+
 export type NotificationStatus = "active" | "read" | "processed";
 export type NotificationKind = "book_stale" | "screen_stale" | "travel_upcoming";
 
 export interface NotificationItem {
   key: string;
   kind: NotificationKind;
-  sourceType: ItemType;
+  sourceType: "book" | "screen" | "travel";
   title: string;
   description: string;
   href: string;

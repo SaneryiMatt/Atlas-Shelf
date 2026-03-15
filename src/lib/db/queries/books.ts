@@ -1,5 +1,11 @@
-import { bookNotes } from "@/lib/db/mock-data";
-import { buildPagination, formatRatingLabel, formatUpdatedAtLabel, MODULE_LIST_PAGE_SIZE, parseModuleListParams } from "@/lib/module-list";
+﻿import { bookNotes } from "@/lib/db/mock-data";
+import {
+  buildPagination,
+  formatRatingLabel,
+  formatUpdatedAtLabel,
+  MODULE_LIST_PAGE_SIZE,
+  parseModuleListParams
+} from "@/lib/module-list";
 import { getProjectRowsByKind, type RpcProjectRow } from "@/lib/supabase/app-data";
 import type { BookListItem } from "@/lib/types/items";
 import { bookStatusLabels } from "@/modules/books/book-form-schema";
@@ -65,7 +71,7 @@ function buildEmptyBooksPageData(sort: "updated" | "rating", page: number) {
       {
         label: "当前在读",
         value: "0",
-        detail: "统计状态为“在读”和“已暂停”的书籍数量。",
+        detail: "统计状态为在读和已暂停的书籍数量。",
         trend: "steady" as const
       },
       {
@@ -77,7 +83,7 @@ function buildEmptyBooksPageData(sort: "updated" | "rating", page: number) {
       {
         label: "带笔记书目",
         value: "0",
-        detail: "当前账号下已生成“创建时备注”的书籍数量。",
+        detail: "当前账号下已经填写备注的书籍数量。",
         trend: "steady" as const
       }
     ],
@@ -91,10 +97,11 @@ function buildEmptyBooksPageData(sort: "updated" | "rating", page: number) {
 
 export async function getBooksPageData(searchParams?: { page?: string; sort?: string }) {
   const { page, sort } = parseModuleListParams(searchParams);
+  const resolvedSort = sort as "updated" | "rating";
 
   try {
     const rows = await getProjectRowsByKind("book");
-    const sortedRows = sortBookRows(rows, sort);
+    const sortedRows = sortBookRows(rows, resolvedSort);
     const pagination = buildPagination(sortedRows.length, page, MODULE_LIST_PAGE_SIZE);
     const offset = (pagination.page - 1) * pagination.perPage;
     const visibleRows = sortedRows.slice(offset, offset + pagination.perPage);
@@ -104,7 +111,7 @@ export async function getBooksPageData(searchParams?: { page?: string; sort?: st
         {
           label: "当前在读",
           value: String(rows.filter((row) => ["in_progress", "paused"].includes(row.status)).length),
-          detail: "统计状态为“在读”和“已暂停”的书籍数量。",
+          detail: "统计状态为在读和已暂停的书籍数量。",
           trend: "steady" as const
         },
         {
@@ -116,17 +123,17 @@ export async function getBooksPageData(searchParams?: { page?: string; sort?: st
         {
           label: "带笔记书目",
           value: String(rows.filter((row) => Boolean(row.summary?.trim())).length),
-          detail: "当前账号下已生成“创建时备注”的书籍数量。",
+          detail: "当前账号下已经填写备注的书籍数量。",
           trend: "up" as const
         }
       ],
       notes: bookNotes,
       items: visibleRows.map(toBookListItem),
-      sort,
+      sort: resolvedSort,
       pagination,
       canCreateBooks: true
     };
   } catch {
-    return buildEmptyBooksPageData(sort, page);
+    return buildEmptyBooksPageData(resolvedSort, page);
   }
 }

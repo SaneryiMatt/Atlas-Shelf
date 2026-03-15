@@ -1,7 +1,6 @@
-import type { Metadata, Viewport } from "next";
+﻿import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import type { ReactNode } from "react";
-import { SpeedInsights } from "@vercel/speed-insights/next"
 
 import "@/app/globals.css";
 import { cn } from "@/lib/utils";
@@ -16,7 +15,7 @@ export const metadata: Metadata = {
     default: "Atlas Shelf",
     template: "%s | Atlas Shelf"
   },
-  description: "一个用于记录书籍、影视与旅行地点的个人追踪系统。",
+  description: "一个用于记录书籍、影视、旅行与求职投递进度的个人追踪系统。",
   metadataBase: new URL("https://example.com")
 };
 
@@ -31,4 +30,3 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
     </html>
   );
 }
-

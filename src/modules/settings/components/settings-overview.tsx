@@ -1,4 +1,4 @@
-import { CheckCircle2, CircleDashed, DatabaseZap, ShieldCheck, WandSparkles } from "lucide-react";
+﻿import { CheckCircle2, CircleDashed, DatabaseZap, ShieldCheck, WandSparkles } from "lucide-react";
 
 import { PageHeader } from "@/components/shared/page-header";
 import { SectionCard } from "@/components/shared/section-card";
@@ -10,11 +10,12 @@ import type {
   SettingsPanel
 } from "@/lib/types/items";
 
-const projectTypeLabels = {
+const projectTypeLabels: Record<ProjectPreview["type"], string> = {
   book: "书籍",
   screen: "影视",
-  travel: "旅行"
-} as const;
+  travel: "旅行",
+  application: "投递"
+};
 
 const noteTypeLabels: Record<string, string> = {
   general: "通用",
@@ -54,12 +55,12 @@ export function SettingsOverview({ envStatus, panels, databasePreview }: Setting
     <div className="space-y-8">
       <PageHeader
         eyebrow="设置模块"
-        title="把权限边界、运行环境和数据入口收拢到同一处查看"
-        description="这里展示当前项目的环境准备度，以及数据库层强隔离改造后的实时数据快照。"
+        title="在同一处查看环境准备、运行状态和当前账号的数据快照。"
+        description="这里聚合当前项目的环境变量检查、架构运行面板，以及通过 Supabase 会话和 RLS 读取到的实时数据预览。"
       />
 
       <section className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
-        <SectionCard title="环境准备情况" description="确认迁移、RLS 访问链路和管理员脚本是否具备运行条件。">
+        <SectionCard title="环境准备情况" description="确认迁移、RLS 访问链路和管理脚本是否具备运行条件。">
           <div className="space-y-4">
             {envStatus.map((entry) => (
               <div key={entry.key} className="flex items-start justify-between gap-4 rounded-3xl border border-border/60 bg-background/70 p-5">
@@ -76,7 +77,7 @@ export function SettingsOverview({ envStatus, panels, databasePreview }: Setting
           </div>
         </SectionCard>
 
-        <SectionCard title="运行面板" description="聚合当前项目的架构状态，便于确认运行时是否仍有绕过 RLS 的旧路径。">
+        <SectionCard title="运行面板" description="集中展示当前项目的重要运行状态，方便检查是否仍存在绕过 RLS 的旧链路。">
           <div className="space-y-4">
             {panels.map((panel) => (
               <div key={panel.title} className="rounded-3xl border border-border/60 bg-background/70 p-5">
@@ -94,7 +95,7 @@ export function SettingsOverview({ envStatus, panels, databasePreview }: Setting
 
       <SectionCard
         title="当前账号数据快照"
-        description="以下数据通过 Supabase 会话 + RLS RPC 读取，只展示当前登录账号拥有的项目、笔记和标签。"
+        description="以下数据通过 Supabase 会话和受限 RPC 读取，只展示当前登录账号拥有的数据。"
       >
         <div className="flex flex-wrap items-center gap-3">
           <Badge variant={databasePreview?.status === "live" ? "success" : "outline"}>
@@ -166,19 +167,19 @@ export function SettingsOverview({ envStatus, panels, databasePreview }: Setting
         </div>
       </SectionCard>
 
-      <SectionCard title="生产接入状态" description="数据库层强隔离上线后，用户态请求只应通过 RLS 和受控 RPC 进入数据层。">
+      <SectionCard title="生产接入状态" description="数据库层隔离上线后，用户态请求只应通过 RLS 和受限 RPC 进入数据层。">
         <div className="grid gap-4 md:grid-cols-3">
           <div className="rounded-3xl bg-background/70 p-5 text-sm leading-6 text-muted-foreground">
             <ShieldCheck className="mb-3 size-5 text-primary" />
-            账号隔离已经下沉到数据库层，项目、标签、笔记、通知和照片都依赖同一套 owner 约束与 RLS policy。
+            账号隔离已经下沉到数据库层，项目、标签、笔记、通知和照片都依赖同一套 owner 约束和 RLS policy。
           </div>
           <div className="rounded-3xl bg-background/70 p-5 text-sm leading-6 text-muted-foreground">
             <DatabaseZap className="mb-3 size-5 text-primary" />
-            运行时读取改走 RPC，避免 Next.js 继续通过高权限连接直接查询底层业务表。
+            运行时读写改走 RPC，避免 Next.js 继续通过高权限连接直接查询底层业务表。
           </div>
           <div className="rounded-3xl bg-background/70 p-5 text-sm leading-6 text-muted-foreground">
             <WandSparkles className="mb-3 size-5 text-primary" />
-            私有媒体 bucket 与 signed URL 已纳入同一条链路，后续只需要执行迁移和存量媒体重定位脚本即可完成切换。
+            私有媒体 bucket 的 signed URL 已纳入同一链路，后续只需要执行迁移和存量媒体重定位脚本即可完成切换。
           </div>
         </div>
       </SectionCard>

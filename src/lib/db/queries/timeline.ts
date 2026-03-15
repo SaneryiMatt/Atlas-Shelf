@@ -1,4 +1,4 @@
-import { getDashboardProjectRows, type RpcProjectRow } from "@/lib/supabase/app-data";
+﻿import { getDashboardProjectRows, type RpcProjectRow } from "@/lib/supabase/app-data";
 import type { TimelineEvent, TimelineMonthGroup, TimelinePageData } from "@/lib/types/items";
 
 const screenFormatLabels = {
@@ -7,11 +7,6 @@ const screenFormatLabels = {
   anime: "动画",
   documentary: "纪录片"
 } as const;
-
-type TimelineEntry = {
-  event: TimelineEvent;
-  occurredAt: Date;
-};
 
 function toTimelineDate(value: string | null | undefined) {
   if (!value) {
@@ -39,7 +34,7 @@ function formatTimelineMonthLabel(date: Date) {
   }).format(date);
 }
 
-function buildTimelineGroups(entries: TimelineEntry[]): TimelinePageData {
+function buildTimelineGroups(entries: Array<{ event: TimelineEvent; occurredAt: Date }>): TimelinePageData {
   const groups = new Map<string, TimelineMonthGroup>();
 
   for (const entry of entries) {
@@ -62,11 +57,13 @@ function buildTimelineGroups(entries: TimelineEntry[]): TimelinePageData {
   };
 }
 
-function rowToTimelineEntry(row: RpcProjectRow): TimelineEntry | null {
+function rowToTimelineEntry(row: RpcProjectRow) {
   const occurredAt =
     row.type === "travel"
       ? toTimelineDate(row.startDate) ?? toTimelineDate(row.updatedAt) ?? toTimelineDate(row.createdAt)
-      : toTimelineDate(row.completedAt) ?? toTimelineDate(row.startedAt) ?? toTimelineDate(row.updatedAt) ?? toTimelineDate(row.createdAt);
+      : row.type === "application"
+        ? toTimelineDate(row.appliedAt) ?? toTimelineDate(row.updatedAt) ?? toTimelineDate(row.createdAt)
+        : toTimelineDate(row.completedAt) ?? toTimelineDate(row.startedAt) ?? toTimelineDate(row.updatedAt) ?? toTimelineDate(row.createdAt);
 
   if (!occurredAt) {
     return null;
@@ -79,7 +76,7 @@ function rowToTimelineEntry(row: RpcProjectRow): TimelineEntry | null {
         id: row.id,
         title: row.title,
         date: formatTimelineDateLabel(occurredAt),
-        kind: "book",
+        kind: "book" as const,
         badge: "书籍",
         description: row.summary?.trim() || `作者：${row.author ?? "未知作者"}`,
         href: `/books/${row.id}`
@@ -97,10 +94,25 @@ function rowToTimelineEntry(row: RpcProjectRow): TimelineEntry | null {
         id: row.id,
         title: row.title,
         date: formatTimelineDateLabel(occurredAt),
-        kind: "screen",
+        kind: "screen" as const,
         badge: formatLabel,
         description: row.summary?.trim() || fallbackDescription || "影视记录",
         href: `/movies/${row.id}`
+      }
+    };
+  }
+
+  if (row.type === "travel") {
+    return {
+      occurredAt,
+      event: {
+        id: row.id,
+        title: row.title,
+        date: formatTimelineDateLabel(occurredAt),
+        kind: "travel" as const,
+        badge: "旅行",
+        description: row.summary?.trim() || [row.country, row.city].filter(Boolean).join(" · ") || "旅行记录",
+        href: `/travels/${row.id}`
       }
     };
   }
@@ -111,10 +123,10 @@ function rowToTimelineEntry(row: RpcProjectRow): TimelineEntry | null {
       id: row.id,
       title: row.title,
       date: formatTimelineDateLabel(occurredAt),
-      kind: "travel",
-      badge: "旅行",
-      description: row.summary?.trim() || [row.country, row.city].filter(Boolean).join(" · ") || "旅行记录",
-      href: `/travels/${row.id}`
+      kind: "application" as const,
+      badge: "投递",
+      description: row.summary?.trim() || [row.company, row.role, row.applicationSource].filter(Boolean).join(" · ") || "投递记录",
+      href: `/applications/${row.id}`
     }
   };
 }
@@ -124,7 +136,7 @@ export async function getTimelinePageData(): Promise<TimelinePageData> {
     const rows = await getDashboardProjectRows();
     const entries = rows
       .map(rowToTimelineEntry)
-      .filter((entry): entry is TimelineEntry => entry !== null)
+      .filter((entry): entry is NonNullable<ReturnType<typeof rowToTimelineEntry>> => entry !== null)
       .sort((left, right) => right.occurredAt.getTime() - left.occurredAt.getTime());
 
     return buildTimelineGroups(entries);

@@ -1,5 +1,5 @@
-import Link from "next/link";
-import { ArrowRight, BookOpen, Clapperboard, MapPin, Clock } from "lucide-react";
+﻿import Link from "next/link";
+import { ArrowRight, BookOpen, Clapperboard, Clock, MapPin } from "lucide-react";
 
 import { SimpleColumnChart } from "@/components/shared/simple-column-chart";
 import { SimpleDonutChart } from "@/components/shared/simple-donut-chart";
@@ -9,20 +9,17 @@ import type { DashboardAnalyticsData, DashboardStat, QueueItem, TimelineEvent } 
 
 const queueBadgeVariant = {
   book: "warm",
-  screen: "outline",
-  travel: "success"
+  screen: "outline"
 } as const;
 
 const queueTypeLabel = {
   book: "书籍",
-  screen: "影视",
-  travel: "旅行"
+  screen: "影视"
 } as const;
 
 const queueDetailHref = {
   book: (id: string) => `/books/${id}`,
-  screen: (id: string) => `/movies/${id}`,
-  travel: (id: string) => `/travels/${id}`
+  screen: (id: string) => `/movies/${id}`
 } as const;
 
 const statIcons = [BookOpen, Clapperboard, MapPin, Clock] as const;
@@ -34,36 +31,46 @@ interface DashboardOverviewProps {
   analytics: DashboardAnalyticsData;
 }
 
-function StatCard({ label, value, index }: DashboardStat & { index: number }) {
+function StatCard({ label, value, detail, index }: DashboardStat & { index: number }) {
   const Icon = statIcons[index] ?? Clock;
 
   return (
-    <div className="flex items-center gap-4 border-r border-border/30 px-6 last:border-r-0">
-      <div className="flex size-10 items-center justify-center rounded-full border border-border/50">
-        <Icon className="size-4 text-muted-foreground" />
+    <div className="rounded-lg border border-border/40 bg-card/20 p-4">
+      <div className="flex items-center gap-3">
+        <div className="flex size-10 items-center justify-center rounded-full border border-border/50">
+          <Icon className="size-4 text-muted-foreground" />
+        </div>
+        <div>
+          <p className="text-2xl font-semibold tracking-tight text-foreground">{value}</p>
+          <p className="text-xs text-muted-foreground">{label}</p>
+        </div>
       </div>
-      <div>
-        <p className="text-2xl font-semibold tracking-tight text-foreground">{value}</p>
-        <p className="text-xs text-muted-foreground">{label}</p>
-      </div>
+      <p className="mt-3 text-xs leading-5 text-muted-foreground">{detail}</p>
     </div>
   );
 }
 
 export function DashboardOverview({ stats, focusItems, recentMoments, analytics }: DashboardOverviewProps) {
-  // 限制时间线最多显示5条
   const limitedMoments = recentMoments.slice(0, 5);
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
-      {/* 简洁标题 */}
-      <header className="mb-12">
+      <header className="mb-12 space-y-3">
         <h1 className="text-3xl font-semibold tracking-tight text-foreground">{analytics.year} 年度概览</h1>
+        <p className="text-sm leading-6 text-muted-foreground">
+          从书籍、影视、旅行和投递记录里提取年度分布、最近动态和当前关注事项。
+        </p>
       </header>
 
-      {/* 图表区域 */}
+      {stats.length ? (
+        <section className="mb-10 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {stats.map((stat, index) => (
+            <StatCard key={stat.label} {...stat} index={index} />
+          ))}
+        </section>
+      ) : null}
+
       <section className="mb-10 grid gap-6 lg:grid-cols-3">
-        {/* 类型分布 */}
         <div className="rounded-lg border border-border/40 bg-card/20 p-5">
           <h3 className="mb-4 text-sm font-medium text-muted-foreground">类型分布</h3>
           <SimpleDonutChart
@@ -73,7 +80,6 @@ export function DashboardOverview({ stats, focusItems, recentMoments, analytics 
           />
         </div>
 
-        {/* 评分分布 */}
         <div className="rounded-lg border border-border/40 bg-card/20 p-5">
           <h3 className="mb-4 text-sm font-medium text-muted-foreground">评分分布</h3>
           <SimpleDonutChart
@@ -83,22 +89,19 @@ export function DashboardOverview({ stats, focusItems, recentMoments, analytics 
           />
         </div>
 
-        {/* 月度趋势 */}
         <div className="rounded-lg border border-border/40 bg-card/20 p-5">
           <h3 className="mb-4 text-sm font-medium text-muted-foreground">月度趋势</h3>
           <SimpleColumnChart items={analytics.monthlyTrend} />
         </div>
       </section>
 
-      {/* 主内容区 - 两栏布局 */}
       <div className="grid gap-10 lg:grid-cols-5">
-        {/* 左侧：进行中 */}
         <section className="lg:col-span-3">
           <div className="mb-6 flex items-center justify-between">
             <h2 className="text-lg font-medium text-foreground">进行中</h2>
             <span className="text-sm text-muted-foreground">{focusItems.length} 项</span>
           </div>
-          
+
           {focusItems.length ? (
             <div className="space-y-3">
               {focusItems.map((item) => (
@@ -127,18 +130,14 @@ export function DashboardOverview({ stats, focusItems, recentMoments, analytics 
           )}
         </section>
 
-        {/* 右侧：时间线 */}
         <section className="lg:col-span-2">
           <div className="mb-6 flex items-center justify-between">
             <h2 className="text-lg font-medium text-foreground">最近动态</h2>
-            <Link 
-              href="/timeline" 
-              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-            >
+            <Link href="/timeline" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
               查看全部
             </Link>
           </div>
-          
+
           {limitedMoments.length ? (
             <TimelineFeed events={limitedMoments} />
           ) : (

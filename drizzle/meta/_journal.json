@@ -50,6 +50,13 @@
             "when": 1773490200000,
             "tag": "0006_private_schema_rpc_helpers",
             "breakpoints": true
+        },
+        {
+            "idx": 7,
+            "version": "7",
+            "when": 1773576000000,
+            "tag": "0007_applications_module",
+            "breakpoints": true
         }
     ]
 }

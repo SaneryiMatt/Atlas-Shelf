@@ -1,10 +1,11 @@
-import { getDashboardProjectRows, type RpcProjectRow } from "@/lib/supabase/app-data";
+﻿import { getDashboardProjectRows, type RpcProjectRow } from "@/lib/supabase/app-data";
 import type { ChartDatum, DashboardAnalyticsData, DashboardStat, QueueItem, TimelineEvent } from "@/lib/types/items";
 
 const chartAccents = {
   book: "#c59d5f",
   screen: "#5f897d",
   travel: "#7c9470",
+  application: "#b56a3a",
   ratingA: "#d8a14d",
   ratingB: "#bc7f4c",
   ratingC: "#8a8f66",
@@ -38,7 +39,7 @@ const screenFormatLabels = {
 
 type DashboardEntry = {
   id: string;
-  type: "book" | "screen" | "travel";
+  type: "book" | "screen" | "travel" | "application";
   title: string;
   status: string;
   summary: string | null;
@@ -48,6 +49,7 @@ type DashboardEntry = {
   startedAt: Date | null;
   completedAt: Date | null;
   startDate: string | null;
+  appliedAt: string | null;
   author: string | null;
   pageCount: number | null;
   screenFormat: "movie" | "series" | "anime" | "documentary" | null;
@@ -55,6 +57,9 @@ type DashboardEntry = {
   platform: string | null;
   country: string | null;
   city: string | null;
+  company: string | null;
+  role: string | null;
+  applicationSource: string | null;
 };
 
 function toDate(value: string | Date | null | undefined) {
@@ -64,29 +69,6 @@ function toDate(value: string | Date | null | undefined) {
 
   const date = value instanceof Date ? value : new Date(value);
   return Number.isNaN(date.getTime()) ? null : date;
-}
-
-function toEntry(row: RpcProjectRow): DashboardEntry {
-  return {
-    id: row.id,
-    type: row.type,
-    title: row.title,
-    status: row.status,
-    summary: row.summary,
-    rating: row.rating,
-    updatedAt: toDate(row.updatedAt),
-    createdAt: toDate(row.createdAt) ?? new Date(),
-    startedAt: toDate(row.startedAt),
-    completedAt: toDate(row.completedAt),
-    startDate: row.startDate,
-    author: row.author,
-    pageCount: row.pageCount,
-    screenFormat: (row.screenFormat as DashboardEntry["screenFormat"]) ?? null,
-    director: row.director,
-    platform: row.platform,
-    country: row.country,
-    city: row.city
-  };
 }
 
 function parseDateLike(value: Date | string | null | undefined) {
@@ -104,9 +86,40 @@ function parseDateLike(value: Date | string | null | undefined) {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
+function toEntry(row: RpcProjectRow): DashboardEntry {
+  return {
+    id: row.id,
+    type: row.type,
+    title: row.title,
+    status: row.status,
+    summary: row.summary,
+    rating: row.rating,
+    updatedAt: toDate(row.updatedAt),
+    createdAt: toDate(row.createdAt) ?? new Date(),
+    startedAt: toDate(row.startedAt),
+    completedAt: toDate(row.completedAt),
+    startDate: row.startDate,
+    appliedAt: row.appliedAt,
+    author: row.author,
+    pageCount: row.pageCount,
+    screenFormat: (row.screenFormat as DashboardEntry["screenFormat"]) ?? null,
+    director: row.director,
+    platform: row.platform,
+    country: row.country,
+    city: row.city,
+    company: row.company,
+    role: row.role,
+    applicationSource: row.applicationSource
+  };
+}
+
 function getActivityDate(entry: DashboardEntry) {
   if (entry.type === "travel") {
     return parseDateLike(entry.startDate) ?? entry.updatedAt ?? entry.createdAt;
+  }
+
+  if (entry.type === "application") {
+    return parseDateLike(entry.appliedAt) ?? entry.updatedAt ?? entry.createdAt;
   }
 
   return entry.completedAt ?? entry.startedAt ?? entry.updatedAt ?? entry.createdAt;
@@ -200,24 +213,10 @@ function buildAnalytics(year: number, entries: DashboardEntry[]): DashboardAnaly
     year,
     annualTotal,
     typeDistribution: [
-      buildDistributionItem(
-        "书籍",
-        annualEntries.filter((entry) => entry.type === "book").length,
-        annualTotal,
-        chartAccents.book
-      ),
-      buildDistributionItem(
-        "影视",
-        annualEntries.filter((entry) => entry.type === "screen").length,
-        annualTotal,
-        chartAccents.screen
-      ),
-      buildDistributionItem(
-        "旅行",
-        annualEntries.filter((entry) => entry.type === "travel").length,
-        annualTotal,
-        chartAccents.travel
-      )
+      buildDistributionItem("书籍", annualEntries.filter((entry) => entry.type === "book").length, annualTotal, chartAccents.book),
+      buildDistributionItem("影视", annualEntries.filter((entry) => entry.type === "screen").length, annualTotal, chartAccents.screen),
+      buildDistributionItem("旅行", annualEntries.filter((entry) => entry.type === "travel").length, annualTotal, chartAccents.travel),
+      buildDistributionItem("投递", annualEntries.filter((entry) => entry.type === "application").length, annualTotal, chartAccents.application)
     ],
     ratingDistribution: buildRatingDistribution(annualEntries, annualTotal),
     monthlyTrend: buildMonthlyTrend(year, annualEntries)
@@ -242,14 +241,7 @@ function buildFocusItem(entry: DashboardEntry): QueueItem {
     title: entry.title,
     type: "screen",
     status: screenStatusLabels[entry.status as keyof typeof screenStatusLabels] ?? entry.status,
-    meta:
-      [
-        entry.screenFormat ? screenFormatLabels[entry.screenFormat] : "影视",
-        entry.director,
-        entry.platform
-      ]
-        .filter(Boolean)
-        .join(" · ") || "继续观看中",
+    meta: [entry.screenFormat ? screenFormatLabels[entry.screenFormat] : "影视", entry.director, entry.platform].filter(Boolean).join(" · ") || "继续观看中",
     summary: entry.summary?.trim() || "继续补充观影记录、平台信息和短评。",
     tags: []
   };
@@ -285,11 +277,20 @@ function buildRecentMoment(entry: DashboardEntry): TimelineEvent {
       date: formatDateLabel(activityDate),
       kind: "screen",
       badge: entry.screenFormat ? screenFormatLabels[entry.screenFormat] : "影视",
-      description:
-        entry.summary?.trim() ||
-        [entry.director, entry.platform].filter(Boolean).join(" · ") ||
-        "补充了新的影视记录。",
+      description: entry.summary?.trim() || [entry.director, entry.platform].filter(Boolean).join(" · ") || "补充了新的影视记录。",
       href: `/movies/${entry.id}`
+    };
+  }
+
+  if (entry.type === "travel") {
+    return {
+      id: entry.id,
+      title: entry.title,
+      date: formatDateLabel(activityDate),
+      kind: "travel",
+      badge: "旅行",
+      description: entry.summary?.trim() || [entry.country, entry.city].filter(Boolean).join(" · ") || "更新了旅行计划。",
+      href: `/travels/${entry.id}`
     };
   }
 
@@ -297,11 +298,10 @@ function buildRecentMoment(entry: DashboardEntry): TimelineEvent {
     id: entry.id,
     title: entry.title,
     date: formatDateLabel(activityDate),
-    kind: "travel",
-    badge: "旅行",
-    description:
-      entry.summary?.trim() || [entry.country, entry.city].filter(Boolean).join(" · ") || "更新了旅行计划。",
-    href: `/travels/${entry.id}`
+    kind: "application",
+    badge: "投递",
+    description: entry.summary?.trim() || [entry.company, entry.role, entry.applicationSource].filter(Boolean).join(" · ") || "更新了一条投递记录。",
+    href: `/applications/${entry.id}`
   };
 }
 

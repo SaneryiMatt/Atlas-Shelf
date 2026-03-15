@@ -1,7 +1,6 @@
-import { Check, CircleDashed, LoaderCircle } from "lucide-react";
+﻿import { Check, CircleDashed, LoaderCircle } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import type { MetadataCandidate } from "@/lib/metadata/schemas";
 import type { MetadataAutofillStatus } from "@/lib/metadata/use-metadata-autofill";
 import { cn } from "@/lib/utils";
@@ -20,14 +19,14 @@ function getCandidateMeta(candidate: MetadataCandidate) {
   if (candidate.kind === "book") {
     return {
       title: candidate.author ?? candidate.subtitle ?? "书籍候选",
-      detail: candidate.summary ?? (candidate.tags.length ? candidate.tags.join("、") : "未返回更多元数据")
+      detail: candidate.summary ?? (candidate.tags.length ? candidate.tags.join(" / ") : "未返回更多元数据")
     };
   }
 
   if (candidate.kind === "movie") {
     const movieTitle = candidate.subtitle ?? [candidate.director, candidate.releaseYear].filter(Boolean).join(" / ");
     const movieDetail =
-      candidate.note ?? [candidate.platform, candidate.tags.length ? candidate.tags.join("、") : null].filter(Boolean).join(" / ");
+      candidate.note ?? [candidate.platform, candidate.tags.length ? candidate.tags.join(" / ") : null].filter(Boolean).join(" / ");
 
     return {
       title: movieTitle || "影视候选",
@@ -58,7 +57,7 @@ export function MetadataCandidates({
       <div className="flex items-start gap-3 rounded-xl border border-dashed border-border/50 bg-accent/20 p-4">
         <CircleDashed className="mt-0.5 size-4 shrink-0 text-muted-foreground/60" />
         <p className="text-sm leading-relaxed text-muted-foreground">
-          输入至少 2 个字符后会自动检索候选，并优先补全未手动编辑的字段。
+          输入至少 2 个字符后会自动检索候选，并优先补全还未手动编辑的字段。
         </p>
       </div>
     );
@@ -98,7 +97,7 @@ export function MetadataCandidates({
   return (
     <div className="space-y-2.5">
       <p className="text-xs text-muted-foreground/70">
-        已找到 {candidates.length} 个候选，点击应用到未手动编辑的字段
+        已找到 {candidates.length} 个候选，点击即可应用到尚未手动编辑的字段。
       </p>
 
       <div className="space-y-2">

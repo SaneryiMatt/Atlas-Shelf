@@ -1,4 +1,10 @@
-import { buildPagination, formatRatingLabel, formatUpdatedAtLabel, MODULE_LIST_PAGE_SIZE, parseModuleListParams } from "@/lib/module-list";
+﻿import {
+  buildPagination,
+  formatRatingLabel,
+  formatUpdatedAtLabel,
+  MODULE_LIST_PAGE_SIZE,
+  parseModuleListParams
+} from "@/lib/module-list";
 import { getProjectRowsByKind, type RpcProjectRow } from "@/lib/supabase/app-data";
 import type { TravelListItem } from "@/lib/types/items";
 
@@ -40,7 +46,7 @@ function toTravelListItem(row: RpcProjectRow): TravelListItem {
     country: row.city ? `${row.country ?? ""} / ${row.city}` : row.country ?? "未填写",
     window: formatTravelDate(row.startDate),
     stage: travelStageLabels[row.travelStage as keyof typeof travelStageLabels] ?? row.travelStage ?? "未填写",
-    budget: row.travelStage === "visited" ? "地点记录" : "待成行",
+    budget: row.travelStage === "visited" ? "地点记录" : "待成行程",
     summary: row.summary ?? "还没有填写地点描述。",
     highlights: row.city?.trim() ? [row.city.trim()] : [],
     ratingLabel: formatRatingLabel(row.rating),
@@ -81,10 +87,11 @@ function buildEmptyTravelsPageData(sort: "updated" | "rating", page: number) {
 
 export async function getTravelsPageData(searchParams?: { page?: string; sort?: string }) {
   const { page, sort } = parseModuleListParams(searchParams);
+  const resolvedSort = sort as "updated" | "rating";
 
   try {
     const rows = await getProjectRowsByKind("travel");
-    const sortedRows = sortTravelRows(rows, sort);
+    const sortedRows = sortTravelRows(rows, resolvedSort);
     const pagination = buildPagination(sortedRows.length, page, MODULE_LIST_PAGE_SIZE);
     const offset = (pagination.page - 1) * pagination.perPage;
     const visibleRows = sortedRows.slice(offset, offset + pagination.perPage);
@@ -111,11 +118,11 @@ export async function getTravelsPageData(searchParams?: { page?: string; sort?: 
         }
       ],
       items: visibleRows.map(toTravelListItem),
-      sort,
+      sort: resolvedSort,
       pagination,
       canCreateTravels: true
     };
   } catch {
-    return buildEmptyTravelsPageData(sort, page);
+    return buildEmptyTravelsPageData(resolvedSort, page);
   }
 }

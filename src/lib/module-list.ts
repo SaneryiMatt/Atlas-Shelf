@@ -1,13 +1,38 @@
-import type { ModuleListSort, PaginationInfo } from "@/lib/types/items";
+﻿import type { ModuleListSort, PaginationInfo } from "@/lib/types/items";
 
 export const MODULE_LIST_PAGE_SIZE = 6;
 
-export function parseModuleListParams(searchParams?: { page?: string; sort?: string }) {
-  const sort: ModuleListSort = searchParams?.sort === "rating" ? "rating" : "updated";
+export function parseModuleListParams(
+  searchParams?: { page?: string; sort?: string },
+  options: {
+    allowedSorts?: readonly ModuleListSort[];
+    defaultSort?: ModuleListSort;
+  } = {}
+) {
+  const allowedSorts = options.allowedSorts ?? (["updated", "rating"] as const);
+  const requestedSort = searchParams?.sort as ModuleListSort | undefined;
+  const fallbackSort =
+    options.defaultSort && allowedSorts.includes(options.defaultSort)
+      ? options.defaultSort
+      : (allowedSorts[0] ?? "updated");
+  const sort = requestedSort && allowedSorts.includes(requestedSort) ? requestedSort : fallbackSort;
   const parsedPage = Number(searchParams?.page);
   const page = Number.isFinite(parsedPage) && parsedPage > 0 ? Math.floor(parsedPage) : 1;
 
   return { page, sort };
+}
+
+function toDate(value: Date | string | null | undefined) {
+  if (!value) {
+    return null;
+  }
+
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? null : value;
+  }
+
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
 }
 
 export function buildPagination(totalItems: number, page: number, perPage = MODULE_LIST_PAGE_SIZE): PaginationInfo {
@@ -22,19 +47,6 @@ export function buildPagination(totalItems: number, page: number, perPage = MODU
     hasPreviousPage: currentPage > 1,
     hasNextPage: currentPage < totalPages
   };
-}
-
-function toDate(value: Date | string | null | undefined) {
-  if (!value) {
-    return null;
-  }
-
-  if (value instanceof Date) {
-    return Number.isNaN(value.getTime()) ? null : value;
-  }
-
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? null : date;
 }
 
 export function formatUpdatedAtLabel(date: Date | string | null) {

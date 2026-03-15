@@ -1,9 +1,9 @@
-import { BookOpen, Clapperboard, Compass, LayoutDashboard } from "lucide-react";
+﻿import { BookOpen, Briefcase, Clapperboard, Compass, LayoutDashboard } from "lucide-react";
 
 import { analyticsFeatureEnabled } from "@/config/features";
 
 export const productName = "Atlas Shelf";
-export const productTagline = "你的书影音与旅行记录";
+export const productTagline = "你的书影音、旅行与求职记录";
 
 export const primaryNavigation = [
   {
@@ -22,13 +22,19 @@ export const primaryNavigation = [
     title: "影视",
     href: "/movies",
     icon: Clapperboard,
-    description: "管理电影、剧集、动漫和纪录片记录。"
+    description: "管理电影、剧集、动画和纪录片记录。"
   },
   {
     title: "旅行",
     href: "/travels",
     icon: Compass,
-    description: "整理想去的地方、去过的地点和行程回忆。"
+    description: "整理想去的地方、去过的地点和旅行回忆。"
+  },
+  {
+    title: "投递",
+    href: "/applications",
+    icon: Briefcase,
+    description: "记录公司、岗位、进度、面试安排和最终结果。"
   }
 ] as const;
 
@@ -82,10 +88,31 @@ export function getPageHeaderMeta(pathname: string) {
     };
   }
 
+  if (pathname === "/applications") {
+    return {
+      title: "投递",
+      description: "管理公司、岗位、投递时间、面试和结果。"
+    };
+  }
+
+  if (pathname.startsWith("/applications/")) {
+    return {
+      title: "投递详情",
+      description: "查看这条投递记录的阶段、时间和备注。"
+    };
+  }
+
   if (pathname === "/search") {
     return {
       title: "搜索",
-      description: "快速找到书籍、影视和旅行记录。"
+      description: "快速找到书籍、影视、旅行和投递记录。"
+    };
+  }
+
+  if (pathname === "/timeline") {
+    return {
+      title: "时间线",
+      description: "按时间查看全部书籍、影视、旅行和投递记录。"
     };
   }
 
@@ -105,6 +132,6 @@ export function getPageHeaderMeta(pathname: string) {
 
   return {
     title: "首页",
-    description: "你的书影音与旅行记录。"
+    description: "你的书影音、旅行与求职记录。"
   };
 }

@@ -5,7 +5,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 interface QuickSearchResult {
   id: string;
-  kind: "book" | "movie" | "travel";
+  kind: "book" | "movie" | "travel" | "application";
   title: string;
   href: string;
   meta: string;
@@ -35,8 +35,22 @@ export async function GET(request: NextRequest) {
       id: row.id,
       kind: row.type === "screen" ? "movie" : row.type,
       title: row.title,
-      href: row.type === "book" ? `/books/${row.id}` : row.type === "screen" ? `/movies/${row.id}` : `/travels/${row.id}`,
-      meta: row.type === "book" ? row.author ?? "" : row.type === "screen" ? row.director ?? "" : row.country ?? ""
+      href:
+        row.type === "book"
+          ? `/books/${row.id}`
+          : row.type === "screen"
+            ? `/movies/${row.id}`
+            : row.type === "travel"
+              ? `/travels/${row.id}`
+              : `/applications/${row.id}`,
+      meta:
+        row.type === "book"
+          ? row.author ?? ""
+          : row.type === "screen"
+            ? row.director ?? ""
+            : row.type === "travel"
+              ? row.country ?? ""
+              : [row.company, row.role, row.applicationSource].filter(Boolean).join(" · ")
     }));
 
     return NextResponse.json({ results });
