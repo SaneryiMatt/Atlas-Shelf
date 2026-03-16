@@ -28,7 +28,11 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <html lang="zh-CN" className="dark">
-      <body className={cn(inter.variable, "font-sans")}>{children}</body>
+      <body className={cn(inter.variable, "font-sans")}>
+        {children}
+        <Analytics />
+        <SpeedInsights />
+      </body>
     </html>
   );
 }
