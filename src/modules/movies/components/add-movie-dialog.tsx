@@ -19,7 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, dialogSelectContentClassName, dialogSelectTriggerClassName } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { discreteRatingOptions } from "@/lib/module-list";
+import { SegmentedRatingInput } from "@/components/shared/segmented-rating-input";
 import { mapMetadataCandidateToMoviePatch } from "@/lib/metadata/mappers";
 import { useMetadataAutofill } from "@/lib/metadata/use-metadata-autofill";
 import type { MovieEditorValues } from "@/lib/types/items";
@@ -192,26 +192,17 @@ function AddMovieForm({ open, onSuccess }: AddMovieFormProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="rating" className="text-sm font-medium text-foreground/90">
+            <Label id="add-movie-rating-label" className="text-sm font-medium text-foreground/90">
               评分
             </Label>
-            <Select
+            <SegmentedRatingInput
+              id="add-movie-rating"
               name="rating"
-              value={formValues.rating || undefined}
-              onValueChange={(value) => handleFieldChange("rating", value)}
+              value={formValues.rating}
+              onChange={(value) => handleFieldChange("rating", value)}
               disabled={isPending}
-            >
-              <SelectTrigger id="rating" className={dialogSelectTriggerClassName}>
-                <SelectValue placeholder="请选择评分" />
-              </SelectTrigger>
-              <SelectContent className={dialogSelectContentClassName}>
-                {discreteRatingOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              ariaLabelledBy="add-movie-rating-label"
+            />
             {state.fieldErrors.rating ? <p className="text-xs text-red-400">{state.fieldErrors.rating}</p> : null}
           </div>
         </div>

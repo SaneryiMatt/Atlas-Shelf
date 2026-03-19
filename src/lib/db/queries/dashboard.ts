@@ -157,7 +157,6 @@ function buildRatingDistribution(entries: DashboardEntry[], total: number) {
     three: 0,
     two: 0,
     one: 0,
-    zero: 0,
     unrated: 0
   };
 
@@ -177,10 +176,8 @@ function buildRatingDistribution(entries: DashboardEntry[], total: number) {
       buckets.three += 1;
     } else if (rating === "2") {
       buckets.two += 1;
-    } else if (rating === "1") {
-      buckets.one += 1;
     } else {
-      buckets.zero += 1;
+      buckets.one += 1;
     }
   }
 
@@ -190,10 +187,10 @@ function buildRatingDistribution(entries: DashboardEntry[], total: number) {
     buildDistributionItem("3 分", buckets.three, total, "#8a8f66"),
     buildDistributionItem("2 分", buckets.two, total, "#6f7f92"),
     buildDistributionItem("1 分", buckets.one, total, "#5f6b78"),
-    buildDistributionItem("0 分", buckets.zero, total, "#4c5560"),
     buildDistributionItem("未评分", buckets.unrated, total, chartAccents.ratingUnrated)
   ];
 }
+
 
 function buildAnalytics(year: number, entries: DashboardEntry[]): DashboardAnalyticsData {
   const annualEntries = entries.filter((entry) => getActivityDate(entry).getUTCFullYear() === year);

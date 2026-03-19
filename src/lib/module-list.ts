@@ -2,7 +2,7 @@
 
 export const MODULE_LIST_PAGE_SIZE = 6;
 
-export const discreteRatingValues = ["0", "1", "2", "3", "4", "5"] as const;
+export const discreteRatingValues = ["1", "2", "3", "4", "5"] as const;
 export const discreteRatingOptions: Array<{ value: (typeof discreteRatingValues)[number]; label: string }> =
   discreteRatingValues.map((value) => ({
     value,
@@ -74,30 +74,42 @@ export function formatUpdatedAtLabel(date: Date | string | null) {
   }).format(resolvedDate);
 }
 
-export function formatRatingLabel(rating: string | number | null) {
+function normalizeDiscreteRating(rating: string | number | null | undefined) {
   if (rating === null || rating === undefined || rating === "") {
-    return "未评分";
+    return null;
   }
 
   const resolvedRating = Number(rating);
 
   if (Number.isNaN(resolvedRating)) {
+    return null;
+  }
+
+  const roundedRating = Math.round(resolvedRating);
+
+  if (roundedRating <= 0) {
+    return 1;
+  }
+
+  return Math.min(5, roundedRating);
+}
+
+export function formatRatingLabel(rating: string | number | null) {
+  const normalizedRating = normalizeDiscreteRating(rating);
+
+  if (normalizedRating === null) {
     return "未评分";
   }
 
-  return String(Math.max(0, Math.min(5, Math.round(resolvedRating))));
+  return String(normalizedRating);
 }
 
 export function formatRatingInputValue(rating: string | number | null | undefined) {
-  if (rating === null || rating === undefined || rating === "") {
+  const normalizedRating = normalizeDiscreteRating(rating);
+
+  if (normalizedRating === null) {
     return "";
   }
 
-  const resolvedRating = Number(rating);
-
-  if (Number.isNaN(resolvedRating)) {
-    return "";
-  }
-
-  return String(Math.max(0, Math.min(5, Math.round(resolvedRating))));
+  return String(normalizedRating);
 }

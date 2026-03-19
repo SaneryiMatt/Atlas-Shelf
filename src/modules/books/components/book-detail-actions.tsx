@@ -21,7 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, dialogSelectContentClassName, dialogSelectTriggerClassName } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { discreteRatingOptions } from "@/lib/module-list";
+import { SegmentedRatingInput } from "@/components/shared/segmented-rating-input";
 import type { BookEditorValues } from "@/lib/types/items";
 import { bookStatusOptions } from "@/modules/books/book-form-schema";
 import { deleteBookAction, type CreateBookFormState, updateBookAction } from "@/modules/books/actions";
@@ -104,24 +104,15 @@ function BookEditForm({ projectId, initialValues, onSuccess }: BookEditFormProps
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="edit-book-rating">评分</Label>
-          <Select
+          <Label id="edit-book-rating-label">评分</Label>
+          <SegmentedRatingInput
+            id="edit-book-rating"
             name="rating"
-            value={formValues.rating || undefined}
-            onValueChange={(value) => setFormValues((current) => ({ ...current, rating: value }))}
+            value={formValues.rating}
+            onChange={(value) => setFormValues((current) => ({ ...current, rating: value }))}
             disabled={isPending}
-          >
-            <SelectTrigger id="edit-book-rating" className={dialogSelectTriggerClassName}>
-              <SelectValue placeholder="请选择评分" />
-            </SelectTrigger>
-            <SelectContent className={dialogSelectContentClassName}>
-              {discreteRatingOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            ariaLabelledBy="edit-book-rating-label"
+          />
           {state.fieldErrors.rating ? <p className="text-sm text-red-600">{state.fieldErrors.rating}</p> : null}
         </div>
       </div>

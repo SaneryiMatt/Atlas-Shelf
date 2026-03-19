@@ -51,7 +51,7 @@ export const bookFormSchema = z
     rating: z
       .string()
       .trim()
-      .refine((value) => value === "" || isDiscreteRatingValue(value), "评分只能选择 0 到 5 分"),
+      .refine((value) => value === "" || isDiscreteRatingValue(value), "评分只能选择 1 到 5 分"),
     startedAt: z
       .string()
       .trim()

@@ -21,7 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, dialogSelectContentClassName, dialogSelectTriggerClassName } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { discreteRatingOptions } from "@/lib/module-list";
+import { SegmentedRatingInput } from "@/components/shared/segmented-rating-input";
 import type { MovieEditorValues } from "@/lib/types/items";
 import { type CreateMovieFormState, deleteMovieAction, updateMovieAction } from "@/modules/movies/actions";
 import { movieStatusOptions } from "@/modules/movies/screen-form-schema";
@@ -131,24 +131,15 @@ function MovieEditForm({ projectId, initialValues, onSuccess }: MovieEditFormPro
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="edit-movie-rating">评分</Label>
-          <Select
+          <Label id="edit-movie-rating-label">评分</Label>
+          <SegmentedRatingInput
+            id="edit-movie-rating"
             name="rating"
-            value={formValues.rating || undefined}
-            onValueChange={(value) => setFormValues((current) => ({ ...current, rating: value }))}
+            value={formValues.rating}
+            onChange={(value) => setFormValues((current) => ({ ...current, rating: value }))}
             disabled={isPending}
-          >
-            <SelectTrigger id="edit-movie-rating" className={dialogSelectTriggerClassName}>
-              <SelectValue placeholder="请选择评分" />
-            </SelectTrigger>
-            <SelectContent className={dialogSelectContentClassName}>
-              {discreteRatingOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            ariaLabelledBy="edit-movie-rating-label"
+          />
           {state.fieldErrors.rating ? <p className="text-sm text-red-600">{state.fieldErrors.rating}</p> : null}
         </div>
       </div>

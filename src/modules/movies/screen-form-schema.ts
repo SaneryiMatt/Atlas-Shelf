@@ -45,7 +45,7 @@ export const movieFormSchema = z.object({
   rating: z
     .string()
     .trim()
-    .refine((value) => value === "" || isDiscreteRatingValue(value), "评分只能选择 0 到 5 分"),
+    .refine((value) => value === "" || isDiscreteRatingValue(value), "评分只能选择 1 到 5 分"),
   note: z.string().trim().max(280, "简短备注不能超过 280 个字符"),
   tags: z
     .string()

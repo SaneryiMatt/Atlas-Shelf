@@ -64,6 +64,13 @@
       "when": 1773907136732,
       "tag": "0008_project_detail_argument_scope",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1773908532434,
+      "tag": "0009_rating_zero_to_one",
+      "breakpoints": true
     }
   ]
 }
