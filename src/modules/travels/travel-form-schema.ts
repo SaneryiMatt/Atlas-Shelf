@@ -1,13 +1,17 @@
 ﻿import { z } from "zod";
 
-import type { ItemStatus } from "@/lib/types/items";
-
 export const travelStatusValues = ["planned", "in_progress", "completed"] as const;
 
-export const travelStatusOptions: Array<{ value: ItemStatus; label: string }> = [
-  { value: "planned", label: "过去式" },
-  { value: "in_progress", label: "现在进行时" },
-  { value: "completed", label: "完成时" }
+export const travelStatusLabels = {
+  planned: "规划中",
+  in_progress: "已预订",
+  completed: "已到访"
+} as const;
+
+export const travelStatusOptions: Array<{ value: (typeof travelStatusValues)[number]; label: string }> = [
+  { value: "planned", label: travelStatusLabels.planned },
+  { value: "in_progress", label: travelStatusLabels.in_progress },
+  { value: "completed", label: travelStatusLabels.completed }
 ];
 
 function isValidDate(value: string) {
@@ -30,7 +34,7 @@ export const travelFormSchema = z.object({
   country: z.string().trim().min(1, "请输入国家或地区").max(80, "国家或地区不能超过 80 个字符"),
   city: z.string().trim().min(1, "请输入城市").max(80, "城市不能超过 80 个字符"),
   status: z.enum(travelStatusValues, {
-    errorMap: () => ({ message: "请选择状态" })
+    errorMap: () => ({ message: "请选择旅行状态" })
   }),
   travelDate: z
     .string()

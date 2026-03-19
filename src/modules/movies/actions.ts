@@ -3,6 +3,7 @@
 import { createHash, randomUUID } from "node:crypto";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 import { requireUser } from "@/lib/auth";
 import { deleteOwnedProject, upsertMovie } from "@/lib/supabase/app-data";
@@ -201,11 +202,6 @@ export async function deleteMovieAction(
   try {
     await deleteOwnedProject(projectId);
     revalidateMoviePaths(projectId);
-
-    return {
-      status: "success",
-      message: "影视条目已删除。"
-    };
   } catch (error) {
     const message = error instanceof Error ? error.message : "未知错误";
 
@@ -214,4 +210,6 @@ export async function deleteMovieAction(
       message: `删除影视条目失败：${message}`
     };
   }
+
+  redirect("/movies");
 }

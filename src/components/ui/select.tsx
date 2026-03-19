@@ -4,6 +4,12 @@ import { Check, ChevronDown, ChevronUp } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
+const dialogSelectTriggerClassName =
+  "border-border/60 bg-background/60 text-foreground/95 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_12px_30px_rgba(15,23,42,0.08)] backdrop-blur-xl supports-[backdrop-filter]:bg-background/45 focus:border-foreground/30 focus:bg-background/72 focus:ring-ring/40 focus:ring-offset-0 data-[placeholder]:text-muted-foreground/80 data-[state=open]:border-foreground/25 data-[state=open]:bg-background/75 data-[state=open]:shadow-[0_18px_40px_rgba(15,23,42,0.16)]";
+
+const dialogSelectContentClassName =
+  "border-border/60 bg-background/82 text-foreground shadow-2xl backdrop-blur-2xl supports-[backdrop-filter]:bg-background/74";
+
 const Select = SelectPrimitive.Root;
 const SelectGroup = SelectPrimitive.Group;
 const SelectValue = SelectPrimitive.Value;
@@ -118,6 +124,8 @@ const SelectSeparator = React.forwardRef<
 SelectSeparator.displayName = SelectPrimitive.Separator.displayName;
 
 export {
+  dialogSelectContentClassName,
+  dialogSelectTriggerClassName,
   Select,
   SelectContent,
   SelectGroup,

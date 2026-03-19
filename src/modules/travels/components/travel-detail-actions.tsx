@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useActionState, useEffect, useState } from "react";
 import { Pencil } from "lucide-react";
@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, dialogSelectContentClassName, dialogSelectTriggerClassName } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type { TravelEditorValues } from "@/lib/types/items";
 import { type CreateTravelFormState, deleteTravelAction, updateTravelAction } from "@/modules/travels/actions";
@@ -93,17 +93,17 @@ function TravelEditForm({ projectId, initialValues, onSuccess }: TravelEditFormP
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="edit-travel-status">状态</Label>
+          <Label htmlFor="edit-travel-status">旅行状态</Label>
           <Select
             name="status"
             value={formValues.status}
             onValueChange={(value) => setFormValues((current) => ({ ...current, status: value as TravelEditorValues["status"] }))}
             disabled={isPending}
           >
-            <SelectTrigger id="edit-travel-status" className="border-border/70 bg-background/70 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-              <SelectValue placeholder="请选择状态" />
+            <SelectTrigger id="edit-travel-status" className={dialogSelectTriggerClassName}>
+              <SelectValue placeholder="请选择旅行状态" />
             </SelectTrigger>
-            <SelectContent className="border-border/70 bg-background/80 backdrop-blur">
+            <SelectContent className={dialogSelectContentClassName}>
               {travelStatusOptions.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
@@ -223,7 +223,6 @@ export function TravelDetailActions({ projectId, projectTitle, initialValues }: 
         projectId={projectId}
         projectTitle={projectTitle}
         itemLabel="旅行地点"
-        redirectTo="/travels"
         action={deleteTravelAction}
       />
     </>

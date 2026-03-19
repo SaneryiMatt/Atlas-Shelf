@@ -17,8 +17,9 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, dialogSelectContentClassName, dialogSelectTriggerClassName } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { discreteRatingOptions } from "@/lib/module-list";
 import { mapMetadataCandidateToMoviePatch } from "@/lib/metadata/mappers";
 import { useMetadataAutofill } from "@/lib/metadata/use-metadata-autofill";
 import type { MovieEditorValues } from "@/lib/types/items";
@@ -168,7 +169,7 @@ function AddMovieForm({ open, onSuccess }: AddMovieFormProps) {
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="status" className="text-sm font-medium text-foreground/90">
-              状态
+              观看状态
             </Label>
             <Select
               name="status"
@@ -176,13 +177,10 @@ function AddMovieForm({ open, onSuccess }: AddMovieFormProps) {
               onValueChange={(value) => handleFieldChange("status", value as MovieEditorValues["status"])}
               disabled={isPending}
             >
-              <SelectTrigger
-                id="status"
-                className="h-10 border-border/50 bg-background/50 transition-colors focus:border-foreground/30 focus:bg-background/80"
-              >
-                <SelectValue placeholder="请选择状态" />
+              <SelectTrigger id="status" className={dialogSelectTriggerClassName}>
+                <SelectValue placeholder="请选择观看状态" />
               </SelectTrigger>
-              <SelectContent className="border-border/50 bg-card/95 backdrop-blur-xl">
+              <SelectContent className={dialogSelectContentClassName}>
                 {movieStatusOptions.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}
@@ -197,19 +195,23 @@ function AddMovieForm({ open, onSuccess }: AddMovieFormProps) {
             <Label htmlFor="rating" className="text-sm font-medium text-foreground/90">
               评分
             </Label>
-            <Input
-              id="rating"
+            <Select
               name="rating"
-              type="number"
-              min="0"
-              max="5"
-              step="0.5"
-              value={formValues.rating}
-              onChange={(event) => handleFieldChange("rating", event.target.value)}
-              placeholder="0 - 5"
+              value={formValues.rating || undefined}
+              onValueChange={(value) => handleFieldChange("rating", value)}
               disabled={isPending}
-              className="h-10 border-border/50 bg-background/50 transition-colors focus:border-foreground/30 focus:bg-background/80"
-            />
+            >
+              <SelectTrigger id="rating" className={dialogSelectTriggerClassName}>
+                <SelectValue placeholder="请选择评分" />
+              </SelectTrigger>
+              <SelectContent className={dialogSelectContentClassName}>
+                {discreteRatingOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             {state.fieldErrors.rating ? <p className="text-xs text-red-400">{state.fieldErrors.rating}</p> : null}
           </div>
         </div>
@@ -231,14 +233,15 @@ function AddMovieForm({ open, onSuccess }: AddMovieFormProps) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="tags" className="text-sm font-medium text-foreground/90">
+          <input type="hidden" name="tags" value={formValues.tags} />
+          <Label htmlFor="add-movie-tags-input" className="text-sm font-medium text-foreground/90">
             标签
           </Label>
           <Input
-            id="tags"
-            name="tags"
+            id="add-movie-tags-input"
             value={formValues.tags}
             onChange={(event) => handleFieldChange("tags", event.target.value)}
+            autoComplete="off"
             placeholder="例如：剧情, 生活流, 年度片单"
             disabled={isPending}
             className="h-10 border-border/50 bg-background/50 transition-colors focus:border-foreground/30 focus:bg-background/80"

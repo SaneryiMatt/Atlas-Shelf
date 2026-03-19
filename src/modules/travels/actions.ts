@@ -3,6 +3,7 @@
 import { createHash, randomUUID } from "node:crypto";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 import { requireUser } from "@/lib/auth";
 import { deleteOwnedProject, upsertTravel } from "@/lib/supabase/app-data";
@@ -193,11 +194,6 @@ export async function deleteTravelAction(
   try {
     await deleteOwnedProject(projectId);
     revalidateTravelPaths(projectId);
-
-    return {
-      status: "success",
-      message: "旅行地点已删除。"
-    };
   } catch (error) {
     const message = error instanceof Error ? error.message : "未知错误";
 
@@ -206,4 +202,6 @@ export async function deleteTravelAction(
       message: `删除旅行地点失败：${message}`
     };
   }
+
+  redirect("/travels");
 }

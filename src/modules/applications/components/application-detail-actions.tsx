@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useActionState, useEffect, useState } from "react";
 import { Pencil } from "lucide-react";
@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, dialogSelectContentClassName, dialogSelectTriggerClassName } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type { ApplicationEditorValues } from "@/lib/types/items";
 import {
@@ -96,10 +96,10 @@ function ApplicationEditForm({ projectId, initialValues, onSuccess }: Applicatio
         <div className="space-y-2">
           <Label htmlFor="edit-stage">当前进度</Label>
           <Select name="stage" value={formValues.stage} onValueChange={(value) => setField("stage", value)} disabled={isPending}>
-            <SelectTrigger id="edit-stage">
+            <SelectTrigger id="edit-stage" className={dialogSelectTriggerClassName}>
               <SelectValue placeholder="请选择进度" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className={dialogSelectContentClassName}>
               {applicationStageOptions.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
@@ -112,10 +112,10 @@ function ApplicationEditForm({ projectId, initialValues, onSuccess }: Applicatio
         <div className="space-y-2">
           <Label htmlFor="edit-result">最终结果</Label>
           <Select name="result" value={formValues.result} onValueChange={(value) => setField("result", value)} disabled={isPending}>
-            <SelectTrigger id="edit-result">
+            <SelectTrigger id="edit-result" className={dialogSelectTriggerClassName}>
               <SelectValue placeholder="请选择结果" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className={dialogSelectContentClassName}>
               {applicationResultOptions.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
@@ -215,7 +215,6 @@ export function ApplicationDetailActions({ projectId, projectTitle, initialValue
         projectId={projectId}
         projectTitle={projectTitle}
         itemLabel="投递记录"
-        redirectTo="/applications"
         action={deleteApplicationAction}
       />
     </>

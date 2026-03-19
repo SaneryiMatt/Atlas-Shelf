@@ -1,4 +1,4 @@
-﻿import { formatRatingLabel, formatUpdatedAtLabel } from "@/lib/module-list";
+﻿import { formatRatingInputValue, formatRatingLabel, formatUpdatedAtLabel } from "@/lib/module-list";
 import { getProjectDetail } from "@/lib/supabase/app-data";
 import { createSignedStorageUrl } from "@/lib/supabase/storage";
 import type {
@@ -195,7 +195,7 @@ export async function getBookDetailPageData(id: string): Promise<BookDetailPageP
       title: book.title,
       author: book.author ?? "",
       status: book.status as BookDetailPagePayload["editor"]["status"],
-      rating: book.rating ? Number(book.rating).toFixed(1) : "",
+      rating: formatRatingInputValue(book.rating),
       startedAt: formatDateInput(book.startedAt),
       completedAt: formatDateInput(book.completedAt),
       summary: book.summary ?? "",
@@ -238,7 +238,7 @@ export async function getMovieDetailPageData(id: string): Promise<MovieDetailPag
       releaseYear: movie.releaseYear ? String(movie.releaseYear) : "",
       platform: movie.platform ?? "",
       status: movie.status as MovieDetailPagePayload["editor"]["status"],
-      rating: movie.rating ? Number(movie.rating).toFixed(1) : "",
+      rating: formatRatingInputValue(movie.rating),
       note: movie.summary ?? "",
       tags: relations.tags.map((tag) => tag.name).join(", ")
     }

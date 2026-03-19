@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, dialogSelectContentClassName, dialogSelectTriggerClassName } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { mapMetadataCandidateToTravelPatch } from "@/lib/metadata/mappers";
 import { useMetadataAutofill } from "@/lib/metadata/use-metadata-autofill";
@@ -148,7 +148,7 @@ function AddTravelForm({ open, onSuccess }: AddTravelFormProps) {
 
           <div className="space-y-2">
             <Label htmlFor="status" className="text-sm font-medium text-foreground/90">
-              状态
+              旅行状态
             </Label>
             <Select
               name="status"
@@ -156,13 +156,10 @@ function AddTravelForm({ open, onSuccess }: AddTravelFormProps) {
               onValueChange={(value) => handleFieldChange("status", value as TravelEditorValues["status"])}
               disabled={isPending}
             >
-              <SelectTrigger
-                id="status"
-                className="h-10 border-border/50 bg-background/50 transition-colors focus:border-foreground/30 focus:bg-background/80"
-              >
-                <SelectValue placeholder="请选择状态" />
+              <SelectTrigger id="status" className={dialogSelectTriggerClassName}>
+                <SelectValue placeholder="请选择旅行状态" />
               </SelectTrigger>
-              <SelectContent className="border-border/50 bg-card/95 backdrop-blur-xl">
+              <SelectContent className={dialogSelectContentClassName}>
                 {travelStatusOptions.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}

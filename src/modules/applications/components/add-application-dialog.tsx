@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, dialogSelectContentClassName, dialogSelectTriggerClassName } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type { ApplicationEditorValues } from "@/lib/types/items";
 import { createApplicationAction, type CreateApplicationFormState } from "@/modules/applications/actions";
@@ -103,10 +103,10 @@ function AddApplicationForm({ onSuccess }: AddApplicationFormProps) {
         <div className="space-y-2">
           <Label htmlFor="stage">当前进度</Label>
           <Select name="stage" value={formValues.stage} onValueChange={(value) => setField("stage", value)} disabled={isPending}>
-            <SelectTrigger id="stage">
+            <SelectTrigger id="stage" className={dialogSelectTriggerClassName}>
               <SelectValue placeholder="请选择进度" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className={dialogSelectContentClassName}>
               {applicationStageOptions.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
@@ -120,10 +120,10 @@ function AddApplicationForm({ onSuccess }: AddApplicationFormProps) {
         <div className="space-y-2">
           <Label htmlFor="result">最终结果</Label>
           <Select name="result" value={formValues.result} onValueChange={(value) => setField("result", value)} disabled={isPending}>
-            <SelectTrigger id="result">
+            <SelectTrigger id="result" className={dialogSelectTriggerClassName}>
               <SelectValue placeholder="请选择结果" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className={dialogSelectContentClassName}>
               {applicationResultOptions.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}

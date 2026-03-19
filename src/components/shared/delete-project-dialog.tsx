@@ -1,9 +1,7 @@
-﻿"use client";
+"use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useState } from "react";
 import { Trash2 } from "lucide-react";
-import { useRouter } from "next/navigation";
-
 import { projectDetailDangerActionButtonClassName } from "@/components/shared/project-detail-action-button-styles";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,7 +23,6 @@ interface DeleteProjectDialogProps {
   projectId: string;
   projectTitle: string;
   itemLabel: string;
-  redirectTo: string;
   action: (state: DeleteDialogState, formData: FormData) => Promise<DeleteDialogState>;
 }
 
@@ -38,21 +35,11 @@ export function DeleteProjectDialog({
   projectId,
   projectTitle,
   itemLabel,
-  redirectTo,
   action
 }: DeleteProjectDialogProps) {
-  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [state, formAction, isPending] = useActionState(action, initialState);
 
-  useEffect(() => {
-    if (state.status !== "success") {
-      return;
-    }
-
-    setOpen(false);
-    router.replace(redirectTo);
-  }, [redirectTo, router, state.status]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

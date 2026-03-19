@@ -19,8 +19,9 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, dialogSelectContentClassName, dialogSelectTriggerClassName } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { discreteRatingOptions } from "@/lib/module-list";
 import type { MovieEditorValues } from "@/lib/types/items";
 import { type CreateMovieFormState, deleteMovieAction, updateMovieAction } from "@/modules/movies/actions";
 import { movieStatusOptions } from "@/modules/movies/screen-form-schema";
@@ -108,17 +109,17 @@ function MovieEditForm({ projectId, initialValues, onSuccess }: MovieEditFormPro
 
       <div className="grid gap-5 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="edit-movie-status">状态</Label>
+          <Label htmlFor="edit-movie-status">观看状态</Label>
           <Select
             name="status"
             value={formValues.status}
             onValueChange={(value) => setFormValues((current) => ({ ...current, status: value as MovieEditorValues["status"] }))}
             disabled={isPending}
           >
-            <SelectTrigger id="edit-movie-status">
-              <SelectValue placeholder="请选择状态" />
+            <SelectTrigger id="edit-movie-status" className={dialogSelectTriggerClassName}>
+              <SelectValue placeholder="请选择观看状态" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className={dialogSelectContentClassName}>
               {movieStatusOptions.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
@@ -131,17 +132,23 @@ function MovieEditForm({ projectId, initialValues, onSuccess }: MovieEditFormPro
 
         <div className="space-y-2">
           <Label htmlFor="edit-movie-rating">评分</Label>
-          <Input
-            id="edit-movie-rating"
+          <Select
             name="rating"
-            type="number"
-            min="0"
-            max="5"
-            step="0.1"
-            value={formValues.rating}
-            onChange={(event) => setFormValues((current) => ({ ...current, rating: event.target.value }))}
+            value={formValues.rating || undefined}
+            onValueChange={(value) => setFormValues((current) => ({ ...current, rating: value }))}
             disabled={isPending}
-          />
+          >
+            <SelectTrigger id="edit-movie-rating" className={dialogSelectTriggerClassName}>
+              <SelectValue placeholder="请选择评分" />
+            </SelectTrigger>
+            <SelectContent className={dialogSelectContentClassName}>
+              {discreteRatingOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           {state.fieldErrors.rating ? <p className="text-sm text-red-600">{state.fieldErrors.rating}</p> : null}
         </div>
       </div>
@@ -159,12 +166,13 @@ function MovieEditForm({ projectId, initialValues, onSuccess }: MovieEditFormPro
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="edit-movie-tags">标签</Label>
+        <input type="hidden" name="tags" value={formValues.tags} />
+        <Label htmlFor="edit-movie-tags-input">标签</Label>
         <Input
-          id="edit-movie-tags"
-          name="tags"
+          id="edit-movie-tags-input"
           value={formValues.tags}
           onChange={(event) => setFormValues((current) => ({ ...current, tags: event.target.value }))}
+          autoComplete="off"
           disabled={isPending}
         />
         {state.fieldErrors.tags ? <p className="text-sm text-red-600">{state.fieldErrors.tags}</p> : null}
@@ -253,7 +261,6 @@ export function MovieDetailActions({ projectId, projectTitle, initialValues }: M
         projectId={projectId}
         projectTitle={projectTitle}
         itemLabel="影视条目"
-        redirectTo="/movies"
         action={deleteMovieAction}
       />
     </>

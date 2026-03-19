@@ -1,19 +1,23 @@
 ﻿import { z } from "zod";
 
+import { isDiscreteRatingValue } from "@/lib/module-list";
 import type { ItemStatus } from "@/lib/types/items";
 
 export const movieStatusValues = ["planned", "in_progress", "completed"] as const;
 
-export const movieStatusOptions: Array<{ value: ItemStatus; label: string }> = [
-  { value: "planned", label: "过去式" },
-  { value: "in_progress", label: "现在进行时" },
-  { value: "completed", label: "完成时" }
-];
+export const movieStatusLabels: Record<ItemStatus, string> = {
+  wishlist: "想看",
+  planned: "待看",
+  in_progress: "在看",
+  completed: "已看完",
+  paused: "已暂停"
+};
 
-export const movieStatusLabels = Object.fromEntries(movieStatusOptions.map((option) => [option.value, option.label])) as Record<
-  ItemStatus,
-  string
->;
+export const movieStatusOptions: Array<{ value: (typeof movieStatusValues)[number]; label: string }> = [
+  { value: "planned", label: movieStatusLabels.planned },
+  { value: "in_progress", label: movieStatusLabels.in_progress },
+  { value: "completed", label: movieStatusLabels.completed }
+];
 
 export function splitMovieTags(rawValue: string) {
   return Array.from(
@@ -41,9 +45,7 @@ export const movieFormSchema = z.object({
   rating: z
     .string()
     .trim()
-    .refine((value) => value === "" || !Number.isNaN(Number(value)), "评分必须是数字")
-    .refine((value) => value === "" || (Number(value) >= 0 && Number(value) <= 5), "评分需在 0 到 5 之间")
-    .refine((value) => value === "" || /^\d(?:\.0|\.5)?$/.test(value), "评分只能是整数或 .5"),
+    .refine((value) => value === "" || isDiscreteRatingValue(value), "评分只能选择 0 到 5 分"),
   note: z.string().trim().max(280, "简短备注不能超过 280 个字符"),
   tags: z
     .string()

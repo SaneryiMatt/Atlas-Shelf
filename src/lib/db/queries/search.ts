@@ -1,4 +1,4 @@
-﻿import { formatUpdatedAtLabel } from "@/lib/module-list";
+﻿import { formatRatingLabel, formatUpdatedAtLabel } from "@/lib/module-list";
 import { searchProjects } from "@/lib/supabase/app-data";
 import type { SearchPageData, SearchResultGroup, SearchResultItem, SearchResultKind } from "@/lib/types/items";
 import {
@@ -62,7 +62,7 @@ function toResultItem(row: Awaited<ReturnType<typeof searchProjects>>[number]): 
       meta: row.author ?? "作者未填写",
       statusLabel: bookStatusLabels[row.status as keyof typeof bookStatusLabels] ?? row.status,
       metricLabel: "评分",
-      metricValue: row.rating === null || row.rating === "" ? "未评分" : Number(row.rating).toFixed(1),
+      metricValue: formatRatingLabel(row.rating),
       updatedAtLabel: formatUpdatedAtLabel(row.updatedAt),
       tags: row.tagNames ?? []
     };
@@ -78,7 +78,7 @@ function toResultItem(row: Awaited<ReturnType<typeof searchProjects>>[number]): 
       meta: [row.director?.trim() || "导演未填写", row.platform?.trim() || "平台未填写"].join(" · "),
       statusLabel: movieStatusLabels[row.status as keyof typeof movieStatusLabels] ?? row.status,
       metricLabel: "评分",
-      metricValue: row.rating === null || row.rating === "" ? "未评分" : Number(row.rating).toFixed(1),
+      metricValue: formatRatingLabel(row.rating),
       updatedAtLabel: formatUpdatedAtLabel(row.updatedAt),
       tags: row.tagNames ?? []
     };
@@ -94,7 +94,7 @@ function toResultItem(row: Awaited<ReturnType<typeof searchProjects>>[number]): 
       meta: row.city?.trim() ? `${row.country} · ${row.city}` : row.country ?? "目的地未填写",
       statusLabel: travelStageLabels[row.travelStage ?? ""] ?? row.travelStage ?? "未填写",
       metricLabel: "评分",
-      metricValue: row.rating === null || row.rating === "" ? "未评分" : Number(row.rating).toFixed(1),
+      metricValue: formatRatingLabel(row.rating),
       updatedAtLabel: formatUpdatedAtLabel(row.updatedAt),
       tags: row.tagNames ?? []
     };

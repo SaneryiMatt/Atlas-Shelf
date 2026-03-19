@@ -1,5 +1,8 @@
 ﻿import { getDashboardProjectRows, type RpcProjectRow } from "@/lib/supabase/app-data";
+import { formatRatingInputValue } from "@/lib/module-list";
 import type { ChartDatum, DashboardAnalyticsData, DashboardStat, QueueItem, TimelineEvent } from "@/lib/types/items";
+import { bookStatusLabels } from "@/modules/books/book-form-schema";
+import { movieStatusLabels } from "@/modules/movies/screen-form-schema";
 
 const chartAccents = {
   book: "#c59d5f",
@@ -12,22 +15,6 @@ const chartAccents = {
   ratingD: "#6f7f92",
   ratingUnrated: "#525866",
   trend: "#8b735b"
-} as const;
-
-const bookStatusLabels = {
-  wishlist: "想读",
-  planned: "计划中",
-  in_progress: "在读",
-  completed: "已读完",
-  paused: "已暂停"
-} as const;
-
-const screenStatusLabels = {
-  wishlist: "想看",
-  planned: "计划中",
-  in_progress: "在看",
-  completed: "已看完",
-  paused: "已暂停"
 } as const;
 
 const screenFormatLabels = {
@@ -165,42 +152,45 @@ function buildMonthlyTrend(year: number, entries: DashboardEntry[]) {
 
 function buildRatingDistribution(entries: DashboardEntry[], total: number) {
   const buckets = {
-    high: 0,
-    mediumHigh: 0,
-    medium: 0,
-    low: 0,
+    five: 0,
+    four: 0,
+    three: 0,
+    two: 0,
+    one: 0,
+    zero: 0,
     unrated: 0
   };
 
   for (const entry of entries) {
-    if (entry.rating === null || entry.rating === undefined || entry.rating === "") {
+    const rating = formatRatingInputValue(entry.rating);
+
+    if (!rating) {
       buckets.unrated += 1;
       continue;
     }
 
-    const rating = Number(entry.rating);
-
-    if (Number.isNaN(rating)) {
-      buckets.unrated += 1;
-      continue;
-    }
-
-    if (rating >= 4.5) {
-      buckets.high += 1;
-    } else if (rating >= 4.0) {
-      buckets.mediumHigh += 1;
-    } else if (rating >= 3.0) {
-      buckets.medium += 1;
+    if (rating === "5") {
+      buckets.five += 1;
+    } else if (rating === "4") {
+      buckets.four += 1;
+    } else if (rating === "3") {
+      buckets.three += 1;
+    } else if (rating === "2") {
+      buckets.two += 1;
+    } else if (rating === "1") {
+      buckets.one += 1;
     } else {
-      buckets.low += 1;
+      buckets.zero += 1;
     }
   }
 
   return [
-    buildDistributionItem("4.5+", buckets.high, total, chartAccents.ratingA),
-    buildDistributionItem("4.0-4.4", buckets.mediumHigh, total, chartAccents.ratingB),
-    buildDistributionItem("3.0-3.9", buckets.medium, total, chartAccents.ratingC),
-    buildDistributionItem("3.0 以下", buckets.low, total, chartAccents.ratingD),
+    buildDistributionItem("5 分", buckets.five, total, "#d8a14d"),
+    buildDistributionItem("4 分", buckets.four, total, "#bc7f4c"),
+    buildDistributionItem("3 分", buckets.three, total, "#8a8f66"),
+    buildDistributionItem("2 分", buckets.two, total, "#6f7f92"),
+    buildDistributionItem("1 分", buckets.one, total, "#5f6b78"),
+    buildDistributionItem("0 分", buckets.zero, total, "#4c5560"),
     buildDistributionItem("未评分", buckets.unrated, total, chartAccents.ratingUnrated)
   ];
 }
@@ -240,7 +230,7 @@ function buildFocusItem(entry: DashboardEntry): QueueItem {
     id: entry.id,
     title: entry.title,
     type: "screen",
-    status: screenStatusLabels[entry.status as keyof typeof screenStatusLabels] ?? entry.status,
+    status: movieStatusLabels[entry.status as keyof typeof movieStatusLabels] ?? entry.status,
     meta: [entry.screenFormat ? screenFormatLabels[entry.screenFormat] : "影视", entry.director, entry.platform].filter(Boolean).join(" · ") || "继续观看中",
     summary: entry.summary?.trim() || "继续补充观影记录、平台信息和短评。",
     tags: []

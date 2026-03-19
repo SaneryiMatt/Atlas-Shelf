@@ -19,8 +19,9 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, dialogSelectContentClassName, dialogSelectTriggerClassName } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { discreteRatingOptions } from "@/lib/module-list";
 import type { BookEditorValues } from "@/lib/types/items";
 import { bookStatusOptions } from "@/modules/books/book-form-schema";
 import { deleteBookAction, type CreateBookFormState, updateBookAction } from "@/modules/books/actions";
@@ -81,17 +82,17 @@ function BookEditForm({ projectId, initialValues, onSuccess }: BookEditFormProps
 
       <div className="grid gap-5 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="edit-book-status">状态</Label>
+          <Label htmlFor="edit-book-status">阅读状态</Label>
           <Select
             name="status"
             value={formValues.status}
             onValueChange={(value) => setFormValues((current) => ({ ...current, status: value as BookEditorValues["status"] }))}
             disabled={isPending}
           >
-            <SelectTrigger id="edit-book-status">
-              <SelectValue placeholder="请选择状态" />
+            <SelectTrigger id="edit-book-status" className={dialogSelectTriggerClassName}>
+              <SelectValue placeholder="请选择阅读状态" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className={dialogSelectContentClassName}>
               {bookStatusOptions.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
@@ -104,17 +105,23 @@ function BookEditForm({ projectId, initialValues, onSuccess }: BookEditFormProps
 
         <div className="space-y-2">
           <Label htmlFor="edit-book-rating">评分</Label>
-          <Input
-            id="edit-book-rating"
+          <Select
             name="rating"
-            type="number"
-            min="0"
-            max="5"
-            step="0.1"
-            value={formValues.rating}
-            onChange={(event) => setFormValues((current) => ({ ...current, rating: event.target.value }))}
+            value={formValues.rating || undefined}
+            onValueChange={(value) => setFormValues((current) => ({ ...current, rating: value }))}
             disabled={isPending}
-          />
+          >
+            <SelectTrigger id="edit-book-rating" className={dialogSelectTriggerClassName}>
+              <SelectValue placeholder="请选择评分" />
+            </SelectTrigger>
+            <SelectContent className={dialogSelectContentClassName}>
+              {discreteRatingOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           {state.fieldErrors.rating ? <p className="text-sm text-red-600">{state.fieldErrors.rating}</p> : null}
         </div>
       </div>
@@ -160,12 +167,13 @@ function BookEditForm({ projectId, initialValues, onSuccess }: BookEditFormProps
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="edit-book-tags">标签</Label>
+        <input type="hidden" name="tags" value={formValues.tags} />
+        <Label htmlFor="edit-book-tags-input">标签</Label>
         <Input
-          id="edit-book-tags"
-          name="tags"
+          id="edit-book-tags-input"
           value={formValues.tags}
           onChange={(event) => setFormValues((current) => ({ ...current, tags: event.target.value }))}
+          autoComplete="off"
           disabled={isPending}
         />
         {state.fieldErrors.tags ? <p className="text-sm text-red-600">{state.fieldErrors.tags}</p> : null}
@@ -254,7 +262,6 @@ export function BookDetailActions({ projectId, projectTitle, initialValues }: Bo
         projectId={projectId}
         projectTitle={projectTitle}
         itemLabel="书籍"
-        redirectTo="/books"
         action={deleteBookAction}
       />
     </>

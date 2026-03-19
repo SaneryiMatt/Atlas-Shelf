@@ -133,9 +133,6 @@ export function DashboardOverview({ stats, focusItems, recentMoments, analytics 
         <section className="lg:col-span-2">
           <div className="mb-6 flex items-center justify-between">
             <h2 className="text-lg font-medium text-foreground">最近动态</h2>
-            <Link href="/timeline" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
-              查看全部
-            </Link>
           </div>
 
           {limitedMoments.length ? (

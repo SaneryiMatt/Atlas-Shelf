@@ -2,6 +2,17 @@
 
 export const MODULE_LIST_PAGE_SIZE = 6;
 
+export const discreteRatingValues = ["0", "1", "2", "3", "4", "5"] as const;
+export const discreteRatingOptions: Array<{ value: (typeof discreteRatingValues)[number]; label: string }> =
+  discreteRatingValues.map((value) => ({
+    value,
+    label: value
+  }));
+
+export function isDiscreteRatingValue(value: string): value is (typeof discreteRatingValues)[number] {
+  return discreteRatingValues.includes(value as (typeof discreteRatingValues)[number]);
+}
+
 export function parseModuleListParams(
   searchParams?: { page?: string; sort?: string },
   options: {
@@ -68,5 +79,25 @@ export function formatRatingLabel(rating: string | number | null) {
     return "未评分";
   }
 
-  return Number(rating).toFixed(1);
+  const resolvedRating = Number(rating);
+
+  if (Number.isNaN(resolvedRating)) {
+    return "未评分";
+  }
+
+  return String(Math.max(0, Math.min(5, Math.round(resolvedRating))));
+}
+
+export function formatRatingInputValue(rating: string | number | null | undefined) {
+  if (rating === null || rating === undefined || rating === "") {
+    return "";
+  }
+
+  const resolvedRating = Number(rating);
+
+  if (Number.isNaN(resolvedRating)) {
+    return "";
+  }
+
+  return String(Math.max(0, Math.min(5, Math.round(resolvedRating))));
 }

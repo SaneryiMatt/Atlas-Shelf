@@ -1,8 +1,9 @@
-﻿"use server";
+"use server";
 
 import { createHash, randomUUID } from "node:crypto";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 import { requireUser } from "@/lib/auth";
 import { deleteOwnedProject, upsertApplication } from "@/lib/supabase/app-data";
@@ -204,11 +205,6 @@ export async function deleteApplicationAction(
   try {
     await deleteOwnedProject(projectId);
     revalidateApplicationPaths(projectId);
-
-    return {
-      status: "success",
-      message: "投递记录已删除。"
-    };
   } catch (error) {
     const message = error instanceof Error ? error.message : "未知错误";
 
@@ -217,4 +213,6 @@ export async function deleteApplicationAction(
       message: `删除投递记录失败：${message}`
     };
   }
+
+  redirect("/applications");
 }

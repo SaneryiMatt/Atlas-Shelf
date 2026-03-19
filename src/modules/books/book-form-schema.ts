@@ -1,19 +1,23 @@
 ﻿import { z } from "zod";
 
+import { isDiscreteRatingValue } from "@/lib/module-list";
 import type { ItemStatus } from "@/lib/types/items";
 
 export const bookStatusValues = ["planned", "in_progress", "completed"] as const;
 
-export const bookStatusOptions: Array<{ value: ItemStatus; label: string }> = [
-  { value: "planned", label: "过去式" },
-  { value: "in_progress", label: "现在进行时" },
-  { value: "completed", label: "完成时" }
-];
+export const bookStatusLabels: Record<ItemStatus, string> = {
+  wishlist: "想读",
+  planned: "待读",
+  in_progress: "在读",
+  completed: "已读完",
+  paused: "已暂停"
+};
 
-export const bookStatusLabels = Object.fromEntries(bookStatusOptions.map((option) => [option.value, option.label])) as Record<
-  ItemStatus,
-  string
->;
+export const bookStatusOptions: Array<{ value: (typeof bookStatusValues)[number]; label: string }> = [
+  { value: "planned", label: bookStatusLabels.planned },
+  { value: "in_progress", label: bookStatusLabels.in_progress },
+  { value: "completed", label: bookStatusLabels.completed }
+];
 
 function isValidDate(value: string) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
@@ -47,9 +51,7 @@ export const bookFormSchema = z
     rating: z
       .string()
       .trim()
-      .refine((value) => value === "" || !Number.isNaN(Number(value)), "评分必须是数字")
-      .refine((value) => value === "" || (Number(value) >= 0 && Number(value) <= 5), "评分需在 0 到 5 之间")
-      .refine((value) => value === "" || /^\d(?:\.0|\.5)?$/.test(value), "评分只能是整数或 .5"),
+      .refine((value) => value === "" || isDiscreteRatingValue(value), "评分只能选择 0 到 5 分"),
     startedAt: z
       .string()
       .trim()
@@ -79,7 +81,7 @@ export const bookFormSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["completedAt"],
-        message: "只有状态为“完成时”时才能填写结束日期"
+        message: "只有状态为“已读完”时才能填写结束日期"
       });
     }
   });
